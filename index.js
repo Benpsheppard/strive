@@ -1,6 +1,7 @@
 let workoutCount = 0;   // Initialize workout count
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('currentUser').textContent = localStorage.getItem('currentUser') || 'Guest'; // Display current user
     // Function to handle the new workout button click
     document.getElementById('newWorkoutBtn').addEventListener('click', () => {
         console.log('Creating a new workout...');  // Log message for debugging

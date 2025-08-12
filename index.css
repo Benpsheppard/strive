@@ -1,59 +1,8 @@
-* {
-    padding: 0px;
-    margin: 0px;
-    font-family: 'Times New Roman', Times, serif;
-}
-
-.header {
-    background-color: #1985A1;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#main-title {
-    color: #C5C3C6;
-    text-align: left;
-    font-size: 48px;
-}
-
-#main-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-}
-
-#main-nav li {
-    color: #C5C3C6;
-    padding: 20px;
-    font-size: 18px;
-}
-
-#main-nav li:hover{
-    color: #4C5C68;
-}
-
-.main-content {
-    padding: 20px;
-    height: 500px;
-    display: block;
-    text-align: center;
-    background-color: #46494C;
-    color: #C5C3C6;
-}
-
 #page-title {
     color:#C5C3C6;
     text-align: center;
     font-size: 26px;
     padding: 20px;
-}
-
-body {
-    background-color: #46494C;
-    display: block;
-    text-align: center;
 }
 
 #newWorkoutBtn{
@@ -67,32 +16,7 @@ body {
     cursor: pointer;
 }
 
-#logoutBtn {
-    background-color: #4C5C68;
-    color: #C5C3C6;
-    border-radius: 5px;
-    border-style: solid;
-    border-color: #1985A1;
-    border-width: 3px;
-    padding: 10px 15px;
-    cursor: pointer;
-}
-
-#newWorkoutBtn:hover, #logoutBtn:hover {
+#newWorkoutBtn:hover {
     background-color: #1985A1;
     color: #C5C3C6;
-}
-
-.img {
-    width: 100%;
-    height: auto;
-}
-
-footer {
-    padding: 25px;
-    color:#C5C3C6;
-    background-color: #4C5C68;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
