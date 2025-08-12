@@ -1,10 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="index.css">
         <title>Gym Tracker</title>
     </head>
     <body>
-        <h1>Welcome to Gym Tracker</h1>
-        <p>Track your workouts and progress easily!</p>
+        <div class="header">
+            <h1 id="main-title">Gym Tracker</h1>
+            <nav id="main-nav">
+                <ul>
+                    <li>Home</li>
+                    <li>Workouts</li>
+                    <li>Progress</li>
+                    <li>Contact</li>
+                </ul>
+            </nav>
+        </div>
+
+        <main class="main-content">
+            <h2 id="page-title">New Workout</h2>
+            <button id="newWorkoutBtn">+</button><br><br>
+            <div id="workouts"></div>
+        </main>
+        
+        <script src="index.js"></script>
     </body>
+    <footer>
+        <p>&copy; 2025 Gym Tracker</p>
+        <button id="logoutBtn">Logout</button>
+    </footer>
 </html>
+
