@@ -1,19 +1,38 @@
 .login-page {
-    background-color: #46494C;
-    color: #C5C3C6;
-    display: flex;
+    background-color: #2B2D42;
+    color: #EDF2F4;
+    display: grid;
     justify-content: center;
     align-items: center;
-    font-family: 'Times New Roman', Times, serif;
+    gap: 20px;
+}
+
+#login-title{
+    font-size: 26px;
 }
 
 #login-form{
-    background-color: #1985A1;
+    background-color: #8D99AE;
     padding: 40px;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 400px;
-    text-align: left;
+    max-width: 300px;
     margin: 0px;
+}
+
+
+/* Login Button */
+#loginBtn{
+    width: 100%;
+    background-color: #EF233C;
+    color: #EDF2F4;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#loginBtn:hover {
+    background-color: #D90429;
 }

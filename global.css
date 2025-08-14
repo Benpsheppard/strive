@@ -4,9 +4,13 @@
     font-family: 'Times New Roman', Times, serif;
 }
 
+h1 {
+    font-size: 56px;
+}
+
 .header {
-    background-color: #1985A1;
-    color: #C5C3C6;
+    background-color: #8D99AE;
+    color: #EDF2F4;
     padding: 10px;
     display: flex;
     justify-content: space-between;
@@ -14,7 +18,7 @@
 }
 
 #main-title {
-    color: #C5C3C6;
+    color: #EDF2F4;
     text-align: left;
     font-size: 48px;
 }
@@ -26,14 +30,14 @@
 }
 
 #main-nav li {
-    color: #C5C3C6;
+    color: #EDF2F4;
     padding: 20px;
     font-size: 18px;
     list-style: none;
 }
 
 #main-nav li:hover{
-    color: #4C5C68;
+    color: #EF233C;
 }
 
 .main-content {
@@ -41,29 +45,34 @@
     height: 500px;
     display: block;
     text-align: center;
-    background-color: #46494C;
-    color: #C5C3C6;
+    background-color: #2B2D42;
+    color: #EDF2F4;
 }
 
 a {
     text-decoration: none;
-    color: #C5C3C6;
+    color: #EDF2F4;
 }
 
 a:hover {
-    color: #4C5C68;
+    color: #D90429;
+}
+
+input {
+    width: 100%;
 }
 
 body {
-    background-color: #46494C;
+    background-color: #2B2D42;
     display: block;
     text-align: center;
+    height: auto;
 }
 
 footer {
     padding: 40px;
-    color:#C5C3C6;
-    background-color: #4C5C68;
+    color:#EDF2F4;
+    background-color: #8D99AE;
     display: flex;
     justify-content: space-between;
     align-items: center;
