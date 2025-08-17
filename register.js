@@ -1,5 +1,5 @@
 
-document.getElementById('registerForm').addEventListener('submit', (e) => {
+document.getElementById('register-form').addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent the default form submission
 
     // Get the values from the input fields
