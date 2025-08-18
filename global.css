@@ -56,7 +56,12 @@ a {
 }
 
 a:hover {
-    color: #D90429;
+    color: #EF233C;
+}
+
+#main-nav li:hover a,
+#main-nav li:hover span {
+    color: #EF233C;
 }
 
 body {
