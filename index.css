@@ -48,8 +48,7 @@ h2.workout-title {
     text-align: center;
 }
 
-input[type="text"],
-input[type="number"] {
+input {
     border: 2px solid #EDF2F4;
     border-radius: 5px;
     background-color: #2B2D42;

@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newWorkoutBtn').addEventListener('click', () => {
         console.log('Creating a new workout...');  // Log message for debugging
         newWorkoutBtn.disabled = true; // Disable button while a workout is open
-        createWorkout();  // Call createWorkout function when button is clicked 
+        createWorkout();  // Call createWorkout function when button is clicked
+        loadExerciseSuggestions(); // Load exercise suggestions from localStorage
     })
 
     // Function to create a new workout
@@ -20,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="text" placeholder="Workout Title" class="workout-title"/>
         <div class="exercises"></div>
         <div class="exercise-input">
-            <input type="text" placeholder="Exercise Name" class="exercise-name" /><br>
+            <input list="exerciseList" placeholder="Exercise Name" class="exercise-name" />
+            <datalist id="exerciseList"></datalist><br>
             <input type="number" placeholder="Weight (kg)" class="exercise-weight" /><br>
             <input type="number" placeholder="Reps" class="exercise-reps" /><br>
             <button class="addExerciseBtn">Add Exercise</button>
@@ -40,6 +42,31 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('workouts').appendChild(workoutDiv);
     }
 
+    // Function to load exercise suggestions from localStorage
+    function loadExerciseSuggestions() {
+        const username = localStorage.getItem('currentUser') || 'Guest';
+        const data = JSON.parse(localStorage.getItem("gymTracker")) || {};
+        const workouts = data[username]?.workouts || [];
+
+        // Collect all unique exercise names from saved workouts
+        const allExercises = new Set();
+        workouts.forEach(w => {
+            w.exercises.forEach(ex => allExercises.add(ex.exercise));
+        });
+
+        // Populate datalist
+        let dataList = document.getElementById("exerciseList");
+        if (!dataList) return;
+        dataList.innerHTML = "";
+
+        allExercises.forEach(exercise => {
+            let option = document.createElement("option");
+            option.value = exercise;
+            dataList.appendChild(option);
+        });
+    }
+
+
     // Function to add exercise to workout
     function addExercise(button) {
         const workoutDiv = button.closest('.workout');  // Find the closest workout div
@@ -48,6 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = workoutDiv.querySelector('.exercise-name').value; // Get the exercise name
         const weight = workoutDiv.querySelector('.exercise-weight').value; // Get the weight
         const reps = workoutDiv.querySelector('.exercise-reps').value; // Get the number of reps
+
+        let savedExercises = JSON.parse(localStorage.getItem("exercises")) || [];
+        if (!savedExercises.includes(name)) {
+            savedExercises.push(name);
+            localStorage.setItem("exercises", JSON.stringify(savedExercises));
+            loadExerciseSuggestions(); // Refresh the datalist
+        }
 
         if (!name || !weight || !reps) {    // Check if all fields are filled
             alert('Please fill in all fields.');
