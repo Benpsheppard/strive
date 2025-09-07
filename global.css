@@ -43,7 +43,7 @@ h1 {
 
 .main-content {
     padding: 20px;
-    height: 500px;
+    height: 100vh;
     display: block;
     text-align: center;
     background-color: #2B2D42;

@@ -1,3 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('currentUser').textContent = localStorage.getItem('currentUser') || 'Guest'; // Display current user
+    const currentUser = localStorage.getItem('currentUser');    // Get the current user from localStorage
+
+    if (!currentUser) {
+        window.location.href = "login.html"; // Redirect to login if no user is logged in
+        return;
+    }
+    document.getElementById('currentUser').textContent = currentUser; // Display current user
 });

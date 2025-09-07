@@ -1,7 +1,14 @@
 let workoutCount = 0;   // Initialize workout count
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('currentUser').textContent = localStorage.getItem('currentUser') || 'Guest'; // Display current user
+    const currentUser = localStorage.getItem('currentUser');    // Get the current user from localStorage
+
+    if (!currentUser) {
+        window.location.href = "login.html"; // Redirect to login if no user is logged in
+        return;
+    }
+
+    document.getElementById('currentUser').textContent = currentUser; // Display current user
 
     // Function to handle new workout button click
     document.getElementById('newWorkoutBtn').addEventListener('click', () => {
@@ -44,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to load exercise suggestions from localStorage
     function loadExerciseSuggestions() {
-        const username = localStorage.getItem('currentUser') || 'Guest';
+        const username = localStorage.getItem('currentUser');
         const data = JSON.parse(localStorage.getItem("gymTracker")) || {};
         const workouts = data[username]?.workouts || [];
 

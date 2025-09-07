@@ -1,7 +1,20 @@
-document.getElementById('currentUser').textContent = localStorage.getItem('currentUser') || 'Guest'; // Display current user
+document.addEventListener('DOMContentLoaded', () => {
+    const currentUser = localStorage.getItem('currentUser');    // Get the current user from localStorage
 
-document.getElementById("logoutBtn").addEventListener("click", function() {
-    localStorage.removeItem("currentUser"); // Clear the current user from localStorage
-    window.location.href = "login.html"; // Redirect to the login page
+    if (!currentUser) {
+        window.location.href = "login.html"; // Redirect to login if no user is logged in
+        return;
+    }
+
+    document.getElementById('currentUser').textContent = currentUser; // Display current user
+
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+        localStorage.removeItem("currentUser"); // Clear the current user from localStorage
+        window.location.href = "login.html"; // Redirect to the login page
+    });
 });
+
+
+
+
 
