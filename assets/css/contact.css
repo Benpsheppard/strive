@@ -1,0 +1,46 @@
+/*Add css for contact form*/    
+
+
+.contact-container {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+
+#contact-form{
+    background-color: #8D99AE;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    width: 500px;
+    height: auto;
+    margin: 0px;
+    align-items: center;
+    text-align: left;
+}
+
+#message {
+    width: 95%;
+    padding: 10px;
+    background-color: #2B2D42;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+#submitBtn {
+    width: 100%;
+    background-color: #EF233C;
+    color: #EDF2F4;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#submitBtn:hover {
+    background-color: #D90429;
+}
