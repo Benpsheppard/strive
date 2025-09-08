@@ -36,3 +36,7 @@ Open index.html in your browser to run the app. (Google Chrome recommended)
 ## Contributing
 - Pull requests are welcome
 - For major changes, please open an issue first to discuss your ideas. Thanks!
+
+## License 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
