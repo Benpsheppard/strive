@@ -3,8 +3,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="global.css">
-        <link rel="stylesheet" href="contact.css">
+        <link rel="stylesheet" href="assets/css/global.css">
+        <link rel="stylesheet" href="assets/css/contact.css">
         <title>Contact Us | Strive</title>
     </head>
     <body>
@@ -22,12 +22,25 @@
         </div>
 
         <main class="main-content">
-            <h2 id="page-title">Contact Us</h2>
-            <p>Email us at: <a href="mailto:ben@bensheppard.co.uk">ben@bensheppard.co.uk</a></p>
-            <p>Or give us a call at: 07496 860 747</p>
+            <div class="contact-container">
+                <h2 id="page-title">Contact Us</h2>
+                <form id="contact-form">
+                    <label for="name">Name:</label><br>
+                    <input type="text" id="name" name="name" required><br>
+
+                    <label for="email">Email:</label><br>
+                    <input type="email" id="email" name="email" required><br>
+
+                    <label for="message">Message:</label><br>
+                    <textarea id="message" name="message" rows="5" required></textarea><br>
+
+                    <button id="submitBtn" type="submit">Send</button>
+                </form>
+            </div>
+            
         </main>
 
-        <script src="contact.js"></script>
+        <script src="assets/js/contact.js"></script>
     </body>
     <footer>
         <p>&copy; 2025 Gym Tracker</p>
