@@ -28,8 +28,6 @@ Open index.html in your browser to run the app. (Google Chrome recommended)
 - MongoDB planned upgrade for storage
 
 ## Roadmap
-- Polish progress page with more stats and graphs
-- Finish contact page with form
 - Improve user authentication
 - Integrate MongoDB
 
