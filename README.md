@@ -1,3 +1,3 @@
-Gym Tracker App;
-Create and Save personalised workouts;
-View Progress charts outlining your improvement
+#Welcome to Strive!
+Strive is a Gym tracker app; Create, log and review workouts
+Built using HTML, CSS and Javascript
