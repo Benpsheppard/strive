@@ -25,10 +25,23 @@
             <div class="summary-card">
                 <h2>Workouts Summary</h2>
                 <p>Total Workouts: <span id="total-workouts"></span></p>
+                <p>Total Exercises: <span id="total-exercises"></span></p>
+                <p>Total Reps: <span id="total-reps"></span></p>
+                <p>Total Weight: <span id="total-weight"></span>kg</p>
+                <p>Total Achievements completed: <span id="total-achievements"></span></p>
+            </div>
+            <div class="personal-best">
+                <h2>Personal Bests</h2>
+                <canvas id="pb-chart" width="400" height="200"></canvas>
+            </div>
+            <div class="achievements">
+                <h2>Achievements</h2>
+                <ul id="achievements-list">
             </div>
         </main>
 
         <script src="assets/js/progress.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>
     <footer>
         <p>&copy; 2025 Strive</p>
