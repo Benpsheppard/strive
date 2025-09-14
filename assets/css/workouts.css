@@ -3,21 +3,55 @@
     flex-direction: column;
     align-items: center;
     margin-top: 20px;
-    gap: 30px;
+    gap: 20px;
 }
 
-.workout{
+/* Workout Card */
+.workout-card {
     width: 80%;
     max-width: 600px;
     background-color: #8D99AE;
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 15px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
 }
 
-.workout:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+/* Hover Effect */
+.workout-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Summary (always visible) */
+.workout-summary {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Details (hidden by default) */
+.workout-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+/* Expand details on hover */
+.workout-card:hover .workout-details {
+    max-height: 500px; /* same as expanded state */
+}
+
+/* Individual exercise */
+.exercise {
+    font-size: 16px;
+    margin-left: 10px;
+    padding: 2px 0;
+}
+
+/* Optional: add subtle separator */
+.workout-details p + p {
+    border-top: 1px solid rgba(255,255,255,0.1); /* almost invisible */
+    padding-top: 5px;
 }
