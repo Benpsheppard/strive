@@ -3,14 +3,12 @@
     flex-direction: column; 
     align-items: center;       
     justify-content: center;    
-    gap: 30px;   
 }
 
 .summary-card, .personal-best, .achievements {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
     width: 80%;
     max-width: 600px;
     background-color: #8D99AE;

@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let userData = gymData[currentUser] || { workouts: [] };
   let workouts = userData.workouts || [];
 
-  // ✅ Use your actual functions
   getOrCreateAchievements(userData, workouts);
   checkAchievements(userData, workouts, gymData, currentUser);
 
@@ -85,7 +84,7 @@ function generateStrengthAchievement(workouts) {
   }
 
   const exercise = lifts[Math.floor(Math.random() * lifts.length)];
-  const currentMax = pb[exercise].weight; // ✅ now consistent
+  const currentMax = pb[exercise].weight;
   const target = Math.round(currentMax * 1.05 / 2) * 2; // +5%, rounded
 
   return `Strength goal: ${exercise} ${target}kg`;

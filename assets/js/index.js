@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`Workout "${workoutTitle}" saved for ${username}!`);
 
-        // ✅ Reset form back to original state
+        // Reset form back to original state
         workoutDiv.querySelector('.workout-title').replaceWith(
             (() => {
                 const input = document.createElement('input');
