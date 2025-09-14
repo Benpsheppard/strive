@@ -1,4 +1,8 @@
-# Strive
+<p align="center">
+  <img src="assets/img/strive_main_logo.png" alt="Strive Logo" width="200"/>
+</p>
+
+# Strive 
 Strive is a Gym Tracker App. Create, log and review personalised workouts - built using HTML, CSS and Javascript
 
 ## Features
