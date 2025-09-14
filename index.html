@@ -11,6 +11,8 @@
     <body>
         <div class="header">
             <h1 id="main-title">Strive</h1>
+
+            <!-- Page Navigation -->
             <nav id="main-nav">
                 <ul>
                     <li><a href="index.html">Home</a></li>
@@ -24,8 +26,30 @@
 
         <main class="main-content">
             <h2 id="page-title">New Workout</h2>
-            <button id="newWorkoutBtn">+</button><br><br>
-            <div id="workouts"></div>
+
+            <!-- Workout Section  -->
+            <section id="workouts">
+                <!-- Workout form -->
+                <div class="workout">
+                    <input type="text" placeholder="Workout Title" class="workout-title"/>
+
+                    <!-- Entered Exercises Div -->
+                    <div class="exercises"></div>
+
+                    <!-- Exercise input fields -->
+                    <div class="exercise-input">
+                        <input list="exerciseList" placeholder="Exercise Name" class="exercise-name" />
+                        <datalist id="exerciseList"></datalist><br>
+                        <input type="number" placeholder="Weight (kg)" class="exercise-weight" /><br>
+                        <input type="number" placeholder="Reps" class="exercise-reps" /><br>
+
+                        <!-- Workout Control Buttons -->
+                        <button class="addExerciseBtn">Add Exercise</button>
+                        <button class="saveWorkoutBtn">Save Workout</button>
+                    </div>
+                </div>
+            </section>
+            
         </main>
         
         <script src="assets/js/index.js"></script>
