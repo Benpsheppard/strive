@@ -1,5 +1,6 @@
+const currentUser = localStorage.getItem('currentUser'); // Get the current user
+
 document.addEventListener('DOMContentLoaded', () => {
-    const currentUser = localStorage.getItem('currentUser'); // Get the current user
 
     if (!currentUser) {
         window.location.href = "login.html"; // Redirect if not logged in
@@ -7,7 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('currentUser').textContent = currentUser; // Display current user
+    loadWorkouts();
 
+    const filterBtn = document.getElementById('filter-workouts-btn');
+    filterBtn.addEventListener('click', filterWorkouts);
+});
+
+function loadWorkouts() {
     const data = JSON.parse(localStorage.getItem('gymTracker')); // Load data
     if (!data || !data[currentUser] || !data[currentUser].workouts) return;
 
@@ -52,4 +59,4 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.toggle('expanded');
         });
     });
-});
+}
