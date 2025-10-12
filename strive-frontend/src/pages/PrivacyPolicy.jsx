@@ -1,0 +1,74 @@
+import Header from '../components/Header.jsx';
+import Footer from '../components/Footer.jsx';
+
+const PrivacyPolicy = () => {
+    return (
+        <>
+            <Header />
+            <section className="min-h-screen flex flex-col text-[#EDF2F4] mx-auto max-w-4xl px-4 py-8 mt-15">
+                <h1 className="text-3xl text-[#EDF2F4] text-center">
+                    Privacy <span className="text-[#EF233C]">Policy</span>
+                </h1>
+                <p className="text-sm text-gray-400 mt-2">Last updated: October 2025</p>
+                {/* Introduction */}
+                <h2 className="text-2xl mt-6 mb-2">Introduction</h2>
+                <p>
+                    Strive is a Gym Tracker App designed to help users log workouts and track progress. 
+                    This privacy policy explains how we collect, use and protect your information when using Strive.
+                </p>
+                {/* Info we collect */}
+                <h2 className="text-2xl mt-6 mb-2">Information We Collect</h2>
+                <ul>
+                    <li>- Account info: Username, email address and password</li>
+                    <li>- Workout data: exercises, weights, reps and dates completed</li>
+                </ul>
+                {/* How we use your info */}
+                <h2 className="text-2xl mt-6 mb-2">How We Use Your Information</h2>
+                <p>
+                    We use your data to:
+                </p>
+                <ul>
+                    <li> - Enable login and user account</li>
+                    <li> - Save and display your workouts</li>
+                </ul>
+                {/* How data is stored */}
+                <h2 className="text-2xl mt-6 mb-2">How We Store Your Data</h2>
+                <p>
+                    Your data is stored securely using a MongoDB database hosted by Render. 
+                    We use industry-standard encryption and security measures to protect your information.
+                </p>
+                {/* Sharing and Disclosure */}
+                <h2 className="text-2xl mt-6 mb-2">Sharing and Disclosure</h2>
+                <p>
+                    We do not share your personal information with third parties.
+                </p>
+                {/* Your Rights */}
+                <h2 className="text-2xl mt-6 mb-2">Your Rights</h2>
+                <p>
+                    You can request to view, update or delete your personal information by contacting <a href="mailto:ben@bensheppard.co.uk" className="text-[#EF233C]">ben@bensheppard.co.uk</a>.
+                </p>
+                {/* Cookies and Analytics */}
+                <h2 className="text-2xl mt-6 mb-2">Cookies and Analytics</h2>
+                <p>
+                    Strive currently does not use cookies or third-party analytics services.
+                </p>
+                {/* Changes to this Policy */}
+                <h2 className="text-2xl mt-6 mb-2">Changes to this Policy</h2>
+                <p>
+                    We may update this privacy policy from time to time.
+                    Any changes will be posted on this page with an updated revision date.
+                </p>
+                {/* Contact Us */}
+                <h2 className="text-2xl mt-6 mb-2">Contact Us</h2>
+                <p>
+                    If you have any questions or concerns about this privacy policy, please contact <a href="mailto:ben@bensheppard.co.uk" className="text-[#EF233C]">ben@bensheppard.co.uk</a>.
+                </p>
+            </section>
+            <Footer />
+        </>
+        
+    );
+};
+
+export default PrivacyPolicy;
+

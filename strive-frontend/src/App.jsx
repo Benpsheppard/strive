@@ -17,6 +17,8 @@ const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'));
 const Progress = lazy(() => import('./pages/Progress.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
+const Help = lazy(() => import('./pages/Help.jsx'));
 
 // App
 const App = () => {
@@ -36,6 +38,8 @@ const App = () => {
               <Route path='/progress' element={<Progress />} />
               <Route path='/contact' element={<Contact />} />
               <Route path='/profile' element={<Profile />} />
+              <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+              <Route path='/help' element={<Help />} />
             </Routes>
           </Suspense>
         </div>
