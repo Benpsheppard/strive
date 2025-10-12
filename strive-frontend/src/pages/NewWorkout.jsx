@@ -167,7 +167,13 @@ const NewWorkout = () => {
 
     const onCancel = () => {
         if (window.confirm("Are you sure you want to delete this workout?")) {                
+            // Reset
+            setTitle('');
+            setExercises([]);
+            setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
+            setCurrentSet({ weight: '', reps: '' });
             setStarted(false);
+            setStartTime(null);
 
             // Clear from localStorage manually
             localStorage.removeItem('newWorkout_title');
@@ -296,7 +302,7 @@ const NewWorkout = () => {
                             />
 
                             {/* Sets Form */}
-                            <div className="flex flex-col gap-2 mb-3 w-full">
+                            <div className="flex flex-col gap-2 mb-3 px-4 py-2 w-full shadow-lg rounded-lg">
                                 {/* Inputs row */}
                                 <div className="flex items-center gap-2 w-full">
                                     <input
