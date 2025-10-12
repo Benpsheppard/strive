@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout, reset } from '../features/auth/authSlice.js';
+import { logout, reset, deleteUser } from '../features/auth/authSlice.js';
 import Header from '../components/Header.jsx';
 import { FaUser } from 'react-icons/fa';
 import Spinner from '../components/Spinner.jsx';
@@ -18,6 +18,14 @@ const Profile = () => {
         dispatch(logout());
         dispatch(reset());
         navigate('/');
+    }
+
+    const onDeleteAccount = () => {
+        if (window.confirm('Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.')) {
+            dispatch(deleteUser(user._id));
+            dispatch(reset());
+            navigate('/');
+        }
     }
 
     useEffect(() => {
@@ -62,9 +70,15 @@ const Profile = () => {
                         <span className="font-semibold">User since:</span>{" "}
                         {new Date(user.createdAt).toLocaleDateString()}
                     </p>
-                    <button onClick={onLogout} className="bg-[#EF233C] text-white px-4 py-2 rounded-lg hover:bg-[#D90429] transition-colors">
-                        Logout
-                    </button>
+                    <div className="flex flex-col w-full items-center">
+                        <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
+                            Logout
+                        </button>
+
+                        <button onClick={onDeleteAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
+                            Delete Account
+                        </button>
+                    </div>
                 </div>
             </div>
         </>

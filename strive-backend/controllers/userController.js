@@ -6,6 +6,7 @@ const asyncHandler = require('express-async-handler');    // Import asyncHandler
 const User = require('../models/userModel.js');      // Import user schema model 
 const jwt = require('jsonwebtoken');    // Import JWT for authentication
 const bcrypt = require('bcryptjs');     // Import bcrypt for hashing passwords
+const Workout = require('../models/workoutModel.js'); // Import workout model
 
 // @desc    Register user
 // @route   POST /api/users
@@ -88,6 +89,37 @@ const getMe = asyncHandler(async (req, res) => {
     res.status(200).json(req.user);
 });
 
+// @desc    Delete user
+// @route   DELETE /api/users/:id
+// @access  Private
+const deleteUser = asyncHandler(async (req, res) => {
+    // Get user from database
+    const user = await User.findById(req.params.id);
+
+    // Check if user exists
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Check if the authenticated user is deleting their own account
+    if (user._id.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('User not authorized to delete this account');
+    }
+
+    // Delete all workouts associated with the user
+    await Workout.deleteMany({ user: req.params.id });
+
+    // Delete user
+    await user.deleteOne();
+
+    res.status(200).json({ 
+        id: req.params.id,
+        message: 'User and associated workouts deleted successfully' 
+    });
+});
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -96,4 +128,4 @@ const genToken = (id) => {
 };
 
 // Export functions
-module.exports = { registerUser, loginUser, getMe };
+module.exports = { registerUser, loginUser, getMe, deleteUser };
