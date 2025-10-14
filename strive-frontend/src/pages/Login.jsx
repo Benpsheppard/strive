@@ -15,12 +15,12 @@ import AuthHeader from '../components/AuthHeader.jsx';
 const Login = () => {
     // Setting fields to blank
     const [formData, setFormData] = useState({
-        username: '',
+        identifier: '',
         password: ''
     })
 
     // Getting user data from form
-    const { username, password } = formData; 
+    const { identifier, password } = formData; 
 
     // Nav and Dispatch initialisation
     const navigate = useNavigate();
@@ -55,15 +55,26 @@ const Login = () => {
     // When form is submitted
     const onSubmit = (e) => {
         e.preventDefault();
+        
+        // Validate input fields
+        if (!identifier.trim() || !password.trim()) {
+            toast.error("Please fill in all fields.");
+            return;
+        }
 
-        const userData = {
-            username,
-            password
-        };
+        // Determine if identifier is email or username
+        const isEmail = identifier.includes('@');
 
+        // User data object
+        const userData = isEmail
+        ? {email: identifier, password}
+        : {username: identifier, password};
+
+        // Dispatch login
         dispatch(login(userData));
     }
 
+    // If loading, show spinner
     if(isLoading){
         return (
             <Spinner />
@@ -89,12 +100,12 @@ const Login = () => {
 
                         <input
                             type="text"
-                            id="username"
+                            id="identifier"
                             required
-                            placeholder="Username"
+                            placeholder="Username or Email"
                             className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                            name="username"
-                            value={username}
+                            name="identifier"
+                            value={identifier}
                             onChange={onChange}
                         />
 

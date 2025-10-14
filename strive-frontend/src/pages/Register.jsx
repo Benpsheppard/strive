@@ -25,6 +25,16 @@ const Register = () => {
     // Desconstruct data from form data
     const { email, username, password, password2 } = formData; 
 
+    // Password criteria
+    const passwordChecks = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        symbol: /[^A-Za-z0-9]/.test(password)
+    };
+
+
     // Nav and Dispatch initialisation
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -59,20 +69,24 @@ const Register = () => {
     const onSubmit = (e) => {
         e.preventDefault();
 
-        // Check passwords match and set up user data with info given in form 
+        // Check passwords match 
         if(password !== password2) {
             toast.error("Passwords do not match!");
-        } else {
-            const userData = {
-                username,
-                email,
-                password
-            }
-
-            dispatch(register(userData));
+            return;
         }
+
+        // User data object
+        const userData = {
+            username,
+            email,
+            password
+        }
+
+        // Dispatch register
+        dispatch(register(userData));
     }
 
+    // If loading, show spinner
     if(isLoading){
         return (
             <Spinner />
@@ -129,6 +143,15 @@ const Register = () => {
                             value={password}
                             onChange={onChange}
                         />
+                        {/* Password checks */}
+                        <ul className="text-[#EDF2F4] list-disc ml-5">
+                            {!passwordChecks.length && <li>At least 8 characters</li>}
+                            {!passwordChecks.lowercase && <li>At least one lowercase letter</li>}
+                            {!passwordChecks.uppercase && <li>At least one uppercase letter</li>}
+                            {!passwordChecks.number && <li>At least one number</li>}
+                            {!passwordChecks.symbol && <li>At least one symbol</li>}
+                        </ul>
+
                         {/* Confirm password input */}
                         <input
                             type="password"
