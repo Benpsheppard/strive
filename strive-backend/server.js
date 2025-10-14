@@ -6,9 +6,10 @@ const express = require('express');                                     // impor
 const dotenv = require('dotenv').config();                              // allow reading of .env file
 const colors = require('colors');                                       // import colors for CLI aesthetics
 const path = require('path');                                           // import path module
+const helmet = require('helmet');                                       // import helmet for http security
 const connectDB = require('./config/db.js');                            // import database configuration file
 const { workoutRouter } = require('./routes/workoutRoutes.js');         // import workout routes
-const { userRouter } = require('./routes/userRoutes.js');            // import user routes
+const { userRouter } = require('./routes/userRoutes.js');               // import user routes
 const { errorHandler } = require('./middleware/errorMiddleware.js');    // import error handler middleware
 
 // Variables
@@ -23,6 +24,9 @@ const app = express();
 // Middleware
 app.use(express.json());    // middleware to allow server to read json data
 app.use(express.urlencoded({ extended: false }));      // middleware to allow server to read urlencoded data
+
+// Helmet HTTP security
+app.use(helmet());
 
 // Workouts routes
 app.use('/api/workouts', workoutRouter);

@@ -6,6 +6,7 @@ const asyncHandler = require('express-async-handler');    // Import asyncHandler
 const User = require('../models/userModel.js');      // Import user schema model 
 const jwt = require('jsonwebtoken');    // Import JWT for authentication
 const bcrypt = require('bcryptjs');     // Import bcrypt for hashing passwords
+const validator = require('validator');     // Import validator for input validation
 const Workout = require('../models/workoutModel.js'); // Import workout model
 
 // @desc    Register user
@@ -13,7 +14,7 @@ const Workout = require('../models/workoutModel.js'); // Import workout model
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
     // Get user info
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
 
     // Check if all info exists
     if (!username || !email || !password) {
@@ -21,13 +22,35 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('Please add all fields');
     }
 
-    // Look if email exists already
-    const userExists = await User.findOne({email});
-
-    // Check if user already exists
-    if (userExists){
+    // Check email is in email format
+    if (!validator.isEmail(email)) {
         res.status(400);
-        throw new Error('User already exists');
+        throw new Error('Invalid email address');
+    }
+
+    // Check password is long enough
+    if (!validator.isStrongPassword(password)) {
+        res.status(400);
+        throw new Error('Password must satisfy all criteria.');
+    }
+
+    // Normalize email
+    email = validator.normalizeEmail(email);
+
+    // Look if email and username exists already
+    const emailExists = await User.findOne({ email });
+    const usernameExists = await User.findOne({ username })
+
+    // Check if email already exists
+    if (emailExists){
+        res.status(400);
+        throw new Error('Email already exists');
+    }
+
+    // Check if username already exists
+    if (usernameExists){
+        res.status(400);
+        throw new Error('Username already exists');
     }
 
     // Hash password
@@ -43,7 +66,7 @@ const registerUser = asyncHandler(async (req, res) => {
     
     // Verify user creation
     if (user) {
-        res.status(200).json({
+        res.status(201).json({
             _id: user.id,
             username: user.username,
             email: user.email,
@@ -61,10 +84,21 @@ const registerUser = asyncHandler(async (req, res) => {
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
     // Get user details
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
+    identifier = username || email;
+
+    if (!identifier || !password) {
+        res.status(400);
+        throw new Error('Please provide username/email and password');
+    }
+
+    // Determine if identifier is email
+    const isEmail = validator.isEmail(identifier);
 
     // Check for username
-    const user = await User.findOne({username});
+    const user = isEmail 
+        ? await User.findOne({ email: validator.normalizeEmail(identifier) })
+        : await User.findOne({ username: identifier });
 
     // Check username and password match
     if (user && (await bcrypt.compare(password, user.password))){
