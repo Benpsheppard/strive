@@ -210,6 +210,8 @@ const NewWorkout = () => {
             localStorage.removeItem('newWorkout_currentSet');
             localStorage.removeItem('newWorkout_started');
             localStorage.removeItem('newWorkout_startTime');
+
+            toast.success("Workout cancelled successfully");
         }
     }
 
