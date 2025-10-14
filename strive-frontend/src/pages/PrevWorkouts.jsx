@@ -5,11 +5,10 @@
 import Header from '../components/Header.jsx';  // Import header
 import WorkoutItem from '../components/WorkoutItem.jsx';    // Import workout items
 import Spinner from '../components/Spinner.jsx' // Import spinner
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
-import { Link } from 'react-router-dom';
 
 // PrevWorkouts
 const PrevWorkouts = () => {
