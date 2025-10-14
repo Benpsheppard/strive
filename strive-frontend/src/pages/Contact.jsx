@@ -30,11 +30,19 @@ const Contact = () => {
     const onSubmit = (e) => {
         e.preventDefault();
 
+        // Basic validation
+        if (!formData.name || !formData.email || !formData.message) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        // Create mailto link
         const subject = encodeURIComponent(`Message from ${formData.name}`);
         const body = encodeURIComponent(
             `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
         );
 
+        // Open default mail client
         window.location.href = `mailto:ben@bensheppard.co.uk?subject=${subject}&body=${body}`;
         setFormData({ name: "", email: "", message: "" });
     };
