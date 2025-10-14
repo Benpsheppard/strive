@@ -49,12 +49,26 @@ const deleteUser = async (userId, token) => {
     return response.data;
 }
 
+// Reset user
+const resetUser = async (userId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.delete(API_URL + userId, config);
+
+    return response.data;
+}
+
 // Export functions
 const authService = {
     register,
     logout,
     login,
-    deleteUser
+    deleteUser,
+    resetUser
 }
 
 export default authService;

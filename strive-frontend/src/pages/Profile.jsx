@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout, reset, deleteUser } from '../features/auth/authSlice.js';
+import { logout, reset, deleteUser, resetUser } from '../features/auth/authSlice.js';
 import Header from '../components/Header.jsx';
 import { FaUser } from 'react-icons/fa';
 import Spinner from '../components/Spinner.jsx';
@@ -25,6 +25,13 @@ const Profile = () => {
             dispatch(deleteUser(user._id));
             dispatch(reset());
             navigate('/');
+        }
+    }
+
+    const onResetAccount = () => {
+        if (window.confirm('Are you sure you want to reset your account? Doing so will permanently delete any workout data but keep your profile in tact. This action cannot be undone.')) {
+            dispatch(resetUser(user._id));
+            dispatch(reset());
         }
     }
 
@@ -75,9 +82,15 @@ const Profile = () => {
                             Logout
                         </button>
 
-                        <button onClick={onDeleteAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-                            Delete Account
-                        </button>
+                        <div className="flex items-center gap-2 w-full">
+                            <button onClick={onDeleteAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
+                                Delete Account
+                            </button>
+                            <button onClick={onResetAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
+                                Reset Account
+                            </button>
+                        </div>
+                        
                     </div>
                 </div>
             </div>

@@ -55,6 +55,17 @@ export const deleteUser = createAsyncThunk('auth/deleteUser', async (id, thunkAP
     }
 })
 
+export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token;
+        return await authService.resetUser(id, token);
+    } catch (error) {
+        const message = (error.response && error.response.data && error.response.data.message)
+        || error.message || error.toString();
+        return thunkAPI.rejectWithValue(message);
+    }
+})
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
