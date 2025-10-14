@@ -21,7 +21,7 @@ const getWorkouts = asyncHandler(async (req, res) => {
 // @route   POST /api/workouts
 // @access  Private
 const setWorkout = asyncHandler(async (req, res) => {
-    // Check if body includes a title
+    // Check if workout includes a title
     if(!req.body.title){
         res.status(400);
         throw new Error('Please add a title field');
@@ -113,6 +113,30 @@ const deleteWorkout = asyncHandler(async (req, res) => {
     res.status(200).json(`The workout with id: ${req.params.id} was deleted`);
 })
 
+// @desc    Delete all workouts
+// @route   DELETE /api/workouts
+// @access  Private
+const deleteAllWorkouts = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Only allow user to delete their own workouts
+    if (user._id.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('User not authorized to reset this account');
+    }
+
+    await Workout.deleteMany({ user: req.user._id });
+
+    res.status(200).json({
+        message: 'All workouts deleted successfully'
+    });
+});
+
 // @desc    Add an exercise to a workout
 // @route   POST /api/workouts/:id/exercises
 // @access  Private
@@ -131,16 +155,33 @@ const addExercise = asyncHandler(async (req, res) => {
         throw new Error('User not authorised');
     }
 
-    // Validate input fields
+    // Validate exercise name
     if (!req.body.name || req.body.name.trim() === '') {
         res.status(400);
         throw new Error('Exercise name is required');
     }
 
+    // Validate exercise muscle group
     if (!req.body.musclegroup || req.body.musclegroup.trim() === '') {
         res.status(400);
         throw new Error('Muscle group is required');
     }
+
+    // Validate set structure
+    if (req.body.sets && !Array.isArray(req.body.sets)) {
+        res.status(400);
+        throw new Error('Sets must be an array');
+    }
+
+    if (Array.isArray(req.body.sets)) {
+        for (const set of req.body.sets) {
+            if (typeof set.weight !== 'number' || typeof set.reps !== 'number') {
+                res.status(400);
+                throw new Error('Each set must include numeric weight and reps');
+            }
+        }
+    }
+
 
     // Build new exercise
     const newExercise = {
@@ -229,5 +270,5 @@ const deleteExercise = asyncHandler(async (req, res) => {
 // Export functions
 module.exports = { 
     getWorkouts, setWorkout, updateWorkout, deleteWorkout,
-    addExercise, updateExercise, deleteExercise
+    deleteAllWorkouts, addExercise, updateExercise, deleteExercise
  };
