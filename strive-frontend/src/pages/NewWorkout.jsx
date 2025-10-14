@@ -6,6 +6,7 @@ import { FaPlus } from 'react-icons/fa';
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Header from '../components/Header.jsx';
 import WorkoutItem from '../components/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
@@ -108,17 +109,39 @@ const NewWorkout = () => {
 
     // Add set to current exercise
     const addSet = () => {
-        if (!currentSet.weight || !currentSet.reps) return;
+        // Check for valid weight
+        if (!currentSet.weight || currentSet.weight <= 0) {
+            toast.error('Weight must be greater than 0.');
+            return;
+        }
+        
+        // Check for valid reps
+        if (!currentSet.reps || currentSet.reps <= 0) {
+            toast.error('Reps must be greater than 0.');
+            return;
+        }
+
         setCurrentExercise(prev => ({
             ...prev,
             sets: [...prev.sets, { weight: Number(currentSet.weight), reps: Number(currentSet.reps) }]
         }));
         setCurrentSet({ weight: '', reps: '' });
+
+        toast.success("Set saved successfully!");
     };
 
     // Add exercise to workout
     const addExercise = () => {
-        if (!currentExercise.name || currentExercise.sets.length === 0) return;
+        // Basic exercise validation
+        if (!currentExercise.name.trim()) {
+            toast.error(`Please enter an exercise name.`);
+            return;
+        }
+
+        if (!currentExercise.musclegroup) {
+            toast.error(`Please select a muscle group for exercise "${currentExercise.name}".`);
+            return;
+        }
         
         const normalizedExercise = {
             ...currentExercise,
@@ -127,18 +150,20 @@ const NewWorkout = () => {
         
         setExercises(prev => [...prev, normalizedExercise]);
         setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
+
+        toast.success("Exercise saved successfully!");
     };
 
     // Submit workout
     const onSubmit = () => {
-        // Basic validation
+        // Basic workout validation
         if (!title.trim()) {
-            alert('Please enter a workout title.');
+            toast.error('Please enter a workout title.');
             return;
         }
 
         if (exercises.length === 0) {
-            alert('Please add at least one exercise.');
+            toast.error('Please add at least one exercise.');
             return;
         }
 
@@ -147,6 +172,9 @@ const NewWorkout = () => {
 
         const workoutData = { title, exercises, duration: durationMinutes };
         dispatch(createWorkout(workoutData));
+
+        // Success toast
+        toast.success("Workout saved successfully!");
 
         // Reset
         setTitle('');
@@ -335,7 +363,13 @@ const NewWorkout = () => {
                             </div>
 
                             {/* Sets List */}
-                            <SetList sets={currentExercise.sets} />
+                            <SetList 
+                                sets={currentExercise.sets} 
+                                onSetsUpdate={() => {
+                                    const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'));
+                                    setCurrentExercise(updatedExercise);
+                                }}
+                            />
 
                             {/* Add Exercise */}
                             <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
