@@ -102,7 +102,7 @@ const Login = () => {
                             type="text"
                             id="identifier"
                             required
-                            placeholder="Username or Email"
+                            placeholder="Username or Email *"
                             className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                             name="identifier"
                             value={identifier}
@@ -113,7 +113,7 @@ const Login = () => {
                             type="password"
                             id="password"
                             required
-                            placeholder="Password"
+                            placeholder="Password *"
                             className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                             name="password"
                             value={password}
