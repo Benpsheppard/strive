@@ -13,6 +13,23 @@ html, body {
   padding-right: env(safe-area-inset-right);
   margin: 0;
   height: 100%;
+  scrollbar-gutter: stable;
+}
+
+/* Override default toast styles to match your app */
+.Toastify__toast {
+  background-color: #8D99AE !important;
+  color: #EDF2F4 !important;
+  border-radius: 12px !important;
+  font-family: inherit !important;
+}
+
+.Toastify__close-button {
+  color: #EDF2F4 !important;
+}
+
+.Toastify__close-button:hover {
+  color: #EF233C !important;
 }
 
 /* Loading Spinner Styles */
