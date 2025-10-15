@@ -6,7 +6,7 @@ const Help = () => {
     <>
       <Header />
       <section className="min-h-screen flex flex-col text-[#EDF2F4] mx-auto max-w-4xl px-4 py-8 mt-15">
-        <h1 className="text-3xl text-[#EDF2F4] text-center">Help <span className="text-[#EF233C]">Page</span></h1>
+        <h1 className="text-3xl text-[#EDF2F4] text-center">How To <span className="text-[#EF233C]">Strive</span></h1>
         <p>To access Strive's core functionality, please make sure you are logged in, and if you don't have an account, please register to start workouts, track progress and more.</p>
         {/* New Workout Help */}
         <h2 className="text-2xl mt-6 mb-2">New <span className="text-[#EF233C]">Workout</span></h2>
