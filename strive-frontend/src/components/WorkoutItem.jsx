@@ -27,7 +27,7 @@ const WorkoutItem = ({ workout }) => {
     const exerciseCount = workout.exercises?.length || 0;
 
     return (
-        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 mb-4 flex flex-col gap-2 max-w-200 mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-[600px]" : "max-h-[120px] overflow-hidden"}`}
+        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 mb-4 flex flex-col gap-2 max-w-2xl mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
             onClick={() => setWorkoutExpanded(!workoutExpanded)}>
             {/* X delete button in top right */}
             <button onClick={onDelete} className="absolute top-2 right-2 text-[#EF233C] hover:text-[#D90429] text-lg font-bold" aria-label="Delete workout">
@@ -58,7 +58,7 @@ const WorkoutItem = ({ workout }) => {
             {workoutExpanded && (
                 <>
                     {exerciseCount > 0 && (
-                        <div className="mt-2">
+                        <div>
                             <h3 className="text-sm font-semibold text-[#EDF2F4] mb-2">Exercises</h3>
                             <ul className="space-y-2">
                                 {workout.exercises.map((ex, index) => (
@@ -75,7 +75,7 @@ const WorkoutItem = ({ workout }) => {
                                                         <FaChevronRight className="text-[#EDF2F4] text-xs" />
                                                 )}
                                                 <span className="text-sm font-medium text-[#EDF2F4]">
-                                                    {ex.name} <span className="text-[#2B2D42]">({ex.musclegroup})</span>
+                                                    {ex.name} | <span className="text-[#EF233C]">{ex.musclegroup}</span> | <span className="text-[#D90429]">{ex.description}</span>
                                                 </span>
                                             </div>
                                             <span className="text-xs text-[#2B2D42]">
