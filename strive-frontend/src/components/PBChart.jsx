@@ -10,6 +10,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { calculatePersonalBests } from '../utils/pbDetection.js';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -18,24 +19,7 @@ const PBChart = ({ workouts }) => {
     const muscleGroups = ['All', 'Chest', 'Back', 'Arms', 'Legs', 'Shoulders', 'Core', 'Full body', 'Other'];
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All');
 
-    const exercisePBs = {};
-
-    // Collect personal bests with muscle group info
-    workouts.forEach((workout) => {
-        const workoutDate = workout.date || workout.createdAt || 'Unknown date';
-
-        workout.exercises.forEach((exercise) => {
-            const name = exercise.name;
-            const muscleGroup = exercise.musclegroup || 'Other';
-            
-            exercise.sets.forEach((set) => {
-                const weight = Number(set.weight) || 0;
-                if (!exercisePBs[name] || weight > exercisePBs[name].weight) {
-                    exercisePBs[name] = { weight, date: workoutDate, muscleGroup };
-                }
-            });
-        });
-    });
+    const exercisePBs = calculatePersonalBests(workouts);
 
     // Filter by selected muscle group
     const filteredExercises = Object.entries(exercisePBs).filter(([name, data]) => {
