@@ -34,7 +34,7 @@ app.use(
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "https://cloud.umami.is"],
-      connectSrc: ["'self'", "https://cloud.umami.is"],
+      connectSrc: ["'self'", "https://cloud.umami.is", "https://api-gateway.umami.dev"],
       imgSrc: ["'self'", "data:"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       objectSrc: ["'none'"],

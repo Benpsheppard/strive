@@ -50,7 +50,10 @@ const PrivacyPolicy = () => {
                 {/* Cookies and Analytics */}
                 <h2 className="text-2xl mt-6 mb-2">Cookies and Analytics</h2>
                 <p>
-                    Strive currently does not use cookies or third-party analytics services.
+                    We use Umami Analytics to collect basic, anonymous usage data to help us understand how users interact with this app and improve its performance.
+                    Umami does not use cookies and does not collect any personal or identifying information.
+                    The data recorded includes metrics such as page views, referrer information, and device type, all of which are fully anonymized.
+                    You can learn more about Umami at https://umami.is
                 </p>
                 {/* Changes to this Policy */}
                 <h2 className="text-2xl mt-6 mb-2">Changes to this Policy</h2>
