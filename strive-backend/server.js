@@ -28,6 +28,22 @@ app.use(express.urlencoded({ extended: false }));      // middleware to allow se
 // Helmet HTTP security
 app.use(helmet());
 
+// Custom Content Security Policy to allow Umami analytics
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://cloud.umami.is"],
+      connectSrc: ["'self'", "https://cloud.umami.is"],
+      imgSrc: ["'self'", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
+
+
 // Workouts routes
 app.use('/api/workouts', workoutRouter);
 
