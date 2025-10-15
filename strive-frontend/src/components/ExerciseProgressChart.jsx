@@ -53,6 +53,7 @@ const ExerciseProgressChart = ({ workouts }) => {
                 label: `${selectedExercise} Progress (kg)`,
                 data: exerciseData.map((d) => d.weight),
                 backgroundColor: '#EF233C',
+                borderColor: '#EF233C',
                 tension: 0.3,
                 pointRadius: 5,
                 pointHoverRadius: 7,
