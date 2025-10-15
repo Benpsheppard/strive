@@ -7,6 +7,7 @@ import { createWorkout, getWorkouts, reset } from '../features/workouts/workouts
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { calculatePersonalBests, detectNewPBs } from '../utils/pbDetection.js';
 import Header from '../components/Header.jsx';
 import WorkoutItem from '../components/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
@@ -171,10 +172,20 @@ const NewWorkout = () => {
         const durationMinutes = Math.round((endTime - startTime) / 60000); // duration in minutes
 
         const workoutData = { title, exercises, duration: durationMinutes };
+
+        const newPBs = detectNewPBs(workoutData, workouts);
+
         dispatch(createWorkout(workoutData));
 
         // Success toast
         toast.success("Workout saved successfully!");
+
+        // Show PB notifications
+        if (newPBs.length > 0) {
+            newPBs.forEach(pb => {
+                toast.success(`New PB for ${pb.exerciseName}! ${pb.oldWeight}kg → ${pb.newWeight}kg`);
+            });
+        }
 
         // Reset
         setTitle('');
@@ -274,7 +285,7 @@ const NewWorkout = () => {
                     </div>
                 )}
 
-                <div className="p-6 w-full sm:max-w-2xl mx-auto mt-10 bg-[#8D99AE] shadow rounded-2xl">
+                <div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
                     {!started ? (
                         <div>
                             <h2 className="text-[#EDF2F4] text-xl text-center mb-3">
@@ -293,7 +304,7 @@ const NewWorkout = () => {
                             type="text"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
-                            placeholder="Workout Title"
+                            placeholder="Workout Title *"
                             className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                             required
                         />
@@ -305,7 +316,7 @@ const NewWorkout = () => {
                                 name="name"
                                 value={currentExercise.name}
                                 onChange={handleExerciseChange}
-                                placeholder="Exercise Name"
+                                placeholder="Exercise Name *"
                                 className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                                 required
                             />
@@ -316,7 +327,7 @@ const NewWorkout = () => {
                                 className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                                 required
                             >
-                                <option value="" className='text-gray-300'>Select Muscle Group</option>
+                                <option value="" className='placeholder-gray-300'>Select Muscle Group *</option>
                                 {muscleGroups.map(group => (
                                     <option key={group} value={group}>{group}</option>
                                 ))}
@@ -340,7 +351,7 @@ const NewWorkout = () => {
                                         name="weight"
                                         value={currentSet.weight}
                                         onChange={handleSetChange}
-                                        placeholder="Weight"
+                                        placeholder="Weight (kg)"
                                         className="flex-1 min-w-0 rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-3 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                                     />
                                     <input
