@@ -143,9 +143,6 @@ export const authSlice = createSlice({
             .addCase(resetUser.fulfilled, (state, action) => {
                 state.isLoading = false,
                 state.isSuccess = true,
-                // if (action.payload?.user) {
-                //     state.user = action.payload.user;
-                // },
                 state.message = action.payload?.message
             })
             .addCase(resetUser.rejected, (state, action) => {
@@ -159,7 +156,10 @@ export const authSlice = createSlice({
             .addCase(updateWeightPreference.fulfilled, (state, action) => {
                 state.isLoading = false,
                 state.isSuccess = true,
-                state.user = action.payload
+                state.user = {
+                    ...state.user,      
+                    ...action.payload
+                };
             })
             .addCase(updateWeightPreference.rejected, (state, action) => {
                 state.isLoading = false,
