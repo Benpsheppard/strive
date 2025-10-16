@@ -36,7 +36,7 @@ const Header = () => {
                         <li>
                             {user ? (
                                 <Link to='/profile' className="text-[#EF233C] hover:text-[#D90429] inline-block transform transition duration-200 hover:scale-110">
-                                    {user.username}
+                                    {user.isGuest ? "Guest" : user.username}
                                 </Link>
                             ) : (
                                 <Link to='/login' className={navOps}>Sign in</Link>

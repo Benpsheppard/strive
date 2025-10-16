@@ -5,6 +5,7 @@
 import Header from '../components/Header.jsx';  // Import header
 import WorkoutItem from '../components/WorkoutItem.jsx';    // Import workout items
 import Spinner from '../components/Spinner.jsx' // Import spinner
+import GuestHeader from '../components/GuestHeader.jsx';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
@@ -44,9 +45,10 @@ const PrevWorkouts = () => {
     }
 
     return (
-        <section className="bg-[#2B2D42] min-h-screen flex flex-col items-center">
+        <section className="bg-[#2B2D42] min-h-screen mt-15 flex flex-col items-center">
             <Header />
-            <section className="mt-15 text-6xl text-[#EDF2F4] text-center px-4 py-4">
+            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
+            <section className="mt-15 text-6xl text-[#EDF2F4] font-semibold text-center px-4 py-4">
                 <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
             </section>
 

@@ -5,11 +5,13 @@
 import { useSelector } from 'react-redux';
 import Header from '../components/Header.jsx';  // Import header component
 import Footer from '../components/Footer.jsx';
+import GuestHeader from '../components/GuestHeader.jsx';
 import { useState } from 'react';
 
 // Contact
 const Contact = () => {
-    const { isLoading } = useSelector((state) => state.auth);
+    const { user, isLoading } = useSelector((state) => state.auth);
+    const { workouts } = useSelector((state) => state.workout);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -54,8 +56,9 @@ const Contact = () => {
     }
 
     return (
-        <>
+        <section className="mt-15">
             <Header />
+            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="min-h-screen bg-[#2B2D42] flex items-center justify-center px-4">
                 <div className="w-full max-w-lg bg-[#8D99AE] p-8 rounded-2xl shadow-lg">
                     <h1 className="text-[#EDF2F4] text-3xl font-semibold text-center mb-6">
@@ -118,7 +121,7 @@ const Contact = () => {
                 </div>
             </div>
             <Footer />
-        </>
+        </section>
     );
 };
 

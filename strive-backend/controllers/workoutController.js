@@ -27,6 +27,14 @@ const setWorkout = asyncHandler(async (req, res) => {
         throw new Error('Please add a title field');
     }
 
+    const workoutCount = await Workout.countDocuments({ user: req.user._id });
+
+    // Check if user is guest account
+    if (req.user.isGuest && workoutCount >= 5) {
+        res.status(403);
+        throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!');
+    }
+
     // Create new workout with given req data
     const workout = await Workout.create({
         user: req.user.id,

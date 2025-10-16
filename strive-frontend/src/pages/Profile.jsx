@@ -8,11 +8,13 @@ import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '..
 import Header from '../components/Header.jsx';
 import { FaUser } from 'react-icons/fa';
 import Spinner from '../components/Spinner.jsx';
+import GuestHeader from '../components/GuestHeader.jsx';
 
 const Profile = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user, isLoading, isError, message } = useSelector((state) => state.auth);
+    const { workouts } = useSelector((state) => state.workout);
 
     const onLogout = () => {
         dispatch(logout());
@@ -62,8 +64,9 @@ const Profile = () => {
     }
 
     return (
-        <>
+        <section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
             <Header />
+            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="container bg-[#2B2D42] min-h-screen mx-auto px-6 py-10">
                 <h1 className="text-3xl text-center mt-25 font-bold text-[#EDF2F4] mb-6">
                     Profile
@@ -126,7 +129,7 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
-        </>
+        </section>
     );
 };
 

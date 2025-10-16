@@ -7,9 +7,35 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { login, reset } from '../features/auth/authSlice.js';
+import { login, reset, register } from '../features/auth/authSlice.js';
 import Spinner from '../components/Spinner.jsx';
 import AuthHeader from '../components/AuthHeader.jsx';
+
+// Helper function
+function generateRandomPassword(length = 10) {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()_+[]{}|;:,.<>?';
+
+  // Make sure we include at least one of each
+  const all = upper + lower + numbers + symbols;
+  let password = '';
+  password += upper[Math.floor(Math.random() * upper.length)];
+  password += lower[Math.floor(Math.random() * lower.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  password += symbols[Math.floor(Math.random() * symbols.length)];
+
+  // Fill the rest with random characters
+  for (let i = password.length; i < length; i++) {
+    password += all[Math.floor(Math.random() * all.length)];
+  }
+
+  // Shuffle the result so the first few aren't always predictable
+  password = password.split('').sort(() => 0.5 - Math.random()).join('');
+
+  return password;
+}
 
 // Login
 const Login = () => {
@@ -37,6 +63,10 @@ const Login = () => {
         // Navigate user to dashboard
         if (isSuccess || user) {
             navigate('/');
+        }
+
+        if (isSuccess && user) {
+            toast.success(`Logged in as: ${user.username}`);
         }
 
         // Reset state to normal
@@ -72,6 +102,20 @@ const Login = () => {
 
         // Dispatch login
         dispatch(login(userData));
+    }
+
+    const loginGuest = () => {
+        const username = `Guest${Date.now()}${Math.floor(Math.random() * 1000)}`;
+        
+        const guestData = {
+            username,
+            email: `${username}@strive.com`,
+            password: generateRandomPassword(),
+            isGuest: true
+        }
+
+        // Dispatch login
+        dispatch(register(guestData));
     }
 
     // If loading, show spinner
@@ -131,6 +175,20 @@ const Login = () => {
                             Login
                         </button>
                     </form>
+                    
+                    {/* Guest Login Button */}
+                    <div className="mt-4 text-center">
+                        <p className="text-sm text-[#EDF2F4] mb-4">Or</p>
+                        <button 
+                            onClick={loginGuest} 
+                            className="w-full rounded-lg bg-[#8D99AE] border-2 border-[#EF233C] px-4 py-2 font-semibold text-[#EDF2F4] transition hover:bg-[#EF233C]"
+                        >
+                            Continue as Guest
+                        </button>
+                        <p className="text-xs text-[#EDF2F4] mt-2 opacity-80">
+                            Try Strive with up to 5 free workouts
+                        </p>
+                    </div>
                 </div>
             </div>
         </>

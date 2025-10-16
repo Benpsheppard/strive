@@ -34,6 +34,10 @@ const userSchema = mongoose.Schema ({
     useImperial: {
         type: Boolean,
         default: false
+    },
+    isGuest: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

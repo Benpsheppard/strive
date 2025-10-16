@@ -62,7 +62,8 @@ const registerUser = asyncHandler(async (req, res) => {
         username,
         email,
         password: hashPassword,
-        useImperial: false
+        useImperial: false,
+        isGuest: req.body.isGuest || false
     })
     
     // Verify user creation
@@ -73,7 +74,8 @@ const registerUser = asyncHandler(async (req, res) => {
             email: user.email,
             useImperial: user.useImperial,
             createdAt: user.createdAt,
-            token: genToken(user._id)
+            token: genToken(user._id),
+            isGuest: user.isGuest
         })
     } else {
         res.status(400);

@@ -13,6 +13,7 @@ import ProgressCard from '../components/ProgressCard.jsx';
 import MobileProgressCard from '../components/CondensedProgressCard.jsx';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.jsx';
 import MuscleGroupSplit from '../components/MuscleGroupSplit.jsx';
+import GuestHeader from '../components/GuestHeader.jsx';
 
 const Progress = () => {
     const navigate = useNavigate();
@@ -75,10 +76,11 @@ const Progress = () => {
     });
 
     return (
-        <>
+        <section className="mt-15">
             <Header />
+            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="min-h-screen bg-[#2B2D42] px-6 py-12 mt-15">
-                <h1 className="text-[#EDF2F4] text-5xl font-semibold text-center mb-8">
+                <h1 className="text-[#EDF2F4] text-6xl font-semibold text-center mb-8">
                     Progress <span className="text-[#EF233C]">Summary</span>
                 </h1>
                 {workouts.length > 0 ? (
@@ -121,7 +123,7 @@ const Progress = () => {
                     </div>
                 )}
             </div>
-        </>
+        </section>
     )
 };
 

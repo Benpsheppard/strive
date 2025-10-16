@@ -13,6 +13,7 @@ import Header from '../components/Header.jsx';
 import WorkoutItem from '../components/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
 import SetList from '../components/SetList.jsx';
+import GuestHeader from '../components/GuestHeader.jsx';
 
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -160,7 +161,7 @@ const NewWorkout = () => {
     };
 
     // Submit workout
-    const onSubmit = () => {
+    const onSubmit = async () => {
         // Basic workout validation
         if (!title.trim()) {
             toast.error('Please enter a workout title.');
@@ -177,38 +178,41 @@ const NewWorkout = () => {
 
         const workoutData = { title, exercises, duration: durationMinutes };
 
-        const newPBs = detectNewPBs(workoutData, workouts);
+        try {
+            const newWorkout = await dispatch(createWorkout(workoutData)).unwrap();
 
-        dispatch(createWorkout(workoutData));
+            toast.success("Workout saved successfully!");
 
-        // Success toast
-        toast.success("Workout saved successfully!");
+            const newPBs = detectNewPBs(workoutData, workouts);
+            if (newPBs.length > 0) {
+                newPBs.forEach(pb => {
+                    const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
+                    const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
+                    toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
+                });
+            }
 
-        // Show PB notifications
-        if (newPBs.length > 0) {
-            newPBs.forEach(pb => {
-                const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
-                const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
-                toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
-            });
+            // Reset
+            setTitle('');
+            setExercises([]);
+            setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
+            setCurrentSet({ weight: '', reps: '' });
+            setStarted(false);
+            setStartTime(null);
+
+            // Clear from localStorage manually
+            localStorage.removeItem('newWorkout_title');
+            localStorage.removeItem('newWorkout_exercises');
+            localStorage.removeItem('newWorkout_currentExercise');
+            localStorage.removeItem('newWorkout_currentSet');
+            localStorage.removeItem('newWorkout_started');
+            localStorage.removeItem('newWorkout_startTime');
+
+        } catch (error) {
+            toast.error(error.message || "Failed to save workout");
         }
-
-        // Reset
-        setTitle('');
-        setExercises([]);
-        setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-        setCurrentSet({ weight: '', reps: '' });
-        setStarted(false);
-        setStartTime(null);
-
-        // Clear from localStorage manually
-        localStorage.removeItem('newWorkout_title');
-        localStorage.removeItem('newWorkout_exercises');
-        localStorage.removeItem('newWorkout_currentExercise');
-        localStorage.removeItem('newWorkout_currentSet');
-        localStorage.removeItem('newWorkout_started');
-        localStorage.removeItem('newWorkout_startTime');
     };
+
 
     const onCancel = () => {
         if (window.confirm("Are you sure you want to delete this workout?")) {                
@@ -234,9 +238,23 @@ const NewWorkout = () => {
 
     // Start workout
     const startWorkout = () => {
+        // Check if guest user exceeded 5 workouts
+        if (user.isGuest && workouts.length >= 5) {
+            toast.error(
+                "Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!"
+            );
+            return; // Prevent starting the workout
+        }
+
+        // Upsell message for guest users after 2 workouts
+        if (user.isGuest && workouts.length == 2) {
+            toast.info("Enjoying Strive? Consider creating a free account for unlimited workouts!");
+        }
+
         setStarted(true);
         setStartTime(Date.now());
     };
+
 
     useEffect(() => {
         if (isError) {
@@ -273,11 +291,12 @@ const NewWorkout = () => {
     return (
         <section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
             <Header />
+            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <section className="w-full px-4 sm:px-0 flex flex-col items-center mt-6">
                 {!started && (
                     <div>
-                        <div className="text-6xl text-[#EDF2F4]">
-                            <h1>Welcome back, <span className="text-[#EF233C]">{user.username}</span></h1>
+                        <div className="text-6xl font-semibold text-[#EDF2F4]">
+                            <h1>Welcome back, <span className="text-[#EF233C]">{user.isGuest ? "Guest" : user.username}</span></h1>
                             <p className="text-lg italic text-[#EDF2F4] text-center mb-6 transition-opacity duration-500">
                                 {tagline}
                             </p>
