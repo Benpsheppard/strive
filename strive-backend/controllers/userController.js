@@ -61,7 +61,8 @@ const registerUser = asyncHandler(async (req, res) => {
     const user = await User.create({
         username,
         email,
-        password: hashPassword
+        password: hashPassword,
+        useImperial: false
     })
     
     // Verify user creation
@@ -70,6 +71,7 @@ const registerUser = asyncHandler(async (req, res) => {
             _id: user.id,
             username: user.username,
             email: user.email,
+            useImperial: user.useImperial,
             createdAt: user.createdAt,
             token: genToken(user._id)
         })
@@ -107,6 +109,7 @@ const loginUser = asyncHandler(async (req, res) => {
             username: user.username,
             email: user.email,
             createdAt: user.createdAt,
+            useImperial: user.useImperial,
             token: genToken(user._id)
         })
     } else {
@@ -154,6 +157,49 @@ const deleteUser = asyncHandler(async (req, res) => {
     });
 });
 
+
+// @desc    Reset all workout data for a user
+// @route   DELETE /api/users/:id/reset
+// @access  Private
+const resetUser = asyncHandler(async (req, res) => {
+    const userId = req.params.id;
+
+    // Make sure user is authorized
+    if (req.user.id !== userId && !req.user.isAdmin) {
+        res.status(401);
+        throw new Error('Not authorized to reset this user');
+    }
+
+    // Delete all workouts that belong to this user
+    await Workout.deleteMany({ user: userId });
+
+    res.status(200).json({ message: 'All user workout data has been reset successfully' });
+});
+
+// @desc    Change user's weight preference (kg or lbs)
+// @route   PUT api/users/preference
+// @access  Private
+const updateWeightPreference = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  user.useImperial = req.body.useImperial;
+  const updatedUser = await user.save();
+
+  res.status(200).json({
+    _id: updatedUser.id,
+    username: updatedUser.username,
+    email: updatedUser.email,
+    useImperial: updatedUser.useImperial,
+    createdAt: updatedUser.createdAt,
+    token: genToken(updatedUser._id)
+  });
+});
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -162,4 +208,4 @@ const genToken = (id) => {
 };
 
 // Export functions
-module.exports = { registerUser, loginUser, getMe, deleteUser };
+module.exports = { registerUser, loginUser, getMe, deleteUser, resetUser, updateWeightPreference };

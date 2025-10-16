@@ -66,6 +66,19 @@ export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI)
     }
 })
 
+export const updateWeightPreference = createAsyncThunk('auth/updatePreference', async (useImperial, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await authService.updateWeightPreference(useImperial, token);
+    } catch (error) {
+      const message = 
+        (error.response && error.response.data && error.response.data.message) 
+        || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -117,9 +130,38 @@ export const authSlice = createSlice({
             .addCase(deleteUser.fulfilled, (state) => {
                 state.isLoading = false,
                 state.isSuccess = true,
-                state.user = null  // Clear user data after deletion
+                state.user = null
             })
             .addCase(deleteUser.rejected, (state, action) => {
+                state.isLoading = false,
+                state.isError = true,
+                state.message = action.payload
+            })
+            .addCase(resetUser.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(resetUser.fulfilled, (state, action) => {
+                state.isLoading = false,
+                state.isSuccess = true,
+                // if (action.payload?.user) {
+                //     state.user = action.payload.user;
+                // },
+                state.message = action.payload?.message
+            })
+            .addCase(resetUser.rejected, (state, action) => {
+                state.isLoading = false,
+                state.isError = true,
+                state.message = action.payload
+            })
+            .addCase(updateWeightPreference.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(updateWeightPreference.fulfilled, (state, action) => {
+                state.isLoading = false,
+                state.isSuccess = true,
+                state.user = action.payload
+            })
+            .addCase(updateWeightPreference.rejected, (state, action) => {
                 state.isLoading = false,
                 state.isError = true,
                 state.message = action.payload

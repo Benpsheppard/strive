@@ -57,10 +57,27 @@ const resetUser = async (userId, token) => {
         }
     }
 
-    const response = await axios.delete(API_URL + userId, config);
+    const response = await axios.delete(API_URL + userId + '/reset', config);
 
     return response.data;
 }
+
+// Update user weight unit preference
+const updateWeightPreference = async (useImperial, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.put(API_URL + 'preference', {useImperial}, config);
+
+  if (response.data) {
+    localStorage.setItem('user', JSON.stringify(response.data));
+  }
+
+  return response.data;
+};
 
 // Export functions
 const authService = {
@@ -68,7 +85,8 @@ const authService = {
     logout,
     login,
     deleteUser,
-    resetUser
+    resetUser,
+    updateWeightPreference
 }
 
 export default authService;

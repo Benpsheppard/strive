@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { deleteWorkout } from '../features/workouts/workoutsSlice.js';
 import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import SetList from './SetList.jsx';
@@ -8,6 +8,9 @@ const WorkoutItem = ({ workout }) => {
     const dispatch = useDispatch();
     const [workoutExpanded, setWorkoutExpanded] = useState(false);
     const [exerciseExpanded, setExerciseExpanded] = useState(false);
+
+    // Get current user
+    const { user } = useSelector((state) => state.auth);
 
     const onDelete = (e) => {
         e.stopPropagation();
@@ -86,7 +89,7 @@ const WorkoutItem = ({ workout }) => {
                                         {/* Exercise Sets - Expandable */}
                                         {exerciseExpanded[index] && (
                                             <div className="px-3 pb-3 pt-1">
-                                                <SetList sets={ex.sets} />
+                                                <SetList sets={ex.sets} useImperial={user.useImperial}/>
                                             </div>
                                         )}
                                     </li>

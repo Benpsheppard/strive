@@ -7,7 +7,8 @@ import { createWorkout, getWorkouts, reset } from '../features/workouts/workouts
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { calculatePersonalBests, detectNewPBs } from '../utils/pbDetection.js';
+import { detectNewPBs } from '../utils/pbDetection.js';
+import { parseWeight, formatWeight, getWeightUnit } from '../utils/weightUnits.js';
 import Header from '../components/Header.jsx';
 import WorkoutItem from '../components/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
@@ -122,9 +123,12 @@ const NewWorkout = () => {
             return;
         }
 
+        // Convert weight to kg before storing
+        const weightInKg = parseWeight(currentSet.weight, user.useImperial);
+
         setCurrentExercise(prev => ({
             ...prev,
-            sets: [...prev.sets, { weight: Number(currentSet.weight), reps: Number(currentSet.reps) }]
+            sets: [...prev.sets, { weight: weightInKg, reps: Number(currentSet.reps) }]
         }));
         setCurrentSet({ weight: '', reps: '' });
 
@@ -183,7 +187,9 @@ const NewWorkout = () => {
         // Show PB notifications
         if (newPBs.length > 0) {
             newPBs.forEach(pb => {
-                toast.success(`New PB for ${pb.exerciseName}! ${pb.oldWeight}kg → ${pb.newWeight}kg`);
+                const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
+                const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
+                toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
             });
         }
 
@@ -351,7 +357,7 @@ const NewWorkout = () => {
                                         name="weight"
                                         value={currentSet.weight}
                                         onChange={handleSetChange}
-                                        placeholder="Weight (kg)"
+                                        placeholder={`Weight (${getWeightUnit(user.useImperial)})`}
                                         className="flex-1 min-w-0 rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-3 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                                     />
                                     <input
@@ -378,6 +384,7 @@ const NewWorkout = () => {
                             {/* Sets List */}
                             <SetList 
                                 sets={currentExercise.sets} 
+                                useImperial={user.useImperial}
                                 onSetsUpdate={() => {
                                     const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'));
                                     setCurrentExercise(updatedExercise);
@@ -398,7 +405,9 @@ const NewWorkout = () => {
                                 <p className="text-[#EDF2F4]">{ex.musclegroup} — {ex.description}</p>
                                 <ul>
                                     {ex.sets.map((s, idx) => (
-                                    <li className="text-[#2B2D42]"key={idx}> - {s.weight} kg × {s.reps} reps</li>
+                                    <li className="text-[#2B2D42]" key={idx}>
+                                        - {formatWeight(s.weight, user.useImperial)} × {s.reps} reps
+                                    </li>
                                     ))}
                                 </ul>
                             </div>

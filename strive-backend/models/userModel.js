@@ -30,7 +30,11 @@ const userSchema = mongoose.Schema ({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Workout"
         }
-    ]
+    ],
+    useImperial: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
