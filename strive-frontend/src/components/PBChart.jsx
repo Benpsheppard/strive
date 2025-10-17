@@ -11,15 +11,18 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { calculatePersonalBests } from '../utils/pbDetection.js';
+import { kgToLbs, getWeightUnit } from '../utils/weightUnits.js';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const PBChart = ({ workouts }) => {
+const PBChart = ({ workouts, useImperial }) => {
     const muscleGroups = ['All', 'Chest', 'Back', 'Arms', 'Legs', 'Shoulders', 'Core', 'Full body', 'Other'];
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All');
 
     const exercisePBs = calculatePersonalBests(workouts);
+
+    const weightUnit = getWeightUnit(useImperial);
 
     // Filter by selected muscle group
     const filteredExercises = Object.entries(exercisePBs).filter(([name, data]) => {
@@ -29,7 +32,9 @@ const PBChart = ({ workouts }) => {
 
     // Prepare data for chart
     const labels = filteredExercises.map(([name]) => name);
-    const weights = filteredExercises.map(([, data]) => data.weight);
+    const weights = filteredExercises.map(([, data]) => 
+        useImperial ? kgToLbs(data.weight) : data.weight
+    );
     const dates = filteredExercises.map(([, data]) => data.date);
 
     // Chart data
@@ -37,7 +42,7 @@ const PBChart = ({ workouts }) => {
         labels,
         datasets: [
         {
-            label: 'Personal Best (kg)',
+            label: `Personal Best (${weightUnit})`,
             data: weights,
             backgroundColor: '#EF233C'
         },
@@ -54,9 +59,9 @@ const PBChart = ({ workouts }) => {
                 callbacks: {
                     label: (context) => {
                         const index = context.dataIndex;
-                        const weight = context.formattedValue;
+                        const weight = context.parsed.y.toFixed(1);
                         const date = dates[index];
-                        return ` ${weight} kg (on ${new Date(date).toLocaleDateString()})`;
+                        return ` ${weight} ${weightUnit} (on ${new Date(date).toLocaleDateString()})`;
                     },
                 },
             },
@@ -72,7 +77,7 @@ const PBChart = ({ workouts }) => {
                 grid: { color: 'rgba(237, 242, 244, 0.3)' },
                 title: {
                     display: true,
-                    text: 'Weight (kg)',
+                    text: `Weight (${weightUnit})`,
                     color: '#EDF2F4',
                 },
             },

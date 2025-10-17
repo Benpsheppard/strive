@@ -13,10 +13,11 @@ import {
     Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { getWeightUnit, kgToLbs } from '../utils/weightUnits';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const ExerciseProgressChart = ({ workouts }) => {
+const ExerciseProgressChart = ({ workouts, useImperial }) => {
     const [selectedExercise, setSelectedExercise] = useState('');
 
     // Extract all unique exercises
@@ -26,6 +27,9 @@ const ExerciseProgressChart = ({ workouts }) => {
         return Array.from(names);
     }, [workouts]);
 
+    // Get the weight unit for labels
+    const weightUnit = getWeightUnit(useImperial);
+
     // Filter data for the selected exercise
     const exerciseData = useMemo(() => {
         if (!selectedExercise) return [];
@@ -34,26 +38,40 @@ const ExerciseProgressChart = ({ workouts }) => {
         workouts.forEach((w) => {
             const found = w.exercises.find((ex) => ex.name === selectedExercise);
             if (found) {
-                const maxWeight = Math.max(...found.sets.map((s) => Number(s.weight) || 0));
+                const weights = found.sets.map((s) => Number(s.weight) || 0);
+                const maxWeight = Math.max(...weights);
+                const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length;
+                
                 dataPoints.push({
-                date: new Date(w.createdAt).toLocaleDateString(),
-                weight: maxWeight,
+                    date: new Date(w.createdAt).toLocaleDateString(),
+                    maxWeight: useImperial ? kgToLbs(maxWeight) : maxWeight,
+                    avgWeight: useImperial ? kgToLbs(avgWeight) : avgWeight,
                 });
-        }
+            }
         });
 
         return dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }, [selectedExercise, workouts]);
+    }, [selectedExercise, workouts, useImperial]);
+
 
     // Chart data
     const data = {
         labels: exerciseData.map((d) => d.date),
         datasets: [
             {
-                label: `${selectedExercise} Progress (kg)`,
-                data: exerciseData.map((d) => d.weight),
+                label: `Personal Best (${weightUnit})`,
+                data: exerciseData.map((d) => d.maxWeight),
                 backgroundColor: '#EF233C',
                 borderColor: '#EF233C',
+                tension: 0.3,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            },
+            {
+                label: `Average Weight (${weightUnit})`,
+                data: exerciseData.map((d) => d.avgWeight),
+                backgroundColor: '#EDF2F4',
+                borderColor: '#EDF2F4',
                 tension: 0.3,
                 pointRadius: 5,
                 pointHoverRadius: 7,
@@ -80,7 +98,7 @@ const ExerciseProgressChart = ({ workouts }) => {
             },
             tooltip: {
                 callbacks: {
-                label: (context) => `${context.parsed.y} kg`,
+                    label: (context) => `${context.parsed.y.toFixed(1)} ${weightUnit}`,
                 },
             },
         },

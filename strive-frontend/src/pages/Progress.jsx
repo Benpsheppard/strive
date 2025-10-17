@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { formatWeight } from '../utils/weightUnits.js';
 import Header from '../components/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
 import PBChart from '../components/PBChart.jsx';
@@ -91,7 +92,7 @@ const Progress = () => {
                             <ProgressCard title="Total Exercises" value={totalExercises} />
                             <ProgressCard title="Total Duration" value={`${totalDuration} min`} />
                             <ProgressCard title="Total Sets" value={totalSets} />
-                            <ProgressCard title="Total Weight Lifted" value={`${totalWeight} kg`} />
+                            <ProgressCard title="Total Weight Lifted" value={formatWeight(totalWeight, user.useImperial)} />
                             <ProgressCard title="Total Reps" value={totalReps} />
                         </div>
 
@@ -107,10 +108,10 @@ const Progress = () => {
 
                         {/* Charts Section */}
                         <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <PBChart workouts={workouts} />
-                            <ExerciseProgressChart workouts={workouts} />
+                            <PBChart workouts={workouts} useImperial={user.useImperial}/>
+                            <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial}/>
                         </div>
-                        <MuscleGroupSplit workouts={workouts} />
+                        <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial}/>
                     </>
                 ) : (
                     <div className="text-[#EDF2F4] text-xl text-center mt-10">

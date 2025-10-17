@@ -6,15 +6,19 @@ import {
   Legend,
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import { kgToLbs, getWeightUnit } from '../utils/weightUnits.js';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const MuscleGroupSplit = ({ workouts }) => {
+const MuscleGroupSplit = ({ workouts, useImperial }) => {
   const [viewMode, setViewMode] = useState('exercises'); // 'exercises', 'sets', or 'weight'
 
   // Count muscle groups based on selected view mode
   const muscleGroupCounts = {};
+
+  // Get weight unit
+  const weightUnit = getWeightUnit(useImperial);
 
   workouts.forEach((workout) => {
     workout.exercises.forEach((exercise) => {
@@ -45,6 +49,8 @@ const MuscleGroupSplit = ({ workouts }) => {
     .map(([group, count]) => ({
       group,
       count,
+      // Convert weight for display if needed
+      displayCount: (viewMode === 'weight' && useImperial) ? kgToLbs(count) : count,
       percentage: ((count / total) * 100).toFixed(1),
     }))
     .sort((a, b) => b.count - a.count);
@@ -98,14 +104,14 @@ const MuscleGroupSplit = ({ workouts }) => {
         callbacks: {
           label: (context) => {
             const index = context.dataIndex;
-            const count = muscleGroupData[index].count;
+            const count = muscleGroupData[index].displayCount;
             const percentage = muscleGroupData[index].percentage;
             let unit;
             if (viewMode === 'exercises') unit = 'exercises';
             else if (viewMode === 'sets') unit = 'sets';
-            else unit = 'kg';
+            else unit = weightUnit;
             
-            const displayValue = viewMode === 'weight' ? count.toFixed(0) : count;
+            const displayValue = viewMode === 'weight' ? count.toFixed(1) : count;
             return ` ${displayValue} ${unit} (${percentage}%)`;
           },
         },
@@ -177,7 +183,9 @@ const MuscleGroupSplit = ({ workouts }) => {
             <div className="text-[#EDF2F4] text-lg font-bold">{item.percentage}%</div>
             {/* Muscle Group Exercise / Set / Weight count*/}
             <div className="text-[#EDF2F4] text-xs opacity-80">
-              {viewMode === 'weight' ? `${item.count.toFixed(0)} kg` : `${item.count} ${viewMode === 'exercises' ? 'exercises' : 'sets'}`}
+              {viewMode === 'weight' 
+                ? `${item.displayCount.toFixed(1)} ${weightUnit}` 
+                : `${item.count} ${viewMode === 'exercises' ? 'exercises' : 'sets'}`}
             </div>
           </div>
         ))}
