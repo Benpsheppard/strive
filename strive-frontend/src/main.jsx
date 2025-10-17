@@ -9,6 +9,13 @@ import { Provider } from 'react-redux';
 import './index.css'
 import App from './App.jsx'
 
+import { registerSW } from 'virtual:pwa-register'
+
+registerSW({
+  onNeedRefresh() {},
+  onOfflineReady() {},
+})
+
 // Root
 createRoot(document.getElementById('root')).render(
   <StrictMode>
