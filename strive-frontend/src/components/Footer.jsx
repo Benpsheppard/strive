@@ -10,7 +10,6 @@ const Footer = () => {
                     <a href="/profile" className="hover:text-[#EF233C] text-center md:text-left">Profile</a>
                     <a href="/prev-workouts" className="hover:text-[#EF233C] text-center md:text-left">Workouts</a>
                     <a href="/contact" className="hover:text-[#EF233C] text-center md:text-left">Contact</a>
-                    <a href="https://github.com/Benpsheppard" target="_blank" className="hover:text-[#EF233C] text-center md:text-left">GitHub</a>
                     <a href="/privacy-policy" className="hover:text-[#EF233C] text-center md:text-left">Privacy Policy</a>
                     <a href="/help" className="hover:text-[#EF233C] text-center md:text-left">Help</a>
                 </div>
