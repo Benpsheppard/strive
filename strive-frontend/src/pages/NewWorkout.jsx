@@ -1,108 +1,64 @@
 // NewWorkout.jsx
 
 // Imports
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { FaPlus } from 'react-icons/fa';
-import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { detectNewPBs } from '../utils/pbDetection.js';
-import { parseWeight, formatWeight, getWeightUnit } from '../utils/weightUnits.js';
 
+// Function Imports
+import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { detectNewPBs } from '../utils/pbDetection.js';
+import { parseWeight, formatWeight } from '../utils/weightUnits.js';
+import { useLocalStorage } from '../hooks/useLocalStorage.js';
+import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js';
+import { addPoints } from '../features/auth/authSlice.js';
+
+// Component Imports
 import Header from '../components/headers/Header.jsx';
 import WorkoutItem from '../components/workouts/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
+import ExerciseList from '../components/workouts/ExerciseList.jsx';
 import SetList from '../components/workouts/SetList.jsx';
+import SetForm from '../components/workouts/SetForm.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
 
-export function useLocalStorage(key, initialValue) {
-  const [value, setValue] = useState(() => {
-    try {
-      const jsonValue = localStorage.getItem(key);
-      return jsonValue != null ? JSON.parse(jsonValue) : initialValue;
-    } catch {
-      return initialValue;
-    }
-  });
+// Muscle groups
+const MUSCLE_GROUPS = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Arms',
+  'Legs',
+  'Core',
+  'Full body',
+  'Other'
+];
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
-  }, [key, value]);
-
-  return [value, setValue];
-}
+// Taglines
+const TAGLINES = [
+  'Consistency builds strength',
+  'One more rep, one step closer',
+  'No excuses, just results',
+  'Push your limits',
+  'Strive for progress, not perfection'
+];
 
 // New Workout
 const NewWorkout = () => {
-  // redux / routing
+  // Redux & Routing
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { user } = useSelector((state) => state.auth);
   const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
-  const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null;
 
-  // Taglines
-  const taglines = [
-    'Consistency builds strength',
-    'One more rep, one step closer',
-    'No excuses, just results',
-    'Push your limits',
-    'Strive for progress, not perfection'
-  ];
   const [tagline, setTagline] = useState('');
-
-  // Muscle groups
-  const muscleGroups = [
-    'Chest',
-    'Back',
-    'Shoulders',
-    'Arms',
-    'Legs',
-    'Core',
-    'Full body',
-    'Other'
-  ];
-
-  // Normalise helper
-  const normaliseExercise = (name = '') =>
-    name
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toLowerCase()
-      .split(' ')
-      .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
-      .join(' ');
-
-  // Compute uniqueExercises from workouts
-  const uniqueExercises = useMemo(() => {
-    const exerciseMap = new Map();
-    workouts.forEach((workout) => {
-      workout.exercises?.forEach((exercise) => {
-        const normalizedName = normaliseExercise(exercise.name);
-        if (!exerciseMap.has(normalizedName)) {
-          exerciseMap.set(normalizedName, {
-            name: normalizedName,
-            musclegroup: exercise.musclegroup,
-            description: exercise.description || ''
-          });
-        }
-      });
-    });
-    return Array.from(exerciseMap.values());
-  }, [workouts]);
 
   // Local state persisted to localStorage
   const [title, setTitle] = useLocalStorage('newWorkout_title', '');
   const [exercises, setExercises] = useLocalStorage('newWorkout_exercises', []);
-  const [currentExercise, setCurrentExercise] = useLocalStorage('newWorkout_currentExercise', {
-    name: '',
-    musclegroup: '',
-    description: '',
-    sets: []
-  });
+  const [currentExercise, setCurrentExercise] = useLocalStorage('newWorkout_currentExercise', {name: '', musclegroup: '', description: '', sets: []});
   const [currentSet, setCurrentSet] = useLocalStorage('newWorkout_currentSet', { weight: '', reps: '' });
   const [started, setStarted] = useLocalStorage('newWorkout_started', false);
   const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null);
@@ -111,20 +67,33 @@ const NewWorkout = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredExercises, setFilteredExercises] = useState([]);
 
+  // Get unique exercises
+  const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts]);
+
+  // Most recent workout
+  const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null;
+
   // Ref to mark a click-selection
   const selectingRef = useRef(false);
 
   // Ref to container for click-outside
   const suggestionsContainerRef = useRef(null);
-
-  // Utility to compare exercise arrays by name
-  const arraysEqualByName = (a = [], b = []) => {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i].name !== b[i].name) return false;
-    }
-    return true;
-  };
+  
+  // Reset workout state
+  const resetWorkoutState = () => {
+    setTitle('');
+    setExercises([]);
+    setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
+    setCurrentSet({ weight: '', reps: '' });
+    setStarted(false);
+    setStartTime(null);
+    localStorage.removeItem('newWorkout_title');
+    localStorage.removeItem('newWorkout_exercises');
+    localStorage.removeItem('newWorkout_currentExercise');
+    localStorage.removeItem('newWorkout_currentSet');
+    localStorage.removeItem('newWorkout_started');
+    localStorage.removeItem('newWorkout_startTime');
+  }
 
   // Filter suggestions when input changes
   useEffect(() => {
@@ -153,7 +122,7 @@ const NewWorkout = () => {
       setFilteredExercises(filtered);
       setShowSuggestions(filtered.length > 0);
     }
-  }, [currentExercise?.name, uniqueExercises]); // stable deps
+  }, [currentExercise?.name, uniqueExercises]);
 
   // Hide suggestions when clicking outside
   useEffect(() => {
@@ -165,10 +134,34 @@ const NewWorkout = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+  
+  // Initial data & taglines effect
+  useEffect(() => {
+    if (isError) {
+      console.log(message);
+    }
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    dispatch(getWorkouts());
+
+    let index = 0;
+    setTagline(TAGLINES[index]);
+    const interval = setInterval(() => {
+      index = (index + 1) % TAGLINES.length;
+      setTagline(TAGLINES[index]);
+    }, 4000);
+
+    return () => {
+      clearInterval(interval);
+      dispatch(reset());
+    };
+  }, [user, message, isError, navigate, dispatch]);
 
   // Select exercise from suggestions
   const selectExercise = (exercise) => {
-    // mark that selection is happening
     selectingRef.current = true;
     setShowSuggestions(false);
     setCurrentExercise((prev) => ({
@@ -235,7 +228,7 @@ const NewWorkout = () => {
     toast.success('Exercise saved successfully!');
   };
 
-  // Submit workout
+  // Submit Workout
   const onSubmit = async () => {
     if (!title.trim()) {
       toast.error('Please enter a workout title.');
@@ -245,14 +238,17 @@ const NewWorkout = () => {
       toast.error('Please add at least one exercise.');
       return;
     }
+
     const endTime = Date.now();
     const durationMinutes = Math.round((endTime - startTime) / 60000);
     const workoutData = { title, exercises, duration: durationMinutes };
 
     try {
+      // Save workout
       await dispatch(createWorkout(workoutData)).unwrap();
       toast.success('Workout saved successfully!');
 
+      // Detect new PBs
       const newPBs = detectNewPBs(workoutData, workouts);
       if (newPBs.length > 0) {
         newPBs.forEach((pb) => {
@@ -262,19 +258,21 @@ const NewWorkout = () => {
         });
       }
 
-      // Reset states and localStorage
-      setTitle('');
-      setExercises([]);
-      setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-      setCurrentSet({ weight: '', reps: '' });
-      setStarted(false);
-      setStartTime(null);
-      localStorage.removeItem('newWorkout_title');
-      localStorage.removeItem('newWorkout_exercises');
-      localStorage.removeItem('newWorkout_currentExercise');
-      localStorage.removeItem('newWorkout_currentSet');
-      localStorage.removeItem('newWorkout_started');
-      localStorage.removeItem('newWorkout_startTime');
+      // Add fixed Strive Points (SP)
+      const SP_AMOUNT = 200;
+      const previousLevel = user.level;
+
+      const spResult = await dispatch(addPoints({ userId: user._id, amount: SP_AMOUNT })).unwrap();
+
+      toast.success(`+${SP_AMOUNT} Strive Points!`);
+
+      if (spResult.level > previousLevel) {
+        toast.success(`Level Up! You are now Level ${spResult.level}!`);
+      }
+
+      // Reset workout state & localStorage
+      resetWorkoutState();
+
     } catch (error) {
       toast.error(error.message || 'Failed to save workout');
     }
@@ -283,18 +281,7 @@ const NewWorkout = () => {
   // Cancel workout
   const onCancel = () => {
     if (window.confirm('Are you sure you want to delete this workout?')) {
-      setTitle('');
-      setExercises([]);
-      setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-      setCurrentSet({ weight: '', reps: '' });
-      setStarted(false);
-      setStartTime(null);
-      localStorage.removeItem('newWorkout_title');
-      localStorage.removeItem('newWorkout_exercises');
-      localStorage.removeItem('newWorkout_currentExercise');
-      localStorage.removeItem('newWorkout_currentSet');
-      localStorage.removeItem('newWorkout_started');
-      localStorage.removeItem('newWorkout_startTime');
+      resetWorkoutState();
       toast.success('Workout cancelled successfully');
     }
   };
@@ -311,31 +298,6 @@ const NewWorkout = () => {
     setStarted(true);
     setStartTime(Date.now());
   };
-
-  // initial data & taglines effect
-  useEffect(() => {
-    if (isError) {
-      console.log(message);
-    }
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    dispatch(getWorkouts());
-
-    let index = 0;
-    setTagline(taglines[index]);
-    const interval = setInterval(() => {
-      index = (index + 1) % taglines.length;
-      setTagline(taglines[index]);
-    }, 4000);
-
-    return () => {
-      clearInterval(interval);
-      dispatch(reset());
-    };
-  }, [user, message, isError, navigate, dispatch]); // kept same as original
 
   if (isLoading || !user) {
     return <Spinner />;
@@ -429,7 +391,7 @@ const NewWorkout = () => {
                   <option value="" className="placeholder-gray-300">
                     Select Muscle Group *
                   </option>
-                  {muscleGroups.map((group) => (
+                  {MUSCLE_GROUPS.map((group) => (
                     <option key={group} value={group}>
                       {group}
                     </option>
@@ -446,37 +408,12 @@ const NewWorkout = () => {
                 />
 
                 {/* Sets Form */}
-                <div className="flex flex-col gap-2 mb-3 px-4 py-2 w-full shadow-lg rounded-lg">
-                  {/* Inputs row */}
-                  <div className="flex items-center gap-2 w-full">
-                    <input
-                      type="number"
-                      name="weight"
-                      value={currentSet.weight}
-                      onChange={handleSetChange}
-                      placeholder={`Weight (${getWeightUnit(user.useImperial)})`}
-                      className="flex-1 min-w-0 rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-3 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                    />
-                    <input
-                      type="number"
-                      name="reps"
-                      value={currentSet.reps}
-                      onChange={handleSetChange}
-                      placeholder="Reps"
-                      className="flex-1 min-w-0 rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-3 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                    />
-
-                    {/* Desktop + Button */}
-                    <button type="button" onClick={addSet} className="hidden sm:flex w-10 h-10 items-center justify-center bg-[#EF233C] text-white rounded-lg transition hover:bg-[#D90429]">
-                      <FaPlus />
-                    </button>
-                  </div>
-
-                  {/* Mobile Add Set Button */}
-                  <button type="button" onClick={addSet} className="sm:hidden w-full bg-[#EF233C] text-white py-2 rounded transition hover:bg-[#D90429]">
-                    Add Set
-                  </button>
-                </div>
+                <SetForm
+                  currentSet={currentSet}
+                  handleSetChange={handleSetChange}
+                  addSet={addSet}
+                  user={user}
+                />
 
                 {/* Sets List */}
                 <SetList
@@ -495,23 +432,7 @@ const NewWorkout = () => {
               </div>
 
               {/* Exercises List */}
-              <div className="max-h-64 overflow-y-auto mb-4">
-                {exercises.map((ex, i) => (
-                  <div key={i} className="bg-[#8D99AE] p-2 rounded-lg mb-2 text-center shadow-lg">
-                    <h4 className="font-bold text-[#EF233C]">{ex.name}</h4>
-                    <p className="text-[#EDF2F4]">
-                      {ex.musclegroup} — {ex.description}
-                    </p>
-                    <ul>
-                      {ex.sets.map((s, idx) => (
-                        <li className="text-[#2B2D42]" key={idx}>
-                          - {formatWeight(s.weight, user.useImperial)} × {s.reps} reps
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+              <ExerciseList exercises={exercises} useImperial={user.useImperial} />
 
               {/* Submit Workout */}
               <div className="flex flex-col w-full items-center">
