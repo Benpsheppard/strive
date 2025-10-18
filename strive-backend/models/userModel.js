@@ -31,10 +31,22 @@ const userSchema = mongoose.Schema ({
         ref: "Workout"
         }
     ],
+    // User level
+    level: {
+        type: Number,
+        default: 1
+    },
+    // User SP points
+    strivepoints: {
+        type: Number,
+        default: 0
+    },
+    // User unit preference
     useImperial: {
         type: Boolean,
         default: false
     },
+    // Guest account flag
     isGuest: {
         type: Boolean,
         default: false

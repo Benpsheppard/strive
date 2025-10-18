@@ -70,7 +70,7 @@ const updateWeightPreference = async (useImperial, token) => {
     },
   };
 
-  const response = await axios.put(API_URL + 'preference', {useImperial}, config);
+  const response = await axios.put(API_URL + 'preference', { useImperial }, config);
 
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data));
@@ -79,6 +79,20 @@ const updateWeightPreference = async (useImperial, token) => {
   return response.data;
 };
 
+// Add Strive Points (SP)
+const addPoints = async (userId, amount, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.post(API_URL + `${userId}/points`, { amount }, config);
+
+  return response.data;
+};
+
+
 // Export functions
 const authService = {
     register,
@@ -86,7 +100,8 @@ const authService = {
     login,
     deleteUser,
     resetUser,
-    updateWeightPreference
+    updateWeightPreference,
+    addPoints
 }
 
 export default authService;

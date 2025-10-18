@@ -112,6 +112,8 @@ const loginUser = asyncHandler(async (req, res) => {
             email: user.email,
             createdAt: user.createdAt,
             useImperial: user.useImperial,
+            level: user.level,
+            strivepoints: user.strivepoints,
             token: genToken(user._id)
         })
     } else {
@@ -202,6 +204,39 @@ const updateWeightPreference = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Add strive points to user
+// @route   POST /api/users/:id/points
+// @access  Private
+const addPoints = asyncHandler(async (req, res) => {
+    const { amount } = req.body;    // Amount of SP to be added
+    const user = await User.findById(req.params.id);      // Get user
+
+    // Check user exists
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    const pointsToAdd = Number(amount);
+
+    if (isNaN(pointsToAdd)){
+        res.status(400);
+        throw new Error('Amount is not a valid number');
+    }
+
+    user.strivepoints += pointsToAdd;    // Add points to user
+
+    user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1;    // Level up rate (lower divisor is quicker leveling)
+    
+    await user.save();  // Save updates to user
+
+    res.json({
+        message: `Added ${amount} SP to ${user.username}`,
+        strivepoints: user.strivepoints,
+        level: user.level,
+    });
+});
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -210,4 +245,4 @@ const genToken = (id) => {
 };
 
 // Export functions
-module.exports = { registerUser, loginUser, getMe, deleteUser, resetUser, updateWeightPreference };
+module.exports = { registerUser, loginUser, getMe, deleteUser, resetUser, updateWeightPreference, addPoints };

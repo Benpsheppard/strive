@@ -4,9 +4,12 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js';
 import { FaUser } from 'react-icons/fa';
 
+// Function Imports
+import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js';
+
+// Component Imports
 import Header from '../components/headers/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
@@ -84,6 +87,12 @@ const Profile = () => {
                     <p className="text-lg mb-6 text-[#2B2D42]">
                         <span className="font-semibold">User since:</span>{" "}
                         {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-lg mb-2 text-[#2B2D42]">
+                        <span className="font-semibold">Level:</span> {user.level}
+                    </p>
+                    <p className="text-lg mb-2 text-[#2B2D42]">
+                        <span className="font-semibold">Strive Points:</span> {user.strivepoints}
                     </p>
 
                     {/* Weight Unit Toggle */}

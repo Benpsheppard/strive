@@ -55,6 +55,7 @@ export const deleteUser = createAsyncThunk('auth/deleteUser', async (id, thunkAP
     }
 })
 
+// Reset users workouts
 export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI) => {
     try {
         const token = thunkAPI.getState().auth.user.token;
@@ -66,6 +67,7 @@ export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI)
     }
 })
 
+// Change users weight unit preference
 export const updateWeightPreference = createAsyncThunk('auth/updatePreference', async (useImperial, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
@@ -76,8 +78,20 @@ export const updateWeightPreference = createAsyncThunk('auth/updatePreference', 
         || error.message || error.toString();
       return thunkAPI.rejectWithValue(message);
     }
-  }
-);
+});
+
+// Add Strive Points
+export const addPoints = createAsyncThunk('auth/addPoints', async ({ userId, amount }, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token;
+        return await authService.addPoints(userId, amount, token);
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message) 
+            || error.message || error.toString();
+        return thunkAPI.rejectWithValue(message);
+    }
+});
 
 // auth slice
 export const authSlice = createSlice({
@@ -165,6 +179,23 @@ export const authSlice = createSlice({
                 state.isLoading = false,
                 state.isError = true,
                 state.message = action.payload
+            })
+            .addCase(addPoints.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(addPoints.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                if (state.user) {
+                    state.user.strivepoints = action.payload.strivepoints;
+                    state.user.level = action.payload.level;
+                    localStorage.setItem('user', JSON.stringify(state.user));
+                }
+            })
+            .addCase(addPoints.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
             })
     }
 });
