@@ -6,10 +6,13 @@ import Header from '../components/Header.jsx';  // Import header
 import WorkoutItem from '../components/WorkoutItem.jsx';    // Import workout items
 import Spinner from '../components/Spinner.jsx' // Import spinner
 import GuestHeader from '../components/GuestHeader.jsx';
+import Offline from '../components/Offline.jsx';
+
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { useOnlineStatus } from '../hooks/onlineStatus.js';
 
 // PrevWorkouts
 const PrevWorkouts = () => {
@@ -19,6 +22,7 @@ const PrevWorkouts = () => {
 
     const { user } = useSelector((state) => state.auth);
     const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
+    const isOnline = useOnlineStatus();
 
     useEffect(() => {
         if (isError) {
@@ -41,6 +45,12 @@ const PrevWorkouts = () => {
     if(isLoading){
         return (
             <Spinner />
+        )
+    }
+
+    if(!isOnline) {
+        return (
+            <Offline />
         )
     }
 

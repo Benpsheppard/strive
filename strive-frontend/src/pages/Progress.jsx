@@ -7,6 +7,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
 import { formatWeight } from '../utils/weightUnits.js';
+import { useOnlineStatus } from '../hooks/onlineStatus.js';
+
 import Header from '../components/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
 import PBChart from '../components/PBChart.jsx';
@@ -15,6 +17,7 @@ import MobileProgressCard from '../components/CondensedProgressCard.jsx';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.jsx';
 import MuscleGroupSplit from '../components/MuscleGroupSplit.jsx';
 import GuestHeader from '../components/GuestHeader.jsx';
+import Offline from '../components/Offline.jsx';
 
 const Progress = () => {
     const navigate = useNavigate();
@@ -22,6 +25,7 @@ const Progress = () => {
 
     const { user } = useSelector((state) => state.auth);
     const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
+    const isOnline = useOnlineStatus();
 
     useEffect(() => {
         if (isError) {
@@ -33,19 +37,15 @@ const Progress = () => {
             return;
         }
 
-        dispatch(getWorkouts());
+        if (isOnline){
+            dispatch(getWorkouts());
+        }
 
         return () => {
             dispatch(reset());
         }
 
     }, [user, isError, message, navigate, dispatch]);
-
-    if(isLoading || !user){
-        return (
-            <Spinner />
-        )
-    }
 
     // Calculate stats
     const totalWorkouts = workouts.length;
@@ -75,6 +75,18 @@ const Progress = () => {
             });
         });
     });
+
+    if(isLoading || !user){
+        return (
+            <Spinner />
+        )
+    }
+
+    if(!isOnline) {
+        return (
+            <Offline />
+        )
+    }
 
     return (
         <section className="mt-15">

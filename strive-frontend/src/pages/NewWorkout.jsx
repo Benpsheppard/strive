@@ -9,12 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { detectNewPBs } from '../utils/pbDetection.js';
 import { parseWeight, formatWeight, getWeightUnit } from '../utils/weightUnits.js';
+import { useOnlineStatus } from '../hooks/onlineStatus.js';
+
 import Header from '../components/Header.jsx';
 import WorkoutItem from '../components/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
 import SetList from '../components/SetList.jsx';
 import GuestHeader from '../components/GuestHeader.jsx';
 
+
+// Helper Functions
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
     try {
@@ -34,6 +38,22 @@ export function useLocalStorage(key, initialValue) {
   return [value, setValue];
 }
 
+const resetWorkoutState = () => {
+  setTitle('');
+  setExercises([]);
+  setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
+  setCurrentSet({ weight: '', reps: '' });
+  setStarted(false);
+  setStartTime(null);
+  localStorage.removeItem('newWorkout_title');
+  localStorage.removeItem('newWorkout_exercises');
+  localStorage.removeItem('newWorkout_currentExercise');
+  localStorage.removeItem('newWorkout_currentSet');
+  localStorage.removeItem('newWorkout_started');
+  localStorage.removeItem('newWorkout_startTime');
+};
+
+
 // New Workout
 const NewWorkout = () => {
   // redux / routing
@@ -42,6 +62,7 @@ const NewWorkout = () => {
   const { user } = useSelector((state) => state.auth);
   const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
   const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null;
+  const isOnline = useOnlineStatus();
 
   // Taglines
   const taglines = [
@@ -165,6 +186,25 @@ const NewWorkout = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Auto-sync pending workouts
+  useEffect(() => {
+  if (isOnline) {
+    const pending = JSON.parse(localStorage.getItem('pendingWorkouts') || '[]');
+    if (pending.length > 0) {
+      pending.forEach(async (workout) => {
+        try {
+          await dispatch(createWorkout(workout)).unwrap();
+          toast.success(`Offline workout "${workout.title}" synced successfully!`);
+        } catch (err) {
+          console.log('Failed to sync offline workout', err);
+        }
+      });
+      localStorage.removeItem('pendingWorkouts');
+    }
+  }
+}, [isOnline, dispatch]);
+
+
   // Select exercise from suggestions
   const selectExercise = (exercise) => {
     // mark that selection is happening
@@ -244,40 +284,39 @@ const NewWorkout = () => {
       toast.error('Please add at least one exercise.');
       return;
     }
+
     const endTime = Date.now();
     const durationMinutes = Math.round((endTime - startTime) / 60000);
-    const workoutData = { title, exercises, duration: durationMinutes };
+    const workoutData = { title, exercises, duration: durationMinutes, createdAt: endTime };
 
-    try {
-      await dispatch(createWorkout(workoutData)).unwrap();
-      toast.success('Workout saved successfully!');
+    if (isOnline) {
+      try {
+        await dispatch(createWorkout(workoutData)).unwrap();
+        toast.success('Workout saved successfully!');
 
-      const newPBs = detectNewPBs(workoutData, workouts);
-      if (newPBs.length > 0) {
-        newPBs.forEach((pb) => {
-          const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
-          const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
-          toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
-        });
+        const newPBs = detectNewPBs(workoutData, workouts);
+        if (newPBs.length > 0) {
+          newPBs.forEach((pb) => {
+            const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
+            const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
+            toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
+          });
+        }
+
+        resetWorkoutState();
+      } catch (error) {
+        toast.error(error.message || 'Failed to save workout');
       }
-
-      // Reset states and localStorage
-      setTitle('');
-      setExercises([]);
-      setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-      setCurrentSet({ weight: '', reps: '' });
-      setStarted(false);
-      setStartTime(null);
-      localStorage.removeItem('newWorkout_title');
-      localStorage.removeItem('newWorkout_exercises');
-      localStorage.removeItem('newWorkout_currentExercise');
-      localStorage.removeItem('newWorkout_currentSet');
-      localStorage.removeItem('newWorkout_started');
-      localStorage.removeItem('newWorkout_startTime');
-    } catch (error) {
-      toast.error(error.message || 'Failed to save workout');
+    } else {
+      // Save to localStorage as pending workout
+      const pending = JSON.parse(localStorage.getItem('pendingWorkouts') || '[]');
+      pending.push(workoutData);
+      localStorage.setItem('pendingWorkouts', JSON.stringify(pending));
+      toast.info('You are offline. Workout saved locally and will sync when online.');
+      resetWorkoutState();
     }
   };
+
 
   // Cancel workout
   const onCancel = () => {
@@ -321,7 +360,9 @@ const NewWorkout = () => {
       return;
     }
 
-    dispatch(getWorkouts());
+    if (isOnline){
+      dispatch(getWorkouts());
+    }
 
     let index = 0;
     setTagline(taglines[index]);
@@ -353,11 +394,15 @@ const NewWorkout = () => {
               </h1>
               <p className="text-lg italic text-[#EDF2F4] text-center mb-6 transition-opacity duration-500">{tagline}</p>
             </div>
-            {lastWorkout && (
-              <div>
-                <h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
-                <WorkoutItem workout={lastWorkout} />
-              </div>
+            {isOnline ? (
+              lastWorkout && (
+                <div>
+                  <h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
+                  <WorkoutItem workout={lastWorkout} />
+                </div>
+              )
+            ) : (
+              <p className="text-[#EDF2F4] text-center text-xl my-6">Reconnect to the internet to view your last session</p>
             )}
           </div>
         )}
