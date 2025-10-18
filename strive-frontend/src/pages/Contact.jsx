@@ -1,12 +1,12 @@
 // Contact.jsx
-// File to hold Contact page layout and functionality
 
 // Imports
 import { useSelector } from 'react-redux';
-import Header from '../components/Header.jsx';  // Import header component
-import Footer from '../components/Footer.jsx';
-import GuestHeader from '../components/GuestHeader.jsx';
 import { useState } from 'react';
+
+import Header from '../components/headers/Header.jsx';
+import Footer from '../components/dashboard/Footer.jsx';
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 // Contact
 const Contact = () => {

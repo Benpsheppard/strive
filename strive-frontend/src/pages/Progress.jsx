@@ -7,14 +7,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
 import { formatWeight } from '../utils/weightUnits.js';
-import Header from '../components/Header.jsx';
+
+import Header from '../components/headers/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
-import PBChart from '../components/PBChart.jsx';
-import ProgressCard from '../components/ProgressCard.jsx';
-import MobileProgressCard from '../components/CondensedProgressCard.jsx';
-import ExerciseProgressChart from '../components/ExerciseProgressChart.jsx';
-import MuscleGroupSplit from '../components/MuscleGroupSplit.jsx';
-import GuestHeader from '../components/GuestHeader.jsx';
+import PBChart from '../components/progress/PBChart.jsx';
+import ProgressCard from '../components/progress/ProgressCard.jsx';
+import MobileProgressCard from '../components/progress/CondensedProgressCard.jsx';
+import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx';
+import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx';
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 const Progress = () => {
     const navigate = useNavigate();

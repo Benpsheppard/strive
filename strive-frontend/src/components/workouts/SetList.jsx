@@ -2,7 +2,7 @@
 
 // Imports
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatWeight } from '../utils/weightUnits.js';
+import { formatWeight } from '../../utils/weightUnits.js';
 
 const SetList = ({ sets, useImperial = false }) => {
     if (!sets || sets.length === 0) {

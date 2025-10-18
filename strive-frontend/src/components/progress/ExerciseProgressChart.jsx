@@ -13,7 +13,7 @@ import {
     Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getWeightUnit, kgToLbs } from '../utils/weightUnits';
+import { getWeightUnit, kgToLbs } from '../../utils/weightUnits';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 

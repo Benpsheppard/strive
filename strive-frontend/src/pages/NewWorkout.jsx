@@ -9,11 +9,12 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { detectNewPBs } from '../utils/pbDetection.js';
 import { parseWeight, formatWeight, getWeightUnit } from '../utils/weightUnits.js';
-import Header from '../components/Header.jsx';
-import WorkoutItem from '../components/WorkoutItem.jsx';
+
+import Header from '../components/headers/Header.jsx';
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx';
 import Spinner from '../components/Spinner.jsx';
-import SetList from '../components/SetList.jsx';
-import GuestHeader from '../components/GuestHeader.jsx';
+import SetList from '../components/workouts/SetList.jsx';
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {

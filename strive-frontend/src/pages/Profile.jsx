@@ -5,10 +5,11 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js';
-import Header from '../components/Header.jsx';
 import { FaUser } from 'react-icons/fa';
+
+import Header from '../components/headers/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
-import GuestHeader from '../components/GuestHeader.jsx';
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 const Profile = () => {
     const navigate = useNavigate();

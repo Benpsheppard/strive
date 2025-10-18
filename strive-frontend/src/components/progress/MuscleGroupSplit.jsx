@@ -6,7 +6,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-import { kgToLbs, getWeightUnit } from '../utils/weightUnits.js';
+import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);

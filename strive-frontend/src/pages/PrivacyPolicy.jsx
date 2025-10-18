@@ -1,5 +1,8 @@
-import Header from '../components/Header.jsx';
-import Footer from '../components/Footer.jsx';
+// PrivacyPolicy.jsx
+
+// Imports
+import Header from '../components/header/Header.jsx';
+import Footer from '../components/dashboard/Footer.jsx';
 
 const PrivacyPolicy = () => {
     return (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteWorkout } from '../features/workouts/workoutsSlice.js';
+import { deleteWorkout } from '../../features/workouts/workoutsSlice.js';
 import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import SetList from './SetList.jsx';
 

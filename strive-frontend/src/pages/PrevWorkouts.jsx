@@ -2,14 +2,15 @@
 // File to hold PrevWorkouts page layout and functionality
 
 // Imports 
-import Header from '../components/Header.jsx';  // Import header
-import WorkoutItem from '../components/WorkoutItem.jsx';    // Import workout items
-import Spinner from '../components/Spinner.jsx' // Import spinner
-import GuestHeader from '../components/GuestHeader.jsx';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+
+import Header from '../components/headers/Header.jsx';  // Import header
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx';    // Import workout items
+import Spinner from '../components/Spinner.jsx' // Import spinner
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 // PrevWorkouts
 const PrevWorkouts = () => {

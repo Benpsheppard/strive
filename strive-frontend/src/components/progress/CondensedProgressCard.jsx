@@ -1,7 +1,7 @@
 // CondensedProgressCard.jsx
 
 // Imports
-import { formatWeight } from '../utils/weightUnits.js';
+import { formatWeight } from '../../utils/weightUnits.js';
 import { useSelector } from 'react-redux';
 
 const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, totalSets, totalWeight, totalReps }) => {

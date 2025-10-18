@@ -8,8 +8,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { login, reset, register } from '../features/auth/authSlice.js';
+
 import Spinner from '../components/Spinner.jsx';
-import AuthHeader from '../components/AuthHeader.jsx';
+import AuthHeader from '../components/headers/AuthHeader.jsx';
 
 // Helper function
 function generateRandomPassword(length = 10) {

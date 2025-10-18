@@ -2,14 +2,15 @@
 // File to hold Dashboard page layout and functionality
 
 // Imports
-import Header from '../components/Header.jsx';  // Import header component
-import Hero from '../components/Hero.jsx';  // Import hero component
-import About from '../components/About.jsx';    // Import about component
-import Features from '../components/Features.jsx';  // Import Features component
-import Footer from '../components/Footer.jsx';
-import Spinner from '../components/Spinner.jsx';
-import GuestHeader from '../components/GuestHeader.jsx';
 import { useSelector } from 'react-redux';
+
+import Header from '../components/headers/Header.jsx'; 
+import Hero from '../components/dashboard/Hero.jsx';
+import About from '../components/dashboard/About.jsx';    
+import Features from '../components/dashboard/Features.jsx';  
+import Footer from '../components/dashboard/Footer.jsx';
+import Spinner from '../components/Spinner.jsx';
+import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 // Dashboard
 const Dashboard = () => {
