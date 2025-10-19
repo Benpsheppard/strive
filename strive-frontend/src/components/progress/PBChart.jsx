@@ -1,23 +1,33 @@
 // PBChart.jsx
+
+// Imports
 import { useState } from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
+    Chart as ChartJS, CategoryScale, LinearScale,
+    BarElement, Title, Tooltip, Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+
+// Function Imports
 import { calculatePersonalBests } from '../../utils/pbDetection.js';
 import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js';
 
-// Register Chart.js components
+// Register Chart
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+const MUSCLE_GROUPS = [
+    'All', 
+    'Chest', 
+    'Back', 
+    'Arms', 
+    'Legs', 
+    'Shoulders', 
+    'Core', 
+    'Full body', 
+    'Other'
+];
+
 const PBChart = ({ workouts, useImperial }) => {
-    const muscleGroups = ['All', 'Chest', 'Back', 'Arms', 'Legs', 'Shoulders', 'Core', 'Full body', 'Other'];
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All');
 
     const exercisePBs = calculatePersonalBests(workouts);
@@ -37,7 +47,6 @@ const PBChart = ({ workouts, useImperial }) => {
     );
     const dates = filteredExercises.map(([, data]) => data.date);
 
-    // Chart data
     const data = {
         labels,
         datasets: [
@@ -49,7 +58,6 @@ const PBChart = ({ workouts, useImperial }) => {
         ],
     };
 
-    // Chart options
     const options = {
         responsive: true,
         maintainAspectRatio: false,
@@ -102,7 +110,7 @@ const PBChart = ({ workouts, useImperial }) => {
             {/* Dropdown Menu */}
             <select className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedMuscleGroup} onChange={(e) => setSelectedMuscleGroup(e.target.value)}>
                 <option value="">Select a Muscle Group</option>
-                {muscleGroups.map((group) => (
+                {MUSCLE_GROUPS.map((group) => (
                     <option key={group} value={group}>
                         {group}
                     </option>
@@ -125,4 +133,5 @@ const PBChart = ({ workouts, useImperial }) => {
     );
 };
 
+// Export
 export default PBChart;

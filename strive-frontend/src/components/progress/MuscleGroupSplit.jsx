@@ -1,18 +1,29 @@
+// MuscleGroupSplit.jsx
+
+// Imports
 import { useState } from 'react';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+
+// Function Imports
 import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js';
 
-// Register Chart.js components
+// Register Chart
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const COLOURS = [
+    '#EF233C',
+    '#D90429',
+    '#8D99AE',
+    '#2B2D42',
+    '#EDF2F4',
+    '#4ECDC4',
+    '#F4A261',
+    '#6A4C93'
+  ];
+
 const MuscleGroupSplit = ({ workouts, useImperial }) => {
-  const [viewMode, setViewMode] = useState('exercises'); // 'exercises', 'sets', or 'weight'
+  const [viewMode, setViewMode] = useState('exercises');
 
   // Count muscle groups based on selected view mode
   const muscleGroupCounts = {};
@@ -20,6 +31,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
   // Get weight unit
   const weightUnit = getWeightUnit(useImperial);
 
+  // Get workout data for chosen viewMode
   workouts.forEach((workout) => {
     workout.exercises.forEach((exercise) => {
       const muscleGroup = exercise.musclegroup;
@@ -55,22 +67,10 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const colors = [
-    '#EF233C', // Bright red
-    '#D90429', // Deep red
-    '#8D99AE', // Gray-blue
-    '#2B2D42', // Dark navy
-    '#EDF2F4', // Light gray-white
-    '#4ECDC4', // Teal
-    '#F4A261', // Warm amber
-    '#6A4C93'  // Muted violet
-  ];
-
-
   // Prepare chart data
   const labels = muscleGroupData.map((item) => item.group);
   const dataValues = muscleGroupData.map((item) => item.count);
-  const backgroundColors = muscleGroupData.map((_, index) => colors[index % colors.length]);
+  const backgroundCOLOURS = muscleGroupData.map((_, index) => COLOURS[index % COLOURS.length]);
 
   const data = {
     labels,
@@ -78,14 +78,13 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
       {
         label: viewMode === 'exercises' ? 'Exercises' : viewMode === 'sets' ? 'Sets' : 'Total Weight',
         data: dataValues,
-        backgroundColor: backgroundColors,
+        backgroundColor: backgroundCOLOURS,
         borderColor: '#2B2D42',
         borderWidth: 2,
       },
     ],
   };
 
-  // Chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -136,8 +135,9 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 
       {/* Toggle between exercises, sets, and weight */}
       <div className="flex gap-2 mb-6 justify-center flex-wrap">
+        {/* Exercises View Mode */}
         <button
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg font-medium transition-COLOURS ${
             viewMode === 'exercises'
               ? 'bg-[#EF233C] text-[#EDF2F4]'
               : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'
@@ -146,8 +146,10 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
         >
           By Exercises
         </button>
+
+        {/* Sets View Mode */}
         <button
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg font-medium transition-COLOURS ${
             viewMode === 'sets'
               ? 'bg-[#EF233C] text-[#EDF2F4]'
               : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'
@@ -156,8 +158,10 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
         >
           By Sets
         </button>
+
+        {/* Weight View Mode */}
         <button
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg font-medium transition-COLOURS ${
             viewMode === 'weight'
               ? 'bg-[#EF233C] text-[#EDF2F4]'
               : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'
@@ -176,7 +180,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
       {/* Stats Summary */}
       <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
         {muscleGroupData.map((item, index) => (
-          <div key={item.group} className="bg-[#2B2D42] p-3 rounded-lg" style={{ borderLeft: `4px solid ${backgroundColors[index]}` }}>
+          <div key={item.group} className="bg-[#2B2D42] p-3 rounded-lg" style={{ borderLeft: `4px solid ${backgroundCOLOURS[index]}` }}>
             {/* Muscle Group Name */}
             <div className="text-[#EDF2F4] font-semibold text-sm">{item.group}</div>
             {/* Muscle Group Percentage */}
@@ -194,4 +198,5 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
   );
 };
 
+// Export
 export default MuscleGroupSplit;

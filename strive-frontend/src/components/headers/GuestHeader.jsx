@@ -1,4 +1,5 @@
 // GuestHeader.jsx
+
 const GuestHeader = ({ currentWorkouts }) => {
     const maxWorkouts = 5;
     const workoutsLeft = maxWorkouts - currentWorkouts;
@@ -23,4 +24,5 @@ const GuestHeader = ({ currentWorkouts }) => {
     );
 };
 
+// Export
 export default GuestHeader;

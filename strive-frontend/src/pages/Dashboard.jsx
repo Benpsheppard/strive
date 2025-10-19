@@ -1,9 +1,9 @@
 // Dashboard.jsx
-// File to hold Dashboard page layout and functionality
 
 // Imports
 import { useSelector } from 'react-redux';
 
+// Component Imports
 import Header from '../components/headers/Header.jsx'; 
 import Hero from '../components/dashboard/Hero.jsx';
 import About from '../components/dashboard/About.jsx';    

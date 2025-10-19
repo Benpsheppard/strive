@@ -1,4 +1,5 @@
 // Features.jsx
+
 const Features = () => {
     return (
         <section className="features bg-gray-50 py-16 px-6">
@@ -38,5 +39,5 @@ const Features = () => {
     )
 };
 
-// Export Features
+// Export
 export default Features;

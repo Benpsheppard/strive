@@ -1,25 +1,26 @@
 // PrevWorkouts.jsx
-// File to hold PrevWorkouts page layout and functionality
 
 // Imports 
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
+
+// Function Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
 
-import Header from '../components/headers/Header.jsx';  // Import header
-import WorkoutItem from '../components/workouts/WorkoutItem.jsx';    // Import workout items
-import Spinner from '../components/Spinner.jsx' // Import spinner
+// Component Imports
+import Header from '../components/headers/Header.jsx';
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx';
+import Spinner from '../components/Spinner.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 // PrevWorkouts
 const PrevWorkouts = () => {
+    const { user } = useSelector((state) => state.auth);
+    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const { user } = useSelector((state) => state.auth);
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
 
     useEffect(() => {
         if (isError) {

@@ -46,14 +46,12 @@ const TAGLINES = [
 
 // New Workout
 const NewWorkout = () => {
-  // Redux & Routing
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
   const { user } = useSelector((state) => state.auth);
   const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
 
-  const [tagline, setTagline] = useState('');
+  // Redux & Routing
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Local state persisted to localStorage
   const [title, setTitle] = useLocalStorage('newWorkout_title', '');
@@ -63,9 +61,10 @@ const NewWorkout = () => {
   const [started, setStarted] = useLocalStorage('newWorkout_started', false);
   const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null);
 
-  // Suggestion state
+  // Use State
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredExercises, setFilteredExercises] = useState([]);
+  const [tagline, setTagline] = useState('');
 
   // Get unique exercises
   const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts]);
@@ -244,30 +243,38 @@ const NewWorkout = () => {
     const workoutData = { title, exercises, duration: durationMinutes };
 
     try {
-      // Save workout
-      await dispatch(createWorkout(workoutData)).unwrap();
-      toast.success('Workout saved successfully!');
-
-      // Detect new PBs
-      const newPBs = detectNewPBs(workoutData, workouts);
-      if (newPBs.length > 0) {
-        newPBs.forEach((pb) => {
-          const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
-          const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
-          toast.success(`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}`);
-        });
-      }
-
-      // Add fixed Strive Points (SP)
-      const SP_AMOUNT = 200;
+      // Add fixed Strive Points for completing workout
+      const WORKOUT_COMPLETE_SP = 200;
       const previousLevel = user.level;
 
-      const spResult = await dispatch(addPoints({ userId: user._id, amount: SP_AMOUNT })).unwrap();
+      await dispatch(addPoints({ userId: user._id, amount: WORKOUT_COMPLETE_SP })).unwrap();
 
-      toast.success(`+${SP_AMOUNT} Strive Points!`);
+      // Save workout
+      await dispatch(createWorkout(workoutData)).unwrap();
+      toast.success(`Workout saved successfully! +${WORKOUT_COMPLETE_SP} SP!`);
 
-      if (spResult.level > previousLevel) {
-        toast.success(`Level Up! You are now Level ${spResult.level}!`);
+      // Detect new PBs and reward bonus SP
+      const newPBs = detectNewPBs(workoutData, workouts);
+      if (newPBs.length > 0) {
+        const PB_REWARD_SP = 500;
+
+        for (const pb of newPBs) {
+          const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
+          const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
+
+          // Award SP for each PB
+          const pbSP = await dispatch(addPoints({ userId: user._id, amount: PB_REWARD_SP })).unwrap();
+
+          // Show PB + SP reward toast
+          toast.success(
+            `New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}! +${PB_REWARD_SP} SP!`
+          );
+
+          // Check if this PB triggered a level-up
+          if (pbSP.level > previousLevel) {
+            toast.success(`🎉 Level Up! You are now Level ${pbSP.level}!`);
+          }
+        }
       }
 
       // Reset workout state & localStorage

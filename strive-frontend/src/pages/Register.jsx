@@ -6,12 +6,19 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
+// Function Imports
 import { register, reset } from '../features/auth/authSlice.js';
 
+// Component Imports
 import Spinner from '../components/Spinner.jsx';
 import AuthHeader from '../components/headers/AuthHeader.jsx';
 
 const Register = () => {
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // Set fields to blank
     const [formData, setFormData] = useState({
@@ -34,13 +41,6 @@ const Register = () => {
         symbol: /[^A-Za-z0-9]/.test(password)
     };
 
-
-    // Nav and Dispatch initialisation
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-
-    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);    // Destructure current state
-
     useEffect(() => {
         // Output error
         if (isError) {
@@ -57,7 +57,6 @@ const Register = () => {
 
     }, [user, isError, isSuccess, message, navigate, dispatch]);
 
-    // When form inputted, change what is displayed
     const onChange = (e) => {
         setFormData((prevState) => ({
             ...prevState,
@@ -65,7 +64,7 @@ const Register = () => {
         }))
     }
 
-    // When form is submitted
+    // Submit form
     const onSubmit = (e) => {
         e.preventDefault();
 
@@ -86,7 +85,6 @@ const Register = () => {
         dispatch(register(userData));
     }
 
-    // If loading, show spinner
     if(isLoading){
         return (
             <Spinner />

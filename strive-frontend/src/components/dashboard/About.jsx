@@ -1,4 +1,5 @@
 // About.jsx
+
 const About = () => {
     return (
         <section className="about bg-[#EDF2F4] py-16 px-6">
@@ -23,5 +24,5 @@ const About = () => {
 };
 
 
-// Export About
+// Export
 export default About;

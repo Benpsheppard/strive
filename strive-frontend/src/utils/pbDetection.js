@@ -1,4 +1,4 @@
-// utils/pbDetection.js
+// pbDetection.js
 
 export const calculatePersonalBests = (workouts) => {
   const exercisePBs = {};

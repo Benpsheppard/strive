@@ -2,19 +2,16 @@
 
 // Imports
 import { useState, useMemo } from 'react';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
+import { 
+    Chart as ChartJS, CategoryScale, LinearScale,
+    PointElement, LineElement, Title, Tooltip, Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+
+// Function Imports
 import { getWeightUnit, kgToLbs } from '../../utils/weightUnits';
 
+// Register Chart
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
@@ -52,7 +49,6 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
 
         return dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date));
     }, [selectedExercise, workouts, useImperial]);
-
 
     // Chart data
     const data = {

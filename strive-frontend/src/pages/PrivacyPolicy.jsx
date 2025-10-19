@@ -1,6 +1,6 @@
 // PrivacyPolicy.jsx
 
-// Imports
+// Component Imports
 import Header from '../components/headers/Header.jsx';
 import Footer from '../components/dashboard/Footer.jsx';
 
@@ -76,5 +76,5 @@ const PrivacyPolicy = () => {
     );
 };
 
+// Export
 export default PrivacyPolicy;
-

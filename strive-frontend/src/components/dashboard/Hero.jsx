@@ -1,13 +1,12 @@
 // Hero.jsx
-// File to manage hero component
 
 // Imports
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-// Hero
 const Hero = () => {
     const { user } = useSelector((state) => state.auth);
+
     return (
         <section className="hero bg-[#8D99AE] h-screen flex items-center justify-center">
             <div className="hero-container text-center px-6">
@@ -25,5 +24,5 @@ const Hero = () => {
     )
 };
 
-// Export Hero
+// Export
 export default Hero;

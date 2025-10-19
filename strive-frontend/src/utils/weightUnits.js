@@ -1,3 +1,5 @@
+// WeightUnits.js
+
 export const kgToLbs = (kg) => kg * 2.20462;
 export const lbsToKg = (lbs) => lbs / 2.20462;
 

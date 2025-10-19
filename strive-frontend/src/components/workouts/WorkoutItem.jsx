@@ -1,16 +1,23 @@
+// WorkoutItem.jsx
+
+// Imports
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteWorkout } from '../../features/workouts/workoutsSlice.js';
 import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+
+// Function Imports
+import { deleteWorkout } from '../../features/workouts/workoutsSlice.js';
+
+// Component Imports
 import SetList from './SetList.jsx';
 
 const WorkoutItem = ({ workout }) => {
+    const { user } = useSelector((state) => state.auth);
+
     const dispatch = useDispatch();
+
     const [workoutExpanded, setWorkoutExpanded] = useState(false);
     const [exerciseExpanded, setExerciseExpanded] = useState(false);
-
-    // Get current user
-    const { user } = useSelector((state) => state.auth);
 
     const onDelete = (e) => {
         e.stopPropagation();
@@ -103,4 +110,5 @@ const WorkoutItem = ({ workout }) => {
     );
 };
 
+// Export
 export default WorkoutItem;

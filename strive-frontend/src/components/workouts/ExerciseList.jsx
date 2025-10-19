@@ -1,6 +1,6 @@
 // ExerciseList.jsx
 
-// Imports
+// Function Imports
 import { formatWeight } from '../../utils/weightUnits.js';
 
 const ExerciseList = ({ exercises, useImperial }) => {
@@ -29,4 +29,5 @@ const ExerciseList = ({ exercises, useImperial }) => {
     );
 };
 
+// Export
 export default ExerciseList;

@@ -1,5 +1,4 @@
 // Login.jsx
-// File to hold Login page layout and functionality
 
 // Imports
 import { Link } from 'react-router-dom';
@@ -7,39 +6,23 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { login, reset, register } from '../features/auth/authSlice.js';
 
+// Function Imports
+import { login, reset, register } from '../features/auth/authSlice.js';
+import { generateRandomPassword } from '../utils/authUtils.js';
+
+// Component Imports
 import Spinner from '../components/Spinner.jsx';
 import AuthHeader from '../components/headers/AuthHeader.jsx';
 
-// Helper function
-function generateRandomPassword(length = 10) {
-  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lower = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const symbols = '!@#$%^&*()_+[]{}|;:,.<>?';
-
-  // Make sure we include at least one of each
-  const all = upper + lower + numbers + symbols;
-  let password = '';
-  password += upper[Math.floor(Math.random() * upper.length)];
-  password += lower[Math.floor(Math.random() * lower.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += symbols[Math.floor(Math.random() * symbols.length)];
-
-  // Fill the rest with random characters
-  for (let i = password.length; i < length; i++) {
-    password += all[Math.floor(Math.random() * all.length)];
-  }
-
-  // Shuffle the result so the first few aren't always predictable
-  password = password.split('').sort(() => 0.5 - Math.random()).join('');
-
-  return password;
-}
-
 // Login
 const Login = () => {
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+
+    // Nav and Dispatch initialisation
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
     // Setting fields to blank
     const [formData, setFormData] = useState({
         identifier: '',
@@ -48,12 +31,6 @@ const Login = () => {
 
     // Getting user data from form
     const { identifier, password } = formData; 
-
-    // Nav and Dispatch initialisation
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-
-    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);    // Destructure current state
 
     useEffect(() => {
         // Output error
@@ -83,7 +60,7 @@ const Login = () => {
         }))
     }
 
-    // When form is submitted
+    // Submit Login form
     const onSubmit = (e) => {
         e.preventDefault();
         
@@ -105,9 +82,12 @@ const Login = () => {
         dispatch(login(userData));
     }
 
+    // Log in as Guest account
     const loginGuest = () => {
+        // Generate guest username
         const username = `Guest${Date.now()}${Math.floor(Math.random() * 1000)}`;
         
+        // Generate guest user data
         const guestData = {
             username,
             email: `${username}@strive.com`,
@@ -119,7 +99,6 @@ const Login = () => {
         dispatch(register(guestData));
     }
 
-    // If loading, show spinner
     if(isLoading){
         return (
             <Spinner />
@@ -180,10 +159,7 @@ const Login = () => {
                     {/* Guest Login Button */}
                     <div className="mt-4 text-center">
                         <p className="text-sm text-[#EDF2F4] mb-4">Or</p>
-                        <button 
-                            onClick={loginGuest} 
-                            className="w-full rounded-lg bg-[#8D99AE] border-2 border-[#EF233C] px-4 py-2 font-semibold text-[#EDF2F4] transition hover:bg-[#EF233C]"
-                        >
+                        <button onClick={loginGuest} className="w-full rounded-lg bg-[#8D99AE] border-2 border-[#EF233C] px-4 py-2 font-semibold text-[#EDF2F4] transition hover:bg-[#EF233C]">
                             Continue as Guest
                         </button>
                         <p className="text-xs text-[#EDF2F4] mt-2 opacity-80">

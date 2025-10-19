@@ -20,5 +20,5 @@ const Header = () => {
     );
 };
 
-// Export Header
+// Export
 export default Header;

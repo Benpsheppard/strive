@@ -3,8 +3,11 @@
 // Imports
 import { FaPlus } from 'react-icons/fa';
 
+// Function Imports;
+import { getWeightUnit } from '../../utils/weightUnits.js';
+
 const SetForm = ({ currentSet, handleSetChange, addSet, user }) => {
-    const getWeightUnit = (useImperial) => (useImperial ? 'lbs' : 'kg');
+    const unit = getWeightUnit(user.useImperial);
 
     return (
         <div className="flex flex-col gap-2 mb-3 px-4 py-2 w-full shadow-lg rounded-lg">
@@ -15,7 +18,7 @@ const SetForm = ({ currentSet, handleSetChange, addSet, user }) => {
                     name="weight"
                     value={currentSet.weight}
                     onChange={handleSetChange}
-                    placeholder={`Weight (${getWeightUnit(user.useImperial)})`}
+                    placeholder={`Weight (${unit})`}
                     className="flex-1 min-w-0 rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-3 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                 />
                 <input

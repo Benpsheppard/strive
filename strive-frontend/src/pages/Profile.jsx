@@ -13,12 +13,14 @@ import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '..
 import Header from '../components/headers/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
+import WeightToggle from '../components/profile/WeightToggle.jsx';
 
 const Profile = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
     const { user, isLoading, isError, message } = useSelector((state) => state.auth);
     const { workouts } = useSelector((state) => state.workout);
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const onLogout = () => {
         dispatch(logout());
@@ -96,32 +98,9 @@ const Profile = () => {
                     </p>
 
                     {/* Weight Unit Toggle */}
-                    <div className="bg-[#2B2D42] rounded-lg p-4 mb-6">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[#EDF2F4] font-semibold">Weight Unit:</span>
-                            <div className="flex items-center gap-3">
-                                <span className={`text-sm ${!user.useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                                    KG
-                                </span>
-                                <button
-                                    onClick={onWeightToggle}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#EF233C] focus:ring-offset-2 ${
-                                        user.useImperial ? 'bg-[#EF233C]' : 'bg-[#8D99AE]'
-                                    }`}
-                                >
-                                    <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-[#EDF2F4] transition-transform ${
-                                            user.useImperial ? 'translate-x-6' : 'translate-x-1'
-                                        }`}
-                                    />
-                                </button>
-                                <span className={`text-sm ${user.useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                                    LBS
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
 
+                    {/* Account Control buttons */}
                     <div className="flex flex-col w-full items-center">
                         <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
                             Logout
@@ -135,7 +114,6 @@ const Profile = () => {
                                 Reset Account
                             </button>
                         </div>
-                        
                     </div>
                 </div>
             </div>

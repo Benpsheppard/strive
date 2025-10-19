@@ -1,3 +1,6 @@
+// Help.jsx
+
+// Component Imports
 import Header from "../components/headers/Header";
 import Footer from "../components/dashboard/Footer";
 
@@ -61,4 +64,5 @@ const Help = () => {
     );
 };
 
+// Export
 export default Help;

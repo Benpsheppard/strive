@@ -4,6 +4,7 @@
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 
+// Component Imports
 import Header from '../components/headers/Header.jsx';
 import Footer from '../components/dashboard/Footer.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
@@ -64,7 +65,10 @@ const Contact = () => {
                     <h1 className="text-[#EDF2F4] text-3xl font-semibold text-center mb-6">
                         Contact Us
                     </h1>
+
+                    {/* Contact Form */}
                     <form onSubmit={onSubmit} className="space-y-4">
+
                         {/* Name */}
                         <div>
                             <label className="block text-[#EDF2F4] mb-1">

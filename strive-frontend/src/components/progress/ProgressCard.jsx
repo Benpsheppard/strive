@@ -1,3 +1,5 @@
+// ProgressCard.jsx
+
 const ProgressCard = ({ title, value }) => {
     return (
         <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center transform transition-transform duration-300 hover:scale-105">

@@ -1,13 +1,15 @@
 // Progress.jsx
-// File to hold Progress page layout and functionality
 
 // Imports
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
+
+// Function Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
 import { formatWeight } from '../utils/weightUnits.js';
 
+// Component Imports
 import Header from '../components/headers/Header.jsx';
 import Spinner from '../components/Spinner.jsx';
 import PBChart from '../components/progress/PBChart.jsx';
@@ -18,11 +20,11 @@ import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx';
 import GuestHeader from '../components/headers/GuestHeader.jsx';
 
 const Progress = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-
     const { user } = useSelector((state) => state.auth);
     const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (isError) {
@@ -129,5 +131,5 @@ const Progress = () => {
     )
 };
 
-// Export Progress
+// Export
 export default Progress;

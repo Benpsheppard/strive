@@ -1,3 +1,5 @@
+// exerciseUtils.js
+
 // Normalise helper
 export const normaliseExercise = (name = '') => {
   return name

@@ -1,3 +1,5 @@
+// Footer.jsx
+
 const Footer = () => {
     return (
         <footer className="bg-[#2B2D42] text-[#8D99AE] py-6">
@@ -21,5 +23,5 @@ const Footer = () => {
     )
 };
 
-
+// Export
 export default Footer;
