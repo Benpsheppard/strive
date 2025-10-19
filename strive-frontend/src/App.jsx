@@ -15,6 +15,7 @@ const Register = lazy(() => import('./pages/Register.jsx'));
 const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'));
 const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'));
 const Progress = lazy(() => import('./pages/Progress.jsx'));
+const Games = lazy(() => import('./pages/Games.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
@@ -36,6 +37,7 @@ const App = () => {
               <Route path='/new-workout' element={<NewWorkout />} />
               <Route path='/prev-workouts' element={<PrevWorkouts />} />
               <Route path='/progress' element={<Progress />} />
+              <Route path='/games' element={<Games />} />
               <Route path='/contact' element={<Contact />} />
               <Route path='/profile' element={<Profile />} />
               <Route path='/privacy-policy' element={<PrivacyPolicy />} />

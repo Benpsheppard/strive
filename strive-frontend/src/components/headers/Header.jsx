@@ -31,6 +31,7 @@ const Header = () => {
                         <li><Link to="/new-workout" className={navOps}>New Workout</Link></li>
                         <li><Link to="/prev-workouts" className={navOps}>Previous Workouts</Link></li>
                         <li><Link to="/progress" className={navOps}>Progress</Link></li>
+                        <li><Link to="/games" onClick={() => setIsOpen(false)} className={navOps}>Games</Link></li>
                         <li><Link to="/contact" className={navOps}>Contact</Link></li>
                         <li>
                             {user ? (
@@ -61,6 +62,7 @@ const Header = () => {
                         <li><Link to="/new-workout" onClick={() => setIsOpen(false)} className={navOps}>New Workout</Link></li>
                         <li><Link to="/prev-workouts" onClick={() => setIsOpen(false)} className={navOps}>Previous Workouts</Link></li>
                         <li><Link to="/progress" onClick={() => setIsOpen(false)} className={navOps}>Progress</Link></li>
+                        <li><Link to="/games" onClick={() => setIsOpen(false)} className={navOps}>Games</Link></li>
                         <li><Link to="/contact" onClick={() => setIsOpen(false)} className={navOps}>Contact</Link></li>
                         <li>
                             {user ? (
