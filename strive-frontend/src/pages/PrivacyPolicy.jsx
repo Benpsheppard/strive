@@ -33,7 +33,22 @@ const PrivacyPolicy = () => {
                 <ul>
                     <li> - Enable login and user account</li>
                     <li> - Save and display your workouts</li>
+                    <li> - Generate AI quests to promote progress and consistency</li>
                 </ul>
+                {/* AI and Personalization */}
+                <h2 className="text-2xl mt-6 mb-2">AI and Personalized Quests</h2>
+                <p>
+                    Strive uses artificial intelligence (AI) to generate personalized quests, challenges, and recommendations based on your workout data. 
+                    This helps tailor the app experience to your goals, workout history, and performance trends.
+                </p>
+                <p>
+                    The AI system processes data such as your logged exercises, workout frequency, and personal bests to suggest relevant quests and challenges. 
+                    No personal information is shared externally, and all processing occurs securely within our system.
+                </p>
+                <p>
+                    You can choose not to participate in AI-generated quests at any time by contacting <a href="mailto:ben@bensheppard.co.uk" className="text-[#EF233C]">ben@bensheppard.co.uk</a>.
+                </p>
+
                 {/* How data is stored */}
                 <h2 className="text-2xl mt-6 mb-2">How We Store Your Data</h2>
                 <p>

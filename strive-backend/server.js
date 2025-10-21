@@ -10,6 +10,7 @@ const helmet = require('helmet');                                       // impor
 const connectDB = require('./config/db.js');                            // import database configuration file
 const { workoutRouter } = require('./routes/workoutRoutes.js');         // import workout routes
 const { userRouter } = require('./routes/userRoutes.js');               // import user routes
+const { questRouter } = require('./routes/questRoutes.js');
 const { errorHandler } = require('./middleware/errorMiddleware.js');    // import error handler middleware
 
 // Variables
@@ -43,12 +44,14 @@ app.use(
   })
 );
 
-
 // Workouts routes
 app.use('/api/workouts', workoutRouter);
 
 // User routes
 app.use('/api/users', userRouter);
+
+// Quest routes
+app.use('/api/quests', questRouter);
 
 // Deployment configuration
 if (process.env.NODE_ENV === 'production') {

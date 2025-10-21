@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 
 // Function Imports
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { checkQuestCompletion } from '../features/quests/questSlice.js';
 import { detectNewPBs } from '../utils/pbDetection.js';
 import { parseWeight, formatWeight } from '../utils/weightUnits.js';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
@@ -48,6 +49,7 @@ const TAGLINES = [
 const NewWorkout = () => {
   const { user } = useSelector((state) => state.auth);
   const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
+  const { quests } = useSelector((state) => state.quests);
 
   // Redux & Routing
   const dispatch = useDispatch();
@@ -244,36 +246,43 @@ const NewWorkout = () => {
 
     try {
       // Add fixed Strive Points for completing workout
+      let SP_REWARD = 0;
       const WORKOUT_COMPLETE_SP = 200;
-      const previousLevel = user.level;
+      const PB_REWARD_SP = 500;
 
-      await dispatch(addPoints({ userId: user._id, amount: WORKOUT_COMPLETE_SP })).unwrap();
+      // Detect PBs
+      const newPBs = detectNewPBs(workoutData, workouts);
 
       // Save workout
       await dispatch(createWorkout(workoutData)).unwrap();
       toast.success(`Workout saved successfully! +${WORKOUT_COMPLETE_SP} SP!`);
 
-      // Detect new PBs and reward bonus SP
-      const newPBs = detectNewPBs(workoutData, workouts);
-      if (newPBs.length > 0) {
-        const PB_REWARD_SP = 500;
+      SP_REWARD += WORKOUT_COMPLETE_SP;
 
+      // Detect new PBs and reward bonus SP
+      if (newPBs.length > 0) {
         for (const pb of newPBs) {
+          SP_REWARD += PB_REWARD_SP;
           const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
           const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
-
-          // Award SP for each PB
-          const pbSP = await dispatch(addPoints({ userId: user._id, amount: PB_REWARD_SP })).unwrap();
 
           // Show PB + SP reward toast
           toast.success(
             `New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}! +${PB_REWARD_SP} SP!`
           );
+        }
+      }
 
-          // Check if this PB triggered a level-up
-          if (pbSP.level > previousLevel) {
-            toast.success(`🎉 Level Up! You are now Level ${pbSP.level}!`);
-          }
+      // Check for completed quests
+      const workoutForQuests = { ...workoutData, date: new Date().toISOString() };
+      await dispatch(checkQuestCompletion(workoutForQuests));
+
+      // Apply all SP at once
+      if (SP_REWARD > 0) {
+        const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap();
+        toast.success(`Total +${SP_REWARD} SP earned this session!`);
+        if (result.level > user.level) {
+          toast.success(`🎉 Level Up! You are now Level ${result.level}!`);
         }
       }
 
