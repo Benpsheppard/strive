@@ -32,7 +32,6 @@ const Header = () => {
                         <li><Link to="/prev-workouts" className={navOps}>Previous Workouts</Link></li>
                         <li><Link to="/progress" className={navOps}>Progress</Link></li>
                         <li><Link to="/games" onClick={() => setIsOpen(false)} className={navOps}>Games</Link></li>
-                        <li><Link to="/contact" className={navOps}>Contact</Link></li>
                         <li>
                             {user ? (
                                 <Link to='/profile' className="text-[#EF233C] hover:text-[#D90429] inline-block transform transition duration-200 hover:scale-110">
@@ -63,7 +62,6 @@ const Header = () => {
                         <li><Link to="/prev-workouts" onClick={() => setIsOpen(false)} className={navOps}>Previous Workouts</Link></li>
                         <li><Link to="/progress" onClick={() => setIsOpen(false)} className={navOps}>Progress</Link></li>
                         <li><Link to="/games" onClick={() => setIsOpen(false)} className={navOps}>Games</Link></li>
-                        <li><Link to="/contact" onClick={() => setIsOpen(false)} className={navOps}>Contact</Link></li>
                         <li>
                             {user ? (
                                 <Link to='/profile' onClick={() => setIsOpen(false)} className="text-[#EF233C] hover:text-[#D90429] inline-block transform transition duration-200 hover:scale-110">

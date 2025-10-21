@@ -3,6 +3,7 @@
 // Imports
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 // Function Imports
@@ -16,18 +17,29 @@ import QuestCard from '../components/games/QuestCard.jsx';
 import Spinner from '../components/Spinner.jsx';
 
 const Games = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user, isError, message } = useSelector((state) => state.auth);
     const { quests, isLoading } = useSelector((state) => state.quests);
     const { contest } = useSelector((state) => state.contest);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [questsCompleted, setQuestsCompleted] = useState(0);
 
-    const isLevelFive = user.level >= 5;
+    const isLevelFive = user?.level >= 5;
+
     const hasGeneratedRef = useRef(false);
 
     useEffect(() => {
+        if (isError) {
+            console.log(message);
+        }
+
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
         dispatch(getContest());
 
         if (!isLevelFive || hasGeneratedRef.current) return;
@@ -39,7 +51,7 @@ const Games = () => {
                 dispatch(generateQuests());
             }
         });
-    }, [dispatch, isLevelFive]);
+    }, [user, navigate, dispatch, isLevelFive]);
 
     const onQuestClick = async (quest) => {
         if (quest.status === 'completed') {
@@ -69,7 +81,7 @@ const Games = () => {
         }
     };
 
-    if (isLoading) {
+    if (isLoading || !user) {
         return <Spinner />
     }
 
@@ -83,8 +95,8 @@ const Games = () => {
 
                 {/* Top Banner */}
                 <div className="w-full rounded-lg bg-[#8D99AE] text-[#EDF2F4] text-center font-semibold px-6 py-6">
-                    <h1 className="text-[#EF233C] text-2xl">{user.username}</h1>
-                    <p>Level {user.level}, {user.strivepoints} SP, Quests completed: {questsCompleted}</p>
+                    <h1 className="text-[#EF233C] text-2xl">{user?.username}</h1>
+                    <p>Level {user?.level}, {user?.strivepoints} SP, Quests completed: {questsCompleted}</p>
                 </div>
 
                 {/* Quests Section */}
