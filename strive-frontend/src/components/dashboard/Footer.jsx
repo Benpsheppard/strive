@@ -8,14 +8,24 @@ const Footer = () => {
                     <h2 className="text-lg font-bold text-[#EDF2F4]">Strive</h2>
                     <p className="text-sm">Build habits. Track progress. Stay consistent.</p>
                 </div>
-                <div className="grid grid-cols-3 gap-4 md:flex md:space-x-6 md:gap-0">
-                    <a href="/profile" className="hover:text-[#EF233C] text-center md:text-left">Profile</a>
-                    <a href="/prev-workouts" className="hover:text-[#EF233C] text-center md:text-left">Workouts</a>
-                    <a href="/contact" className="hover:text-[#EF233C] text-center md:text-left">Contact</a>
-                    <a href="/privacy-policy" className="hover:text-[#EF233C] text-center md:text-left">Privacy Policy</a>
-                    <a href="/help" className="hover:text-[#EF233C] text-center md:text-left">Help</a>
+
+                {/* Links section */}
+                <div className="flex flex-col items-center space-y-2 md:flex-row md:space-y-0 md:space-x-6">
+                    {/* Top row */}
+                    <div className="flex justify-center space-x-4">
+                        <a href="/profile" className="hover:text-[#EF233C]">Profile</a>
+                        <a href="/prev-workouts" className="hover:text-[#EF233C]">Workouts</a>
+                        <a href="/contact" className="hover:text-[#EF233C]">Contact</a>
+                    </div>
+
+                    {/* Bottom row */}
+                    <div className="flex justify-center space-x-4">
+                        <a href="/privacy-policy" className="hover:text-[#EF233C]">Privacy Policy</a>
+                        <a href="/help" className="hover:text-[#EF233C]">Help</a>
+                    </div>
                 </div>
             </div>
+
             <div className="text-center text-xs text-gray-500 mt-4">
                 © 2025 Strive. All rights reserved.
             </div>
@@ -23,5 +33,4 @@ const Footer = () => {
     )
 };
 
-// Export
 export default Footer;
