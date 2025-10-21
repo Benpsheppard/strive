@@ -2,16 +2,21 @@
 // File to run server for Strive
 
 // Imports
-const express = require('express');                                     // import express
-const dotenv = require('dotenv').config();                              // allow reading of .env file
-const colors = require('colors');                                       // import colors for CLI aesthetics
-const path = require('path');                                           // import path module
-const helmet = require('helmet');                                       // import helmet for http security
-const connectDB = require('./config/db.js');                            // import database configuration file
-const { workoutRouter } = require('./routes/workoutRoutes.js');         // import workout routes
-const { userRouter } = require('./routes/userRoutes.js');               // import user routes
+const express = require('express');                                     
+const dotenv = require('dotenv').config();                             
+const colors = require('colors');                                   
+const path = require('path');                                          
+const helmet = require('helmet');  
+
+// Function Imports
+const connectDB = require('./config/db.js');                       
+const { errorHandler } = require('./middleware/errorMiddleware.js');   
+
+// Router Imports
+const { workoutRouter } = require('./routes/workoutRoutes.js');        
+const { userRouter } = require('./routes/userRoutes.js');              
 const { questRouter } = require('./routes/questRoutes.js');
-const { errorHandler } = require('./middleware/errorMiddleware.js');    // import error handler middleware
+const { contestRouter } = require('./routes/contestRoutes.js');
 
 // Variables
 const port = process.env.PORT || 5050;  // port from .env file or default to 5050
@@ -52,6 +57,9 @@ app.use('/api/users', userRouter);
 
 // Quest routes
 app.use('/api/quests', questRouter);
+
+// Contest routes
+app.use('/api/contests', contestRouter);
 
 // Deployment configuration
 if (process.env.NODE_ENV === 'production') {
