@@ -15,7 +15,7 @@ const QuestCard = ({ quest, onClick }) => {
         <div
             onClick={onClick} className={`rounded-lg p-4 text-[#EDF2F4] shadow-md font-semibold cursor-pointer hover:shadow-xl transition-shadow duration-300 ${cardColour}`}
         >
-            <h3 className="text-lg font-bold mb-2">{title}</h3>
+            <h3 className="text-lg text-[#EF233C] font-bold mb-2">{title}</h3>
             <p className="mb-2">{description}</p>
 
             <div className="flex justify-between text-sm text-gray-200">

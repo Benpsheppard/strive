@@ -107,6 +107,13 @@ const Games = () => {
                         </>
                     )}
                 </div>
+
+                {/* Monthly Contest Section */}
+                 <div className="mt-6 w-full rounded-lg bg-[#8D99AE] text-[#EDF2F4] text-center font-semibold px-6 py-6">
+                    <h2 className="text-[#EF233C] text-xl mb-2">Monthly Contest</h2>
+
+                    <p>Monthly Contests coming soon...</p>
+                </div>
             </section>
         </>
     );
