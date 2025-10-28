@@ -49,7 +49,6 @@ const TAGLINES = [
 const NewWorkout = () => {
   const { user } = useSelector((state) => state.auth);
   const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
-  const { quests } = useSelector((state) => state.quests);
 
   // Redux & Routing
   const dispatch = useDispatch();
@@ -323,7 +322,7 @@ const NewWorkout = () => {
     <section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
       <Header />
       {user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
-      <section className="w-full px-4 sm:px-0 flex flex-col items-center mt-6">
+      <section className="w-full px-4 sm:px-0 flex flex-col items-center mt-15">
         {!started && (
           <div>
             <div className="text-6xl font-semibold text-[#EDF2F4]">
