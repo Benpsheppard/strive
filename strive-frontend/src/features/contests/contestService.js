@@ -6,15 +6,35 @@ import axios from 'axios';
 // API URL
 const API_URL = '/api/contests/';
 
-// Get the current monthly contest
-const getContest = async () => {
-  const response = await axios.get(API_URL + 'current');
+// Get current contest
+const getContest = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.get(API_URL + 'current', config);
   return response.data;
 };
+
+// Get current contest's leaderboard
+const getLeaderboard = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.get(API_URL + 'leaderboard', config);
+  return response.data;
+};
+
 
 // Export
 const contestService = {
   getContest,
+  getLeaderboard
 };
 
 export default contestService;

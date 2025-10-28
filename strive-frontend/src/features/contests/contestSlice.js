@@ -7,7 +7,9 @@ import contestService from './contestService';
 // Initial State
 const initialState = {
   contest: null,
+  leaderboard: { topFive: [], user: null},
   isLoading: false,
+  isLeaderboardLoading: false,
   isSuccess: false,
   isError: false,
   message: '',
@@ -16,7 +18,8 @@ const initialState = {
 // Get current contest
 export const getContest = createAsyncThunk('contests/getCurrent', async (_, thunkAPI) => {
     try {
-      return await contestService.getContest();
+      const token = thunkAPI.getState().auth.user.token; // get token from Redux state
+      return await contestService.getContest(token);
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) ||
@@ -24,6 +27,20 @@ export const getContest = createAsyncThunk('contests/getCurrent', async (_, thun
         error.toString();
       return thunkAPI.rejectWithValue(message);
     }
+});
+
+// Get current contest's leaderboard
+export const getLeaderboard = createAsyncThunk('contest/getLeaderboard', async (_, thunkAPI) => {
+  try {
+    const token = thunkAPI.getState().auth.user.token; // get token from Redux state
+    return await contestService.getLeaderboard(token);
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
 });
 
 export const contestSlice = createSlice({
@@ -47,6 +64,18 @@ export const contestSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         state.contest = null;
+      })
+      .addCase(getLeaderboard.pending, (state) => {
+        state.isLeaderboardLoading = true;
+      })
+      .addCase(getLeaderboard.fulfilled, (state, action) => {
+        state.isLeaderboardLoading = false;
+        state.leaderboard = action.payload;
+      })
+      .addCase(getLeaderboard.rejected, (state, action) => {
+        state.isLeaderboardLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });

@@ -38,8 +38,10 @@ const contestSchema = mongoose.Schema({
     month: {
         type: String,
         enum: [
-            'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-            'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+            'jan', 'feb', 'mar', 
+            'apr', 'may', 'jun',
+            'jul', 'aug', 'sep', 
+            'oct', 'nov', 'dec'
         ]
     },
     // Active
