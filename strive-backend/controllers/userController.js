@@ -2,12 +2,15 @@
 // File to handle user functionality
 
 // Imports
-const asyncHandler = require('express-async-handler');    // Import asyncHandler
-const User = require('../models/userModel.js');      // Import user schema model 
-const jwt = require('jsonwebtoken');    // Import JWT for authentication
-const bcrypt = require('bcryptjs');     // Import bcrypt for hashing passwords
-const validator = require('validator');     // Import validator for input validation
-const Workout = require('../models/workoutModel.js'); // Import workout model
+const asyncHandler = require('express-async-handler');
+const jwt = require('jsonwebtoken');  
+const bcrypt = require('bcryptjs');    
+const validator = require('validator');    
+
+// Model Imports
+const User = require('../models/userModel.js');    
+const Workout = require('../models/workoutModel.js'); 
+const Quest = require('../models/questModel.js');
 
 // @desc    Register user
 // @route   POST /api/users
@@ -75,7 +78,9 @@ const registerUser = asyncHandler(async (req, res) => {
             useImperial: user.useImperial,
             createdAt: user.createdAt,
             token: genToken(user._id),
-            isGuest: user.isGuest
+            isGuest: user.isGuest,
+            level: user.level,
+            strivepoints: user.strivepoints
         })
     } else {
         res.status(400);
@@ -152,12 +157,15 @@ const deleteUser = asyncHandler(async (req, res) => {
     // Delete all workouts associated with the user
     await Workout.deleteMany({ user: req.params.id });
 
+    // Delete all quests associated with the user
+    await Quest.deleteMany({ user: req.params.id });
+
     // Delete user
     await user.deleteOne();
 
     res.status(200).json({ 
         id: req.params.id,
-        message: 'User and associated workouts deleted successfully' 
+        message: 'User and associated data deleted successfully' 
     });
 });
 
