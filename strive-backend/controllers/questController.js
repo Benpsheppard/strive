@@ -8,187 +8,11 @@ const Workout = require('../models/workoutModel');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// @desc    Generate three quests
-// @route   POST /api/quests/generate-quests
-// @access  Private
-const genQuests = asyncHandler(async (req, res) => {
-    const { userId } = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) {
-        res.status(404);
-        throw new Error('User not found');
-    }
-
-    let existingQuests = await Quest.find({ user: userId, expiry: { $gte: new Date() } });
-    if (existingQuests.length === 0) {
-        await new Promise(resolve => setTimeout(resolve, 300)); // wait 0.3s
-        existingQuests = await Quest.find({ user: userId, expiry: { $gte: new Date() } });
-    }
-
-    if (existingQuests.length > 0) {
-        return res.status(200).json({
-            message: "Active quests already exist — returning existing ones.",
-            quests: existingQuests
-        });
-    }
-
-    const recentWorkouts = await Workout.find({ user: userId })
-        .sort({ date: -1 })
-        .limit(10);
-
-    if (recentWorkouts.length === 0) {
-        res.status(400);
-        throw new Error('No workouts found for this user');
-    }
-
-    const summary = recentWorkouts.map(w => ({
-        date: w.date,
-        exercises: w.exercises.map(e => ({
-            name: e.name,
-            sets: e.sets,
-            reps: e.reps,
-            weight: e.weight
-        }))
-    }));
-
-    const unitSystem = user.useImperial ? "imperial (lbs)" : "metric (kg)";
-
-    // --- MOCK MODE ---
-    if (process.env.USE_MOCK_AI === 'true') {
-        const mockQuests = [
-            {
-                title: "Iron Resolve",
-                duration: "weekly",
-                difficulty: "medium",
-                description: "Complete 3 full-body sessions this week with consistent effort."
-            },
-            {
-                title: "Momentum Maker",
-                duration: "daily",
-                difficulty: "easy",
-                description: "Add one extra set to your favourite lift today."
-            },
-            {
-                title: "Titan's Challenge",
-                duration: "monthly",
-                difficulty: "hard",
-                description: "Increase your squat PR by 5% before the month ends."
-            }
-        ];
-
-        const questsData = mockQuests.map(q => ({
-            user: userId,
-            title: q.title,
-            duration: q.duration,
-            difficulty: q.difficulty.toLowerCase(),
-            description: q.description,
-            expiry: new Date(Date.now() +
-                (q.duration === 'daily' ? 1 : q.duration === 'weekly' ? 7 : 30) * 24 * 60 * 60 * 1000)
-        }));
-
-        const savedQuests = await Quest.insertMany(questsData);
-        return res.status(200).json({
-            message: "Mock quests generated!",
-            quests: savedQuests
-        });
-    }
-
-    // --- ANTHROPIC CLAUDE API CALL ---
-    const prompt = `You are an AI fitness coach. 
-        The user tracks their workouts using the ${unitSystem} system, so anything you generate should reflect that.
-        Based on the user's recent workouts, generate 3 creative fitness quests.
-        Each quest should be in valid JSON format with these fields:
-        [
-            {
-                "title": "string",
-                "duration": "daily | weekly | monthly",
-                "difficulty": "light | easy | medium | hard | impossible",
-                "description": "string",
-                "completion": {
-                    "exercise": "String",
-                    "weight": "Number",
-                    "reps": "Number"
-                }
-            }
-        ]
-
-        The "title" should be short (1 - 6 words), creative and inspiring.
-        The "description" should be 1 - 2 sentences with a clear objective.
-        The "description" should follow a similar theme to the title and encourage the user to complete the quest. 
-        The "description" should outline what the user needs to complete in order to complete the quest.
-        The "difficulty" should be one of "light", "easy", "medium", "hard", or "impossible"
-        The "difficulty" should be determined by looking at the users current progress.
-        The "duration" should reflect the "difficulty", the easier quests should be daily or weekly and harder quests should be weekly or monthly.
-        The "duration" should be one of "daily", "weekly" or "monthly".
-        The "completion" object must include the exact exercise name.
-        The first letter of each word in the exercise name must be capitalised (e.g. "Bicep Curls", "Leg Press").
-        If an exercise contains a hyphen, treat the entire hyphenated term as one word — only the first letter before the hyphen should be capitalised, and the rest remain lowercase (e.g. "T-bar Row", not "T-Bar Row" or "T-Bar row").
-        Do not alter or invent exercise names — always use the same capitalization and spelling as shown in the user's workout history.
-        Respond ONLY with a valid JSON array of 3 objects, no extra text. Do NOT include anything other than the outlined fields above. Do NOT include explanations, quotes or notes.
-
-        User workouts: ${JSON.stringify(summary)}
-
-        Remember: Exercise names in quests must match exactly with those in the user's workouts — including capitalization and hyphen usage (e.g., "T-bar Row", "Bicep Curls").
-    `;
-
-    const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 1024,
-        messages: [
-            {
-                role: 'user',
-                content: prompt
-            }
-        ]
-    });
-
-    let text = response.content[0].text;
-
-    // Remove markdown code blocks if present
-    text = text
-        .replace(/```json\s*/gi, '')
-        .replace(/```\s*/gi, '')
-        .replace(/^\s*Here are.*?:/i, '')
-        .trim();
-
-    let questsArray;
-    try {
-        questsArray = JSON.parse(text);
-    } catch (error) {
-        console.error("Failed to parse AI response: ", text)
-        res.status(500);
-        throw new Error("Failed to parse AI response: ", text);
-    }
-
-    const questsData = questsArray.map(q => ({
-        user: userId,
-        title: q.title,
-        duration: q.duration,
-        difficulty: q.difficulty.toLowerCase(),
-        description: q.description,
-        expiry: new Date(Date.now() +
-            (q.duration === 'daily' ? 1 : q.duration === 'weekly' ? 7 : 30) * 24 * 60 * 60 * 1000),
-        completion: {
-            exercise: q.completion.exercise,
-            weight: q.completion.weight,
-            reps: q.completion.reps
-        }
-    }));
-
-    const savedQuests = await Quest.insertMany(questsData);
-
-    res.status(200).json({
-        message: "Three quests generated!",
-        quests: savedQuests
-    });
-});
-
-// @desc    Generate one quest
+// @desc    Generate a quest
 // @route   POST /api/quests/generate-quest
 // @access  Private
 const genQuest = asyncHandler(async (req, res) => {
-    const { userId } = req.body;
+    const userId = req.user.id;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -349,28 +173,10 @@ const getQuests = asyncHandler(async (req, res) => {
     // Fetch quests that haven't expired
     const quests = await Quest.find({
         user: userId,
-        expiry: { $gte: new Date() }
-    }).sort({ expiry: 1 });
+    }).sort({ status: 1, expiry: 1 });
 
     res.status(200).json({
         quests
-    });
-});
-
-// @desc    Get a single quest by ID
-// @route   GET /api/quests/quest/:questId
-// @access  Private
-const getQuest = asyncHandler(async (req, res) => {
-    const { questId } = req.params;
-
-    const quest = await Quest.findById(questId);
-    if (!quest) {
-        res.status(404);
-        throw new Error('Quest not found');
-    }
-
-    res.status(200).json({
-        quest
     });
 });
 
@@ -467,8 +273,7 @@ const updateExpiredQuests = async () => {
 
 
 module.exports = { 
-    genQuests, genQuest, 
-    getQuests, getQuest,
+    genQuest, getQuests,
     completeQuest, deleteQuest,
     checkQuestCompletion 
 };

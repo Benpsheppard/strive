@@ -17,7 +17,6 @@ const initialState = {
 export const getQuests = createAsyncThunk('quests/getAll', async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.user.token;
-    const userId = thunkAPI.getState().auth.user._id;
     return await questService.getQuests(token);
   } catch (error) {
     const message =
@@ -28,27 +27,11 @@ export const getQuests = createAsyncThunk('quests/getAll', async (_, thunkAPI) =
   }
 });
 
-// Generate 3 quests
-export const generateQuests = createAsyncThunk('quests/createThree', async (_, thunkAPI) => {
-  try {
-    const token = thunkAPI.getState().auth.user.token;
-    const userId = thunkAPI.getState().auth.user._id;
-    return await questService.generateQuests(userId, token);
-  } catch (error) {
-    const message =
-      (error.response && error.response.data && error.response.data.message) ||
-      error.message ||
-      error.toString();
-    return thunkAPI.rejectWithValue(message);
-  }
-});
-
-// Generate 1 quest
+// Generate quest
 export const generateQuest = createAsyncThunk('quests/createOne', async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.user.token;
-    const userId = thunkAPI.getState().auth.user._id;
-    return await questService.generateQuest(userId, token);
+    return await questService.generateQuest(token);
   } catch (error) {
     const message =
       (error.response && error.response.data && error.response.data.message) ||
@@ -118,21 +101,6 @@ export const questSlice = createSlice({
         state.quests = action.payload;
       })
       .addCase(getQuests.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
-      })
-
-      // Generate 3 quests
-      .addCase(generateQuests.pending, (state) => { 
-        state.isLoading = true 
-      })
-      .addCase(generateQuests.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.quests = action.payload;
-      })
-      .addCase(generateQuests.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

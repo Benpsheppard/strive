@@ -7,9 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 // Function Imports
-import { getQuests, generateQuests, generateQuest, deleteQuest } from '../features/quests/questSlice';
+import { getQuests, generateQuest, deleteQuest } from '../features/quests/questSlice';
 import { addPoints } from '../features/auth/authSlice.js';
-import { getContest } from '../features/contests/contestSlice.js';
+import { getContest, getLeaderboard } from '../features/contests/contestSlice.js';
 
 // Component Imports
 import Header from '../components/headers/Header.jsx';
@@ -19,39 +19,60 @@ import Spinner from '../components/Spinner.jsx';
 const Games = () => {
     const { user, isError, message } = useSelector((state) => state.auth);
     const { quests, isLoading } = useSelector((state) => state.quests);
-    const { contest } = useSelector((state) => state.contest);
+    const { contest, leaderboard, isLeaderboardLoading } = useSelector((state) => state.contest);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const [questsCompleted, setQuestsCompleted] = useState(0);
 
+    // Unlock quests at level 5
     const isLevelFive = user?.level >= 5;
 
-    const hasGeneratedRef = useRef(false);
+    // Unlock contests at level 10
+    const isLevelTen = user?.level >= 10;
+
+    const hasInitialized = useRef(false);
 
     useEffect(() => {
-        if (isError) {
-            console.log(message);
-        }
-
         if (!user) {
             navigate('/login');
             return;
         }
 
+        // Only run once
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
+        // Get contest data
         dispatch(getContest());
+        dispatch(getLeaderboard());
 
-        if (!isLevelFive || hasGeneratedRef.current) return;
-
-        hasGeneratedRef.current = true;
-
-        dispatch(getQuests()).unwrap().then((fetchedQuests) => {
-            if (fetchedQuests && fetchedQuests.length === 0) {
-                dispatch(generateQuests());
-            }
-        });
-    }, [user, navigate, dispatch, isLevelFive]);
+        // Initialize quests if level 5+
+        if (user.level >= 5) {
+            const initQuests = async () => {
+                try {
+                    // Get existing quests
+                    const existing = await dispatch(getQuests()).unwrap();
+                    
+                    // Generate missing quests
+                    const needed = 3 - (existing?.length || 0);
+                    for (let i = 0; i < needed; i++) {
+                        await dispatch(generateQuest()).unwrap();
+                    }
+                    
+                    // Refresh quest list
+                    if (needed > 0) {
+                        await dispatch(getQuests()).unwrap();
+                    }
+                } catch (error) {
+                    console.error('Quest init failed:', error);
+                }
+            };
+            
+            initQuests();
+        }
+    }, [user, navigate, dispatch]);
 
     const onQuestClick = async (quest) => {
         if (quest.status === 'completed') {
@@ -64,6 +85,9 @@ const Games = () => {
             // Generate a new quest in its place
             await dispatch(generateQuest());
 
+            // Fetch all quests
+            await dispatch(getQuests());
+
             // Increment number of quests completed
             setQuestsCompleted(prev => prev + 1);
 
@@ -75,6 +99,9 @@ const Games = () => {
 
             // Generate a new quest in its place
             await dispatch(generateQuest());
+
+            // Fetch all quests
+            await dispatch(getQuests());
         } else {
             // Quest still active but not completed
             toast.info('Quest not completed yet! Keep working on it.');
@@ -107,6 +134,10 @@ const Games = () => {
                         <p>Reach level 5 to unlock Quests!</p>
                     )}
 
+                    {!user.workouts && (
+                        <p>You need to log workouts to generate Quests!</p>
+                    )}
+
                     {isLevelFive && quests?.length > 0 && (
                         <>
                         <p className="text-[#EDF2F4] text-xl mb-2">Complete your Quests and reap the rewards</p>
@@ -128,7 +159,11 @@ const Games = () => {
                 <div className="mt-6 mb-6 w-full rounded-lg bg-[#8D99AE] text-[#EDF2F4] text-center font-semibold px-6 py-6">
                     <h2 className="text-[#EF233C] text-2xl mb-4">Monthly Contest</h2>
 
-                    {contest ? (
+                    {!isLevelTen && (
+                        <p>Reach level 10 to unlock Monthly Contests!</p>
+                    )}
+
+                    {isLevelTen && contest && (
                         <>
                         <h3 className="text-3xl mb-2">{contest.name}</h3>
                         <p className="text-lg mb-4">{contest.description}</p>
@@ -147,30 +182,52 @@ const Games = () => {
                         {/* Rewards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 text-center">
                             <div className="bg-[#2B2D42] p-4 rounded-lg">
-                            <h4 className="text-[#FFD700] text-xl">🥇 1st</h4>
-                            <p>{contest.reward.first} SP</p>
+                                <h4 className="text-[#FFD700] text-xl">🥇 1st</h4>
+                                <p>{contest.reward.first} SP</p>
                             </div>
                             <div className="bg-[#2B2D42] p-4 rounded-lg">
-                            <h4 className="text-[#C0C0C0] text-xl">🥈 2nd</h4>
-                            <p>{contest.reward.second} SP</p>
+                                <h4 className="text-[#C0C0C0] text-xl">🥈 2nd</h4>
+                                <p>{contest.reward.second} SP</p>
                             </div>
                             <div className="bg-[#2B2D42] p-4 rounded-lg">
-                            <h4 className="text-[#CD7F32] text-xl">🥉 3rd</h4>
-                            <p>{contest.reward.third} SP</p>
+                                <h4 className="text-[#CD7F32] text-xl">🥉 3rd</h4>
+                                <p>{contest.reward.third} SP</p>
                             </div>
                         </div>
                         </>
-                    ) : (
-                        <p>No active contest this month. Check back soon!</p>
                     )}
                 </div>
 
                 {/* Contest Leaderboard */}
                 <div className="mt-6 mb-6 w-full rounded-lg bg-[#8D99AE] text-[#EDF2F4] text-center font-semibold px-6 py-6">
                     <h2 className="text-[#EF233C] text-2xl mb-4">Contest Leaderboard</h2>
-                    <p>Leaderboards coming soon!</p>
-                </div>
+                    {!isLevelTen && (
+                        <p>Reach level 10 to view Contest Leaderboards!</p>
+                    )}
 
+                    {isLeaderboardLoading ? (
+                        <Spinner />
+                    ) : isLevelTen && leaderboard.topFive && leaderboard.topFive.length > 0 && (
+                    <>
+                        <div className="bg-[#2B2D42] p-4 rounded-lg text-left max-w-md mx-auto">
+                        {leaderboard.topFive.map((u, i) => (
+                            <div key={i} className="flex justify-between py-2 border-b border-gray-600">
+                            <span>
+                                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`} {u.username} | <span className="text-[#EF233C]">{u.level}</span>
+                            </span>
+                            <span>{u.percentGain.toFixed(1)}%</span>
+                            </div>
+                        ))}
+                        </div>
+
+                        {leaderboard.user && !leaderboard.topFive.some(u => u.username === leaderboard.user.username) && (
+                        <div className="mt-4 text-center text-gray-200">
+                            Your Progress: {leaderboard.user.percentGain.toFixed(1)}%
+                        </div>
+                        )}
+                    </>
+                    )}
+                </div>
             </section>
         </>
     );

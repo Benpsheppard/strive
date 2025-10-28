@@ -6,23 +6,13 @@ import axios from 'axios'
 // API URL
 const API_URL = '/api/quests/'
 
-// Generate three quests
-const generateQuests = async (userId, token) => {
+// Generate quest
+const generateQuest = async (token) => {
   const config = {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const response = await axios.post(API_URL + 'generate-quests', { userId }, config);
-  return response.data.quests;
-}
-
-// Generate a single quest (e.g., when one is completed)
-const generateQuest = async (userId, token) => {
-  const config = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
-
-  const response = await axios.post(API_URL + 'generate-quest', { userId }, config);
+  const response = await axios.post(API_URL + 'generate-quest', null, config);
   return response.data.quest;
 }
 
@@ -33,6 +23,9 @@ const getQuests = async (token) => {
   };
 
   const response = await axios.get(API_URL, config);
+  console.log('getQuests FULL response:', response);
+  console.log('getQuests response.data:', response.data);
+  console.log('getQuests response.data.quests:', response.data.quests);
   return response.data.quests;
 }
 
@@ -64,7 +57,6 @@ const checkQuestCompletion = async (newWorkout, token) => {
 };
 
 const questService = {
-  generateQuests,
   generateQuest,
   getQuests,
   completeQuest,
