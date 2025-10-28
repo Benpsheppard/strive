@@ -25,14 +25,12 @@ const Profile = () => {
     const onLogout = () => {
         dispatch(logout());
         dispatch(reset());
-        navigate('/');
     }
 
     const onDeleteAccount = () => {
         if (window.confirm('Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.')) {
             dispatch(deleteUser(user._id));
             dispatch(reset());
-            navigate('/');
         }
     }
 
@@ -74,7 +72,7 @@ const Profile = () => {
             <Header />
             {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="container bg-[#2B2D42] min-h-screen mx-auto px-6 py-10">
-                <h1 className="text-3xl text-center mt-25 font-bold text-[#EDF2F4] mb-6">
+                <h1 className="text-6xl text-center font-bold text-[#EDF2F4] mb-6">
                     Profile
                 </h1>
 
