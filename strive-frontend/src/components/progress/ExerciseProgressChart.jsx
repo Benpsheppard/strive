@@ -47,7 +47,9 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             }
         });
 
-        return dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date));
+        return dataPoints
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(-10); // Keep only the last 10 workouts
     }, [selectedExercise, workouts, useImperial]);
 
     // Chart data
