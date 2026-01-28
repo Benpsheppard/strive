@@ -3,7 +3,7 @@
 // Imports
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 // Function Imports
@@ -20,6 +20,8 @@ const Games = () => {
     const { user, isError, message } = useSelector((state) => state.auth);
     const { quests, isLoading } = useSelector((state) => state.quests);
     const { contest, leaderboard, isLeaderboardLoading } = useSelector((state) => state.contest);
+
+    const NEEDS_UPDATING = true
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -110,6 +112,20 @@ const Games = () => {
 
     if (isLoading || !user) {
         return <Spinner />
+    }
+
+    if (NEEDS_UPDATING) {
+        return (
+            <>
+                <Header />
+                <div className='flex flex-col h-screen mt-20 text-[#EDF2F4] text-center justify-center items-center'>
+                    <h1>Needs Updating...</h1>
+                    <button className="bg-[#EF233C] hover:bg-red-700 text-[#EDF2F4] font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                        <Link to='/'>Return to Main page</Link>
+                    </button>
+                </div>
+            </>
+        )
     }
 
     return (
