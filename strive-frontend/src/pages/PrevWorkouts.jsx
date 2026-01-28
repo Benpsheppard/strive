@@ -58,8 +58,11 @@ const PrevWorkouts = () => {
                 {workouts.length > 0 ? 
                 (
                     <div className="w-full px-4">
-                        {workouts.map((workout) => (
-                            <WorkoutItem key={workout._id} workout={workout} />
+                        {workouts
+                            .slice()
+                            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))  // Sort workouts by most recent
+                            .map((workout) => (
+                                <WorkoutItem key={workout._id} workout={workout} />
                         ))}
                     </div>
                 ) : (
