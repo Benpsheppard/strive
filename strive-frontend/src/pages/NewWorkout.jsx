@@ -1,470 +1,477 @@
 // NewWorkout.jsx
 
 // Imports
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 // Function Imports
-import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
-import { checkQuestCompletion } from '../features/quests/questSlice.js';
-import { detectNewPBs } from '../utils/pbDetection.js';
-import { parseWeight, formatWeight } from '../utils/weightUnits.js';
-import { useLocalStorage } from '../hooks/useLocalStorage.js';
-import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js';
-import { addPoints } from '../features/auth/authSlice.js';
+import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+import { detectNewPBs } from '../utils/pbDetection.js'
+import { parseWeight, formatWeight } from '../utils/weightUnits.js'
+import { useLocalStorage } from '../hooks/useLocalStorage.js'
+import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js'
+import { addPoints } from '../features/auth/authSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import WorkoutItem from '../components/workouts/WorkoutItem.jsx';
-import Spinner from '../components/Spinner.jsx';
-import ExerciseList from '../components/workouts/ExerciseList.jsx';
-import SetList from '../components/workouts/SetList.jsx';
-import SetForm from '../components/workouts/SetForm.jsx';
-import GuestHeader from '../components/headers/GuestHeader.jsx';
+import Header from '../components/headers/Header.jsx'
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
+import Spinner from '../components/Spinner.jsx'
+import ExerciseList from '../components/workouts/ExerciseList.jsx'
+import SetList from '../components/workouts/SetList.jsx'
+import SetForm from '../components/workouts/SetForm.jsx'
+import GuestHeader from '../components/headers/GuestHeader.jsx'
 
 // Muscle groups
 const MUSCLE_GROUPS = [
-  'Chest',
-  'Back',
-  'Shoulders',
-  'Arms',
-  'Legs',
-  'Core',
-  'Full body',
-  'Other'
-];
+	'Chest',
+	'Back',
+	'Shoulders',
+	'Arms',
+	'Legs',
+	'Core',
+	'Full body',
+	'Other'
+]
 
 // Taglines
 const TAGLINES = [
-  'Consistency builds strength',
-  'One more rep, one step closer',
-  'No excuses, just results',
-  'Push your limits',
-  'Strive for progress, not perfection'
-];
+	'Consistency builds strength',
+	'One more rep, one step closer',
+	'No excuses, just results',
+	'Push your limits',
+	'Strive for progress, not perfection'
+]
 
 // New Workout
 const NewWorkout = () => {
-  const { user } = useSelector((state) => state.auth);
-  const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout);
+	const { user } = useSelector((state) => state.auth)
+	const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout)
 
-  // Redux & Routing
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+	// Redux & Routing
+	const dispatch = useDispatch()
+	const navigate = useNavigate()
 
-  // Local state persisted to localStorage
-  const [title, setTitle] = useLocalStorage('newWorkout_title', '');
-  const [exercises, setExercises] = useLocalStorage('newWorkout_exercises', []);
-  const [currentExercise, setCurrentExercise] = useLocalStorage('newWorkout_currentExercise', {name: '', musclegroup: '', description: '', sets: []});
-  const [currentSet, setCurrentSet] = useLocalStorage('newWorkout_currentSet', { weight: '', reps: '' });
-  const [started, setStarted] = useLocalStorage('newWorkout_started', false);
-  const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null);
+	// Local state persisted to localStorage
+	const [title, setTitle] = useLocalStorage('newWorkout_title', '')
+	const [exercises, setExercises] = useLocalStorage('newWorkout_exercises', [])
+	const [currentExercise, setCurrentExercise] = useLocalStorage('newWorkout_currentExercise', {name: '', musclegroup: '', description: '', sets: []})
+	const [currentSet, setCurrentSet] = useLocalStorage('newWorkout_currentSet', { weight: '', reps: '' })
+	const [started, setStarted] = useLocalStorage('newWorkout_started', false)
+	const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null)
 
-  // Use State
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredExercises, setFilteredExercises] = useState([]);
-  const [tagline, setTagline] = useState('');
+	// Use State
+	const [showSuggestions, setShowSuggestions] = useState(false)
+	const [filteredExercises, setFilteredExercises] = useState([])
+	const [tagline, setTagline] = useState('')
 
-  // Get unique exercises
-  const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts]);
+	// Get unique exercises
+	const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts])
 
-  // Most recent workout
-  const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null;
+	// Most recent workout
+	const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
-  // Ref to mark a click-selection
-  const selectingRef = useRef(false);
+	// Ref to mark a click-selection
+	const selectingRef = useRef(false)
 
-  // Ref to container for click-outside
-  const suggestionsContainerRef = useRef(null);
+	// Ref to container for click-outside
+	const suggestionsContainerRef = useRef(null)
   
-  // Reset workout state
-  const resetWorkoutState = () => {
-    setTitle('');
-    setExercises([]);
-    setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-    setCurrentSet({ weight: '', reps: '' });
-    setStarted(false);
-    setStartTime(null);
-    localStorage.removeItem('newWorkout_title');
-    localStorage.removeItem('newWorkout_exercises');
-    localStorage.removeItem('newWorkout_currentExercise');
-    localStorage.removeItem('newWorkout_currentSet');
-    localStorage.removeItem('newWorkout_started');
-    localStorage.removeItem('newWorkout_startTime');
-  }
+	// Reset workout state
+	const resetWorkoutState = () => {
+		setTitle('')
+		setExercises([])
+		setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] })
+		setCurrentSet({ weight: '', reps: '' })
+		setStarted(false)
+		setStartTime(null)
+		localStorage.removeItem('newWorkout_title')
+		localStorage.removeItem('newWorkout_exercises')
+		localStorage.removeItem('newWorkout_currentExercise')
+		localStorage.removeItem('newWorkout_currentSet')
+		localStorage.removeItem('newWorkout_started')
+		localStorage.removeItem('newWorkout_startTime')
+	}
 
-  // Filter suggestions when input changes
-  useEffect(() => {
-    if (selectingRef.current) {
-      selectingRef.current = false;
-      return;
-    }
+	// Filter suggestions when input changes
+	useEffect(() => {
+		if (selectingRef.current) {
+			selectingRef.current = false
+			return
+		}
 
-    const q = (currentExercise?.name || '').trim();
-    if (!q) {
-      if (filteredExercises.length > 0 || showSuggestions) {
-        setFilteredExercises([]);
-        setShowSuggestions(false);
-      }
-      return;
-    }
+		const q = (currentExercise?.name || '').trim()
+		if (!q) {
+			if (filteredExercises.length > 0 || showSuggestions) {
+				setFilteredExercises([])
+				setShowSuggestions(false)
+			}
+			return
+		}
 
-    const normalizedQ = normaliseExercise(q).toLowerCase();
+		const normalizedQ = normaliseExercise(q).toLowerCase()
 
-    const filtered = uniqueExercises.filter((ex) =>
-      ex.name.toLowerCase().includes(normalizedQ)
-    );
+		const filtered = uniqueExercises.filter((ex) =>
+			ex.name.toLowerCase().includes(normalizedQ)
+		)
 
-    // Only set state if it actually changed
-    if (!arraysEqualByName(filtered, filteredExercises)) {
-      setFilteredExercises(filtered);
-      setShowSuggestions(filtered.length > 0);
-    }
-  }, [currentExercise?.name, uniqueExercises]);
+		// Only set state if it actually changed
+		if (!arraysEqualByName(filtered, filteredExercises)) {
+			setFilteredExercises(filtered)
+			setShowSuggestions(filtered.length > 0)
+		}
+	}, [currentExercise?.name, uniqueExercises])
 
-  // Hide suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (suggestionsContainerRef.current && !suggestionsContainerRef.current.contains(e.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+	// Hide suggestions when clicking outside
+	useEffect(() => {
+		const handleClickOutside = (e) => {
+			if (suggestionsContainerRef.current && !suggestionsContainerRef.current.contains(e.target)) {
+				setShowSuggestions(false)
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside)
+		return () => document.removeEventListener('click', handleClickOutside)
+	}, [])
   
-  // Initial data & taglines effect
-  useEffect(() => {
-    if (isError) {
-      console.log(message);
-    }
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+	// Initial data & taglines effect
+	useEffect(() => {
+		if (isError) {
+			console.log(message)
+		}
 
-    dispatch(getWorkouts());
+		if (!user) {
+			navigate('/login')
+			return
+		}
 
-    let index = 0;
-    setTagline(TAGLINES[index]);
-    const interval = setInterval(() => {
-      index = (index + 1) % TAGLINES.length;
-      setTagline(TAGLINES[index]);
-    }, 4000);
+		dispatch(getWorkouts())
 
-    return () => {
-      clearInterval(interval);
-      dispatch(reset());
-    };
-  }, [user, message, isError, navigate, dispatch]);
+		let index = 0
+		setTagline(TAGLINES[index])
+		const interval = setInterval(() => {
+			index = (index + 1) % TAGLINES.length
+			setTagline(TAGLINES[index])
+		}, 4000)
 
-  // Select exercise from suggestions
-  const selectExercise = (exercise) => {
-    selectingRef.current = true;
-    setShowSuggestions(false);
-    setCurrentExercise((prev) => ({
-      ...prev,
-      name: exercise.name,
-      musclegroup: exercise.musclegroup,
-      description: exercise.description
-    }));
-  };
+		return () => {
+			clearInterval(interval)
+			dispatch(reset())
+		}
+	}, [user, message, isError, navigate, dispatch])
 
-  // Change input for exercise fields
-  const handleExerciseChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentExercise((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+	// Select exercise from suggestions
+	const selectExercise = (exercise) => {
+		selectingRef.current = true
+		setShowSuggestions(false)
+		setCurrentExercise((prev) => ({
+			...prev,
+			name: exercise.name,
+			musclegroup: exercise.musclegroup,
+			description: exercise.description
+		}))
+	}
 
-  // Change input for set fields
-  const handleSetChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentSet((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+	// Change input for exercise fields
+	const handleExerciseChange = (e) => {
+		const { name, value } = e.target
+		setCurrentExercise((prev) => ({
+			...prev,
+			[name]: value
+		}))
+	}
 
-  // Add set to current exercise
-  const addSet = () => {
-    if (!currentSet.weight || currentSet.weight <= 0) {
-      toast.error('Weight must be greater than 0.');
-      return;
-    }
-    if (!currentSet.reps || currentSet.reps <= 0) {
-      toast.error('Reps must be greater than 0.');
-      return;
-    }
-    const weightInKg = parseWeight(currentSet.weight, user.useImperial);
-    setCurrentExercise((prev) => ({
-      ...prev,
-      sets: [...(prev.sets || []), { weight: weightInKg, reps: Number(currentSet.reps) }]
-    }));
-    setCurrentSet({ weight: '', reps: '' });
-    toast.success('Set saved successfully!');
-  };
+	// Change input for set fields
+	const handleSetChange = (e) => {
+		const { name, value } = e.target
+		setCurrentSet((prev) => ({
+			...prev,
+			[name]: value
+		}))
+	}
 
-  // Add exercise to workout
-  const addExercise = () => {
-    if (!currentExercise.name.trim()) {
-      toast.error('Please enter an exercise name.');
-      return;
-    }
-    if (!currentExercise.musclegroup) {
-      toast.error(`Please select a muscle group for exercise "${currentExercise.name}".`);
-      return;
-    }
-    const normalizedExercise = {
-      ...currentExercise,
-      name: normaliseExercise(currentExercise.name)
-    };
-    setExercises((prev) => [...prev, normalizedExercise]);
-    setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] });
-    toast.success('Exercise saved successfully!');
-  };
+	// Add set to current exercise
+	const addSet = () => {
+		if (!currentSet.weight || currentSet.weight <= 0) {
+			toast.error('Weight must be greater than 0.')
+			return
+		}
 
-  // Submit Workout
-  const onSubmit = async () => {
-    if (!title.trim()) {
-      toast.error('Please enter a workout title.');
-      return;
-    }
-    if (exercises.length === 0) {
-      toast.error('Please add at least one exercise.');
-      return;
-    }
+		if (!currentSet.reps || currentSet.reps <= 0) {
+			toast.error('Reps must be greater than 0.')
+			return
+		}
 
-    const endTime = Date.now();
-    const durationMinutes = Math.round((endTime - startTime) / 60000);
-    const workoutData = { title, exercises, duration: durationMinutes };
+		const weightInKg = parseWeight(currentSet.weight, user.useImperial)
+		setCurrentExercise((prev) => ({
+			...prev,
+			sets: [...(prev.sets || []), { weight: weightInKg, reps: Number(currentSet.reps) }]
+		}))
 
-    try {
-      // Add fixed Strive Points for completing workout
-      let SP_REWARD = 0;
-      const WORKOUT_COMPLETE_SP = 200;
-      const PB_REWARD_SP = 500;
+		setCurrentSet({ weight: '', reps: '' })
+		toast.success('Set saved successfully!')
+	}
 
-      // Detect PBs
-      const newPBs = detectNewPBs(workoutData, workouts);
+	// Add exercise to workout
+	const addExercise = () => {
+		if (!currentExercise.name.trim()) {
+			toast.error('Please enter an exercise name.')
+			return
+		}
 
-      // Save workout
-      await dispatch(createWorkout(workoutData)).unwrap();
-      toast.success(`Workout saved successfully! +${WORKOUT_COMPLETE_SP} SP!`);
+		if (!currentExercise.musclegroup) {
+			toast.error(`Please select a muscle group for exercise "${currentExercise.name}".`)
+			return
+		}
 
-      SP_REWARD += WORKOUT_COMPLETE_SP;
+		const normalizedExercise = {
+			...currentExercise,
+			name: normaliseExercise(currentExercise.name)
+		}
 
-      // Detect new PBs and reward bonus SP
-      if (newPBs.length > 0) {
-        for (const pb of newPBs) {
-          SP_REWARD += PB_REWARD_SP;
-          const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial);
-          const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial);
+		setExercises((prev) => [...prev, normalizedExercise])
+		setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] })
+		toast.success('Exercise saved successfully!')
+	}
 
-          // Show PB + SP reward toast
-          toast.success(
-            `New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}! +${PB_REWARD_SP} SP!`
-          );
-        }
-      }
+	// Submit Workout
+	const onSubmit = async () => {
+		if (!title.trim()) {
+			toast.error('Please enter a workout title.')
+			return
+		}
 
-      // Check for completed quests
-      const workoutForQuests = { ...workoutData, date: new Date().toISOString() };
-      await dispatch(checkQuestCompletion(workoutForQuests));
+		if (exercises.length === 0) {
+			toast.error('Please add at least one exercise.')
+			return
+		}
 
-      // Apply all SP at once
-      if (SP_REWARD > 0) {
-        const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap();
-        toast.success(`Total +${SP_REWARD} SP earned this session!`);
-        if (result.level > user.level) {
-          toast.success(`🎉 Level Up! You are now Level ${result.level}!`);
-        }
-      }
+		const endTime = Date.now()
+		const durationMinutes = Math.round((endTime - startTime) / 60000)
+		const workoutData = { title, exercises, duration: durationMinutes }
 
-      // Reset workout state & localStorage
-      resetWorkoutState();
+		try {
+			// Add fixed Strive Points for completing workout
+			let SP_REWARD = 0
+			const WORKOUT_COMPLETE_SP = 200
+			const PB_REWARD_SP = 500
 
-    } catch (error) {
-      toast.error(error.message || 'Failed to save workout');
-    }
-  };
+			// Detect PBs
+			const newPBs = detectNewPBs(workoutData, workouts)
 
-  // Cancel workout
-  const onCancel = () => {
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      resetWorkoutState();
-      toast.success('Workout cancelled successfully');
-    }
-  };
+			// Save workout
+			await dispatch(createWorkout(workoutData)).unwrap()
+			toast.success(`Workout saved successfully! +${WORKOUT_COMPLETE_SP} SP!`)
 
-  // Start workout
-  const startWorkout = () => {
-    if (user.isGuest && workouts.length >= 5) {
-      toast.error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!');
-      return;
-    }
-    if (user.isGuest && workouts.length === 2) {
-      toast.info('Enjoying Strive? Consider creating a free account for unlimited workouts!');
-    }
-    setStarted(true);
-    setStartTime(Date.now());
-  };
+			SP_REWARD += WORKOUT_COMPLETE_SP
 
-  if (isLoading || !user) {
-    return <Spinner />;
-  }
+			// Detect new PBs and reward bonus SP
+			if (newPBs.length > 0) {
+				for (const pb of newPBs) {
+					SP_REWARD += PB_REWARD_SP
+					const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial)
+					const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial)
 
-  return (
-    <section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
-      <Header />
-      {user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
-      <section className="w-full px-4 sm:px-0 flex flex-col items-center mt-15">
-        {!started && (
-          <div>
-            <div className="text-6xl font-semibold text-[#EDF2F4]">
-              <h1>
-                Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
-              </h1>
-              <p className="text-lg italic text-[#EDF2F4] text-center mb-6 transition-opacity duration-500">{tagline}</p>
-            </div>
-            {lastWorkout && (
-              <div>
-                <h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
-                <WorkoutItem workout={lastWorkout} />
-              </div>
-            )}
-          </div>
-        )}
+					// Show PB + SP reward toast
+					toast.success(
+						`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}! +${PB_REWARD_SP} SP!`
+					)
+				}
+			}
 
-        <div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
-          {!started ? (
-            <div>
-              <h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
-              <button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-                Start Workout
-              </button>
-            </div>
-          ) : (
-            <>
-              <h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
-                - New <span className="text-[#EF233C]">Workout</span> -
-              </h1>
+			// Apply all SP at once
+			if (SP_REWARD > 0) {
+				const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap()
+				toast.success(`Total +${SP_REWARD} SP earned this session!`)
 
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Workout Title *"
-                className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                required
-              />
+				if (result.level > user.level) {
+					toast.success(`🎉 Level Up! You are now Level ${result.level}!`)
+				}
+			}
 
-              {/* Exercise Form */}
-              <div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
-                <div className="relative" ref={suggestionsContainerRef}>
-                  <input
-                    type="text"
-                    name="name"
-                    value={currentExercise.name}
-                    onChange={handleExerciseChange}
-                    placeholder="Exercise Name *"
-                    className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                    required
-                  />
+			// Reset workout state & localStorage
+			resetWorkoutState()
 
-                  {/* Suggestions dropdown */}
-                  {showSuggestions && (
-                    <ul
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
-                    >
-                      {filteredExercises.map((exercise, index) => (
-                        <li
-                          key={index}
-                          onClick={() => selectExercise(exercise)}
-                          className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer"
-                        >
-                          <div className="font-semibold">{exercise.name}</div>
-                          {exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+		} catch (error) {
+			toast.error(error.message || 'Failed to save workout')
+		}
+	}
 
-                <select
-                  name="musclegroup"
-                  value={currentExercise.musclegroup}
-                  onChange={handleExerciseChange}
-                  className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                  required
-                >
-                  <option value="" className="placeholder-gray-300">
-                    Select Muscle Group *
-                  </option>
-                  {MUSCLE_GROUPS.map((group) => (
-                    <option key={group} value={group}>
-                      {group}
-                    </option>
-                  ))}
-                </select>
+	// Cancel workout
+	const onCancel = () => {
+		if (window.confirm('Are you sure you want to delete this workout?')) {
+			resetWorkoutState()
+			toast.success('Workout cancelled successfully')
+		}
+	}
 
-                <input
-                  type="text"
-                  name="description"
-                  value={currentExercise.description}
-                  onChange={handleExerciseChange}
-                  placeholder="Description"
-                  className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                />
+	// Start workout
+	const startWorkout = () => {
+		if (user.isGuest && workouts.length >= 5) {
+			toast.error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
+			return
+		}
 
-                {/* Sets Form */}
-                <SetForm
-                  currentSet={currentSet}
-                  handleSetChange={handleSetChange}
-                  addSet={addSet}
-                  user={user}
-                />
+		if (user.isGuest && workouts.length === 2) {
+			toast.info('Enjoying Strive? Consider creating a free account for unlimited workouts!')
+		}
 
-                {/* Sets List */}
-                <SetList
-                  sets={currentExercise.sets}
-                  useImperial={user.useImperial}
-                  onSetsUpdate={() => {
-                    const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'));
-                    setCurrentExercise(updatedExercise);
-                  }}
-                />
+		setStarted(true)
+		setStartTime(Date.now())
+	}
 
-                {/* Add Exercise */}
-                <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                  Add Exercise
-                </button>
-              </div>
+	if (isLoading || !user) {
+		return <Spinner />
+	}
 
-              {/* Exercises List */}
-              <ExerciseList exercises={exercises} useImperial={user.useImperial} />
+	return (
+		<section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
+		<Header />
+		{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
+		<section className="w-full px-4 py-4 sm:px-0 flex flex-col items-center">
+			{!started && (
+			<div>
+				<div className="text-6xl font-semibold text-[#EDF2F4]">
+				<h1>
+					Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
+				</h1>
+				<p className="text-lg italic text-[#EDF2F4] text-center mb-6 transition-opacity duration-500">{tagline}</p>
+				</div>
+				{lastWorkout && (
+				<div>
+					<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
+					<WorkoutItem workout={lastWorkout} />
+				</div>
+				)}
+			</div>
+			)}
 
-              {/* Submit Workout */}
-              <div className="flex flex-col w-full items-center">
-                <button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
-                  End Workout
-                </button>
+			<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
+			{!started ? (
+				<div>
+				<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
+				<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
+					Start Workout
+				</button>
+				</div>
+			) : (
+				<>
+				<h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
+					- New <span className="text-[#EF233C]">Workout</span> -
+				</h1>
 
-                <button onClick={onCancel} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-                  Cancel Workout
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-    </section>
-  );
-};
+				<input
+					type="text"
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
+					placeholder="Workout Title *"
+					className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+					required
+				/>
 
-export default NewWorkout;
+				{/* Exercise Form */}
+				<div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
+					<div className="relative" ref={suggestionsContainerRef}>
+					<input
+						type="text"
+						name="name"
+						value={currentExercise.name}
+						onChange={handleExerciseChange}
+						placeholder="Exercise Name *"
+						className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+						required
+					/>
+
+					{/* Suggestions dropdown */}
+					{showSuggestions && (
+						<ul
+						onClick={(e) => e.stopPropagation()}
+						className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
+						>
+						{filteredExercises.map((exercise, index) => (
+							<li
+							key={index}
+							onClick={() => selectExercise(exercise)}
+							className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer"
+							>
+							<div className="font-semibold">{exercise.name}</div>
+							{exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
+							</li>
+						))}
+						</ul>
+					)}
+					</div>
+
+					<select
+					name="musclegroup"
+					value={currentExercise.musclegroup}
+					onChange={handleExerciseChange}
+					className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+					required
+					>
+					<option value="" className="placeholder-gray-300">
+						Select Muscle Group *
+					</option>
+					{MUSCLE_GROUPS.map((group) => (
+						<option key={group} value={group}>
+						{group}
+						</option>
+					))}
+					</select>
+
+					<input
+					type="text"
+					name="description"
+					value={currentExercise.description}
+					onChange={handleExerciseChange}
+					placeholder="Description"
+					className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+					/>
+
+					{/* Sets Form */}
+					<SetForm
+					currentSet={currentSet}
+					handleSetChange={handleSetChange}
+					addSet={addSet}
+					user={user}
+					/>
+
+					{/* Sets List */}
+					<SetList
+					sets={currentExercise.sets}
+					useImperial={user.useImperial}
+					onSetsUpdate={() => {
+						const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
+						setCurrentExercise(updatedExercise)
+					}}
+					/>
+
+					{/* Add Exercise */}
+					<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+					Add Exercise
+					</button>
+				</div>
+
+				{/* Exercises List */}
+				<ExerciseList exercises={exercises} useImperial={user.useImperial} />
+
+				{/* Submit Workout */}
+				<div className="flex flex-col w-full items-center">
+					<button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
+					End Workout
+					</button>
+
+					<button onClick={onCancel} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
+					Cancel Workout
+					</button>
+				</div>
+				</>
+			)}
+			</div>
+		</section>
+		</section>
+	)
+}
+
+export default NewWorkout
