@@ -51,6 +51,6 @@ const contestPool = [
     description: "Show all-round improvement — % increase across every muscle group.",
     musclegroups: ["Chest", "Back", "Legs", "Arms", "Shoulders", "Core", "Full body", "Other"]
   }
-];
+]
 
-module.exports = contestPool;
+module.exports = contestPool

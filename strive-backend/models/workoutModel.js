@@ -2,7 +2,7 @@
 // File to create workout schema
 
 // Imports
-const mongoose = require('mongoose');   // import mongoose
+const mongoose = require('mongoose')   // import mongoose
 
 // Exercise Schema
 const exerciseSchema = mongoose.Schema({
@@ -34,7 +34,7 @@ const exerciseSchema = mongoose.Schema({
     ] 
 }, {
     timestamps: true
-});
+})
 
 // Workout Schema
 const workoutSchema = mongoose.Schema({
@@ -63,6 +63,6 @@ const workoutSchema = mongoose.Schema({
     exercises: [exerciseSchema]
 }, {
     timestamps: true
-});
+})
 
-module.exports = mongoose.model('Workout', workoutSchema);
+module.exports = mongoose.model('Workout', workoutSchema)

@@ -1,7 +1,7 @@
 // contestProgressModel.js
 
 // Imports
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const contestProgressSchema = mongoose.Schema({
     // User reference
@@ -29,6 +29,6 @@ const contestProgressSchema = mongoose.Schema({
     }
 }, {
     timestamps: true
-});
+})
 
-module.exports = mongoose.model('ContestProgress', contestProgressSchema);
+module.exports = mongoose.model('ContestProgress', contestProgressSchema)

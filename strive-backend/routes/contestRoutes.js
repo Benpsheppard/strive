@@ -1,19 +1,19 @@
 // contestRoutes.js
 
 // Imports
-const express = require('express');
-const { protect } = require('../middleware/authMiddleware.js');
-const { getContest, getLeaderboard } = require('../controllers/contestController.js');
+const express = require('express')
+const { protect } = require('../middleware/authMiddleware.js')
+const { getContest, getLeaderboard } = require('../controllers/contestController.js')
 
 // Initialise router
-const contestRouter = express.Router();
+const contestRouter = express.Router()
 
-contestRouter.use(protect);
+contestRouter.use(protect)
 
 // Get current contest
-contestRouter.get('/current', getContest);
+contestRouter.get('/current', getContest)
 
 // Get current leaderboard
-contestRouter.get('/leaderboard', getLeaderboard);
+contestRouter.get('/leaderboard', getLeaderboard)
 
-module.exports = { contestRouter };
+module.exports = { contestRouter }

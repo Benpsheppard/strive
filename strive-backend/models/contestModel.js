@@ -1,7 +1,7 @@
 // contestModel.js
 
 // Imports 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 // Contest Schema
 const contestSchema = mongoose.Schema({
@@ -51,4 +51,4 @@ const contestSchema = mongoose.Schema({
 })
 
 // Export
-module.exports = mongoose.model('Contest', contestSchema);
+module.exports = mongoose.model('Contest', contestSchema)

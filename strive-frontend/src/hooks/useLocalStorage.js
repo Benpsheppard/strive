@@ -1,24 +1,24 @@
 // Imports
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 // Local Storage helper
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
     try {
-      const jsonValue = localStorage.getItem(key);
-      return jsonValue != null ? JSON.parse(jsonValue) : initialValue;
+      const jsonValue = localStorage.getItem(key)
+      return jsonValue != null ? JSON.parse(jsonValue) : initialValue
     } catch {
-      return initialValue;
+      return initialValue
     }
-  });
+  })
 
   useEffect(() => {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(key, JSON.stringify(value))
     } catch (err) {
-        console.error(`Failed to read/write localStorage key "${key}"`, err);
+        console.error(`Failed to read/write localStorage key "${key}"`, err)
     }
-  }, [key, value]);
+  }, [key, value])
 
-  return [value, setValue];
+  return [value, setValue]
 }

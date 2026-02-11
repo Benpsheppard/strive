@@ -2,7 +2,7 @@
 // File to create user schema
 
 // Imports
-const mongoose = require('mongoose');      // import mongoose
+const mongoose = require('mongoose')      // import mongoose
 
 // User schema
 const userSchema = mongoose.Schema ({
@@ -53,6 +53,6 @@ const userSchema = mongoose.Schema ({
     }
 }, {
     timestamps: true
-});
+})
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema)

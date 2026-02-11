@@ -1,18 +1,22 @@
 // db.js
-// File to configure database
 
 // Import
-const mongoose = require('mongoose');   // import mongoose for database handling
+const mongoose = require('mongoose')
 
 // Function to connect to database
-const connectDB = async (req, res) => { 
+const connectDB = async () => { 
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI);     // connect to database using URI
-        console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);   // log successful connection to console with colors styling
+        if (process.env.NODE_ENV === 'development') {
+            const conn = await mongoose.connect(process.env.MONGO_URI_TEST)
+            console.log(`MongoDB Connected (development): ${conn.connection.host}`.cyan.underline)
+        } else {
+            const conn = await mongoose.connect(process.env.MONGO_URI)
+            console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline)
+        }
     } catch (error) {
-        console.log(error);     // output any error to console
-        process.exit(1);    // close application
+        console.log(error)
+        process.exit(1)
     }
-};
+}
 
-module.exports = connectDB;     // export connectDB function
+module.exports = connectDB
