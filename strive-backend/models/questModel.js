@@ -1,7 +1,7 @@
 // questModel.js
 
 // Imports
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 // Quest Schema
 const questSchema = mongoose.Schema({
@@ -13,35 +13,26 @@ const questSchema = mongoose.Schema({
     // Title
     title: {
         type: String,
-        required: [true, 'Please add a title']
+        required: [true, 'Missing title']
     },
     //Duration
     duration: {
         type: String,
         enum: ['daily', 'weekly', 'monthly'],
-        required: [true, 'Please add a duration e.g. daily']
+        required: [true, 'Missing duration e.g. daily']
     },
-    // Difficulty
-    difficulty: {
-        type: String,
-        enum: [
-            'light', 'easy', 'medium', 'hard', 'impossible'
-        ],
-        required: [true, 'Please add a difficulty e.g. hard'],
-        lowercase: true
-    },
-    // Reward: dependant on difficulty
+    // Reward: dependant on duration
     reward: {
         type: Number,
         default: function() {
-            const scale = { light: 100, easy: 200, medium: 500, hard: 750, impossible: 1000 };
-            return scale[this.difficulty] || 10;
+            const scale = { daily: 100, weekly: 500, monthly: 1000 }
+            return scale[this.duration] || 10
         },
     },
     // Description
     description: {
         type: String,
-        required: [true, 'Please add a description']
+        required: [true, 'Missing description']
     },
     // Status
     status: {
@@ -49,14 +40,15 @@ const questSchema = mongoose.Schema({
         enum: [
             'completed',
             'expired',
-            'active'
+            'active',
+            'claimed'
         ],
         default: 'active'
     },
     // Expiry date
     expiry: {
         type: Date,
-        required: [true, 'Please add an end date']
+        required: [true, 'Missing end date']
     },
     // Completion data
     completion: {
@@ -70,11 +62,12 @@ const questSchema = mongoose.Schema({
         },
         reps: { 
             type: Number,
+            enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             required: true 
         }
     }
 }, {
     timestamps: true
-});
+})
 
-module.exports = mongoose.model('Quest', questSchema);
+module.exports = mongoose.model('Quest', questSchema)
