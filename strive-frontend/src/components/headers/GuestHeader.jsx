@@ -1,8 +1,8 @@
 // GuestHeader.jsx
 
 const GuestHeader = ({ currentWorkouts }) => {
-    const maxWorkouts = 5;
-    const workoutsLeft = maxWorkouts - currentWorkouts;
+    const maxWorkouts = 5
+    const workoutsLeft = maxWorkouts - currentWorkouts
 
     return (
         <div className="w-full bg-[#EF233C] text-[#EDF2F4] font-semibold px-4 py-3 flex flex-col items-center text-sm font-medium shadow-md">
@@ -21,8 +21,8 @@ const GuestHeader = ({ currentWorkouts }) => {
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default GuestHeader;
+export default GuestHeader

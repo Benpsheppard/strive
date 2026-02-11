@@ -1,18 +1,18 @@
 // Header.jsx
 
 // Imports
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 
 const Header = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.auth)
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false)
 
     // Navigation options styling
-    const navOps = "text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110";
+    const navOps = "text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110"
 
     return (
         <header className="header fixed top-0 left-0 w-full bg-[#2B2D42] backdrop-blur-md text-[#EDF2F4] shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-100 h-15">
@@ -75,8 +75,8 @@ const Header = () => {
                 </nav>
             )}
         </header>
-    );
-};
+    )
+}
 
 // Export
-export default Header;
+export default Header

@@ -1,19 +1,19 @@
 // PBChart.jsx
 
 // Imports
-import { useState } from 'react';
+import { useState } from 'react'
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
     BarElement, Title, Tooltip, Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+} from 'chart.js'
+import { Bar } from 'react-chartjs-2'
 
 // Function Imports
-import { calculatePersonalBests } from '../../utils/pbDetection.js';
-import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js';
+import { calculatePersonalBests } from '../../utils/pbDetection.js'
+import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js'
 
 // Register Chart
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const MUSCLE_GROUPS = [
     'All', 
@@ -25,27 +25,27 @@ const MUSCLE_GROUPS = [
     'Core', 
     'Full body', 
     'Other'
-];
+]
 
 const PBChart = ({ workouts, useImperial }) => {
-    const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All');
+    const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
 
-    const exercisePBs = calculatePersonalBests(workouts);
+    const exercisePBs = calculatePersonalBests(workouts)
 
-    const weightUnit = getWeightUnit(useImperial);
+    const weightUnit = getWeightUnit(useImperial)
 
     // Filter by selected muscle group
     const filteredExercises = Object.entries(exercisePBs).filter(([name, data]) => {
-        if (selectedMuscleGroup === 'All') return true;
-        return data.muscleGroup === selectedMuscleGroup;
-    });
+        if (selectedMuscleGroup === 'All') return true
+        return data.muscleGroup === selectedMuscleGroup
+    })
 
     // Prepare data for chart
-    const labels = filteredExercises.map(([name]) => name);
+    const labels = filteredExercises.map(([name]) => name)
     const weights = filteredExercises.map(([, data]) => 
         useImperial ? kgToLbs(data.weight) : data.weight
-    );
-    const dates = filteredExercises.map(([, data]) => data.date);
+    )
+    const dates = filteredExercises.map(([, data]) => data.date)
 
     const data = {
         labels,
@@ -56,7 +56,7 @@ const PBChart = ({ workouts, useImperial }) => {
             backgroundColor: '#EF233C'
         },
         ],
-    };
+    }
 
     const options = {
         responsive: true,
@@ -66,10 +66,10 @@ const PBChart = ({ workouts, useImperial }) => {
             tooltip: {
                 callbacks: {
                     label: (context) => {
-                        const index = context.dataIndex;
-                        const weight = context.parsed.y.toFixed(1);
-                        const date = dates[index];
-                        return ` ${weight} ${weightUnit} (on ${new Date(date).toLocaleDateString()})`;
+                        const index = context.dataIndex
+                        const weight = context.parsed.y.toFixed(1)
+                        const date = dates[index]
+                        return ` ${weight} ${weightUnit} (on ${new Date(date).toLocaleDateString()})`
                     },
                 },
             },
@@ -90,7 +90,7 @@ const PBChart = ({ workouts, useImperial }) => {
                 },
             },
         },
-    };
+    }
 
     // Handle case with no exercises
     if (Object.keys(exercisePBs).length === 0) {
@@ -98,7 +98,7 @@ const PBChart = ({ workouts, useImperial }) => {
         <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
             <p>No exercises found</p>
         </div>
-        );
+        )
     }
 
     return (
@@ -130,8 +130,8 @@ const PBChart = ({ workouts, useImperial }) => {
             )}
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default PBChart;
+export default PBChart

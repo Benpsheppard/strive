@@ -1,27 +1,27 @@
 // Login.jsx
 
 // Imports
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react'; 
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react' 
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 // Function Imports
-import { login, reset, register } from '../features/auth/authSlice.js';
-import { generateRandomPassword } from '../utils/authUtils.js';
+import { login, reset, register } from '../features/auth/authSlice.js'
+import { generateRandomPassword } from '../utils/authUtils.js'
 
 // Component Imports
-import Spinner from '../components/Spinner.jsx';
-import AuthHeader from '../components/headers/AuthHeader.jsx';
+import Spinner from '../components/spinners/Spinner.jsx'
+import AuthHeader from '../components/headers/AuthHeader.jsx'
 
 // Login
 const Login = () => {
-    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
 
     // Nav and Dispatch initialisation
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     // Setting fields to blank
     const [formData, setFormData] = useState({
@@ -30,27 +30,27 @@ const Login = () => {
     })
 
     // Getting user data from form
-    const { identifier, password } = formData; 
+    const { identifier, password } = formData 
 
     useEffect(() => {
         // Output error
         if (isError) {
-            toast.error(message);
+            toast.error(message)
         }
 
         // Navigate user to dashboard
         if (isSuccess || user) {
-            navigate('/');
+            navigate('/')
         }
 
         if (isSuccess && user) {
-            toast.success(`Logged in as: ${user.username}`);
+            toast.success(`Logged in as: ${user.username}`)
         }
 
         // Reset state to normal
-        dispatch(reset());
+        dispatch(reset())
 
-    }, [user, isError, isSuccess, message, navigate, dispatch]);
+    }, [user, isError, isSuccess, message, navigate, dispatch])
 
     // When input fields change
     const onChange = (e) => {
@@ -62,30 +62,30 @@ const Login = () => {
 
     // Submit Login form
     const onSubmit = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         
         // Validate input fields
         if (!identifier.trim() || !password.trim()) {
-            toast.error("Please fill in all fields.");
-            return;
+            toast.error("Please fill in all fields.")
+            return
         }
 
         // Determine if identifier is email or username
-        const isEmail = identifier.includes('@');
+        const isEmail = identifier.includes('@')
 
         // User data object
         const userData = isEmail
         ? {email: identifier, password}
-        : {username: identifier, password};
+        : {username: identifier, password}
 
         // Dispatch login
-        dispatch(login(userData));
+        dispatch(login(userData))
     }
 
     // Log in as Guest account
     const loginGuest = () => {
         // Generate guest username
-        const username = `Guest${Date.now()}${Math.floor(Math.random() * 1000)}`;
+        const username = `Guest${Date.now()}${Math.floor(Math.random() * 1000)}`
         
         // Generate guest user data
         const guestData = {
@@ -96,7 +96,7 @@ const Login = () => {
         }
 
         // Dispatch login
-        dispatch(register(guestData));
+        dispatch(register(guestData))
     }
 
     if(isLoading){
@@ -170,7 +170,7 @@ const Login = () => {
             </div>
         </>
     )
-};
+}
 
 // Export Login
-export default Login;
+export default Login

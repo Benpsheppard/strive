@@ -1,14 +1,14 @@
 // SetList.jsx
 
 // Imports
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Function Imports
-import { formatWeight } from '../../utils/weightUnits.js';
+import { formatWeight } from '../../utils/weightUnits.js'
 
 const SetList = ({ sets, useImperial = false }) => {
     if (!sets || sets.length === 0) {
-        return null;
+        return null
     }
 
     return (
@@ -22,7 +22,7 @@ const SetList = ({ sets, useImperial = false }) => {
             </ul>
         </AnimatePresence>
     )
-};
+}
 
 // Export
-export default SetList;
+export default SetList

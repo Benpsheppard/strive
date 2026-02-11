@@ -1,40 +1,40 @@
 // WorkoutItem.jsx
 
 // Imports
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
-import { deleteWorkout } from '../../features/workouts/workoutsSlice.js';
+import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 
 // Component Imports
-import SetList from './SetList.jsx';
+import SetList from './SetList.jsx'
 
 const WorkoutItem = ({ workout }) => {
-    const { user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.auth)
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch()
 
-    const [workoutExpanded, setWorkoutExpanded] = useState(false);
-    const [exerciseExpanded, setExerciseExpanded] = useState(false);
+    const [workoutExpanded, setWorkoutExpanded] = useState(false)
+    const [exerciseExpanded, setExerciseExpanded] = useState(false)
 
     const onDelete = (e) => {
-        e.stopPropagation();
+        e.stopPropagation()
         if (window.confirm("Are you sure you want to delete this workout?")) {
-            dispatch(deleteWorkout(workout._id));
+            dispatch(deleteWorkout(workout._id))
         }
-    };
+    }
 
     const toggleExercise = (e, index) => {
-        e.stopPropagation();
+        e.stopPropagation()
         setExerciseExpanded(prev => ({
             ...prev,
             [index]: !prev[index]
-        }));
-    };
+        }))
+    }
 
-    const exerciseCount = workout.exercises?.length || 0;
+    const exerciseCount = workout.exercises?.length || 0
 
     return (
         <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 mb-4 flex flex-col gap-2 max-w-2xl mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
@@ -107,8 +107,8 @@ const WorkoutItem = ({ workout }) => {
                 </>
             )}
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default WorkoutItem;
+export default WorkoutItem

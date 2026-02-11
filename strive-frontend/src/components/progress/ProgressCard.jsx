@@ -7,7 +7,7 @@ const ProgressCard = ({ title, value }) => {
             <p className="text-[#EF233C] text-2xl font-bold">{value}</p>
         </div>
     )
-};
+}
 
 // Export
-export default ProgressCard;
+export default ProgressCard

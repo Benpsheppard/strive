@@ -1,11 +1,11 @@
 // Hero.jsx
 
 // Imports
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 const Hero = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.auth)
 
     return (
         <section className="hero bg-[#8D99AE] h-screen flex items-center justify-center">
@@ -22,7 +22,7 @@ const Hero = () => {
             </div>  
         </section>
     )
-};
+}
 
 // Export
-export default Hero;
+export default Hero

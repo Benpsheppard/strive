@@ -21,8 +21,8 @@ const About = () => {
             </div>
         </section>
     )
-};
+}
 
 
 // Export
-export default About;
+export default About

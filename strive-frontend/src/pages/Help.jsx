@@ -1,8 +1,8 @@
 // Help.jsx
 
 // Component Imports
-import Header from "../components/headers/Header";
-import Footer from "../components/dashboard/Footer";
+import Header from "../components/headers/Header"
+import Footer from "../components/dashboard/Footer"
 
 const Help = () => {
   return (
@@ -17,8 +17,8 @@ const Help = () => {
         <ul>
             <li>- Click 'Start Workout' to begin entering your workout data.</li>
             <li>- Each workout has a title - entered by you - and a duration taken from the time you press start, to the time you press end.</li>
-            <li>- Each workout is built up of exercises; each of these have a name, muscle group and an optional description.</li>
-            <li>- Each exercise can have multiple sets; enter each set you complete with their respective weight and reps and click the 'Add Set' (mobile) or ' + ' (desktop) button to save.</li>
+            <li>- Each workout is built up of exercises each of these have a name, muscle group and an optional description.</li>
+            <li>- Each exercise can have multiple sets enter each set you complete with their respective weight and reps and click the 'Add Set' (mobile) or ' + ' (desktop) button to save.</li>
             <li>- Once your done with each exercise, click the 'Add Exercise' button to save the exercise and start a new one.</li>
             <li>- After you've completed your workout and filled all the data out, don't forget to click 'End Workout' for accurate duration statistics.</li>
             <li>- Clicking 'End Workout' will save your workout to your account, and completed workouts can be view on the 'Previous Workout' page.</li>
@@ -38,7 +38,7 @@ const Help = () => {
         <p className="mb-4">This page displays your progress using data you have submitted previously.</p>
         <ul>
             <li>- Your accounts general statistics like total workouts logged, total workout duration etc are displayed at the top of the screen.</li>
-            <li>- Below the statistics are two graphs; the first displays Personal Bests in each exercise you've logged and the second displays each exercises weight progression.</li>
+            <li>- Below the statistics are two graphs the first displays Personal Bests in each exercise you've logged and the second displays each exercises weight progression.</li>
             <li>- The personal best graph can be filtered by muscle group, allowing for easier viewing and comparisons. Use the drop down menu at the top to select one.</li>
             <li>- The exercise progression graph can be filtered by exercise, allowing you to view the weight progression of specific exercises. Select an exercise you've logged from the drop down menu.</li>
         </ul>
@@ -74,8 +74,8 @@ const Help = () => {
       </section>
       <Footer />
     </>
-    );
-};
+    )
+}
 
 // Export
-export default Help;
+export default Help

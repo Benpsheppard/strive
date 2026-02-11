@@ -1,10 +1,10 @@
 // ExerciseList.jsx
 
 // Function Imports
-import { formatWeight } from '../../utils/weightUnits.js';
+import { formatWeight } from '../../utils/weightUnits.js'
 
 const ExerciseList = ({ exercises, useImperial }) => {
-    if (!exercises || exercises.length === 0) return null;
+    if (!exercises || exercises.length === 0) return null
 
     return (
         <div className="max-h-64 overflow-y-auto mb-4">
@@ -26,8 +26,8 @@ const ExerciseList = ({ exercises, useImperial }) => {
             </div>
         ))}
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default ExerciseList;
+export default ExerciseList

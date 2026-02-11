@@ -1,15 +1,15 @@
 // MuscleGroupSplit.jsx
 
 // Imports
-import { useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
+import { useState } from 'react'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Pie } from 'react-chartjs-2'
 
 // Function Imports
-import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js';
+import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js'
 
 // Register Chart
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const COLOURS = [
     '#EF233C',
@@ -20,43 +20,43 @@ const COLOURS = [
     '#4ECDC4',
     '#F4A261',
     '#6A4C93'
-  ];
+  ]
 
 const MuscleGroupSplit = ({ workouts, useImperial }) => {
-  const [viewMode, setViewMode] = useState('exercises');
+  const [viewMode, setViewMode] = useState('exercises')
 
   // Count muscle groups based on selected view mode
-  const muscleGroupCounts = {};
+  const muscleGroupCounts = {}
 
   // Get weight unit
-  const weightUnit = getWeightUnit(useImperial);
+  const weightUnit = getWeightUnit(useImperial)
 
   // Get workout data for chosen viewMode
   workouts.forEach((workout) => {
     workout.exercises.forEach((exercise) => {
-      const muscleGroup = exercise.musclegroup;
+      const muscleGroup = exercise.musclegroup
       
       if (viewMode === 'exercises') {
         // Count each exercise once
-        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + 1;
+        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + 1
       } else if (viewMode === 'sets') {
         // Count by number of sets
-        const setCount = exercise.sets?.length || 0;
-        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + setCount;
+        const setCount = exercise.sets?.length || 0
+        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + setCount
       } else if (viewMode === 'weight') {
         // Sum total weight lifted
         const totalWeight = exercise.sets?.reduce((sum, set) => {
-          const weight = parseFloat(set.weight) || 0;
-          const reps = parseFloat(set.reps) || 0;
-          return sum + (weight * reps);
-        }, 0) || 0;
-        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + totalWeight;
+          const weight = parseFloat(set.weight) || 0
+          const reps = parseFloat(set.reps) || 0
+          return sum + (weight * reps)
+        }, 0) || 0
+        muscleGroupCounts[muscleGroup] = (muscleGroupCounts[muscleGroup] || 0) + totalWeight
       }
-    });
-  });
+    })
+  })
 
   // Calculate total and percentages
-  const total = Object.values(muscleGroupCounts).reduce((sum, count) => sum + count, 0);
+  const total = Object.values(muscleGroupCounts).reduce((sum, count) => sum + count, 0)
   const muscleGroupData = Object.entries(muscleGroupCounts)
     .map(([group, count]) => ({
       group,
@@ -65,12 +65,12 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
       displayCount: (viewMode === 'weight' && useImperial) ? kgToLbs(count) : count,
       percentage: ((count / total) * 100).toFixed(1),
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => b.count - a.count)
 
   // Prepare chart data
-  const labels = muscleGroupData.map((item) => item.group);
-  const dataValues = muscleGroupData.map((item) => item.count);
-  const backgroundCOLOURS = muscleGroupData.map((_, index) => COLOURS[index % COLOURS.length]);
+  const labels = muscleGroupData.map((item) => item.group)
+  const dataValues = muscleGroupData.map((item) => item.count)
+  const backgroundCOLOURS = muscleGroupData.map((_, index) => COLOURS[index % COLOURS.length])
 
   const data = {
     labels,
@@ -83,7 +83,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
         borderWidth: 2,
       },
     ],
-  };
+  }
 
   const options = {
     responsive: true,
@@ -102,21 +102,21 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
       tooltip: {
         callbacks: {
           label: (context) => {
-            const index = context.dataIndex;
-            const count = muscleGroupData[index].displayCount;
-            const percentage = muscleGroupData[index].percentage;
-            let unit;
-            if (viewMode === 'exercises') unit = 'exercises';
-            else if (viewMode === 'sets') unit = 'sets';
-            else unit = weightUnit;
+            const index = context.dataIndex
+            const count = muscleGroupData[index].displayCount
+            const percentage = muscleGroupData[index].percentage
+            let unit
+            if (viewMode === 'exercises') unit = 'exercises'
+            else if (viewMode === 'sets') unit = 'sets'
+            else unit = weightUnit
             
-            const displayValue = viewMode === 'weight' ? count.toFixed(1) : count;
-            return ` ${displayValue} ${unit} (${percentage}%)`;
+            const displayValue = viewMode === 'weight' ? count.toFixed(1) : count
+            return ` ${displayValue} ${unit} (${percentage}%)`
           },
         },
       },
     },
-  };
+  }
 
   // Handle case with no exercises
   if (muscleGroupData.length === 0) {
@@ -124,7 +124,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
       <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
         <p>No exercises found</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -195,8 +195,8 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
 // Export
-export default MuscleGroupSplit;
+export default MuscleGroupSplit

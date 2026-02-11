@@ -1,24 +1,25 @@
 // Register.jsx
 
 // Imports
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react'; 
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react' 
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 // Function Imports
-import { register, reset } from '../features/auth/authSlice.js';
+import { register, reset } from '../features/auth/authSlice.js'
 
 // Component Imports
-import Spinner from '../components/Spinner.jsx';
-import AuthHeader from '../components/headers/AuthHeader.jsx';
+import Spinner from '../components/spinners/Spinner.jsx'
+import AuthHeader from '../components/headers/AuthHeader.jsx'
+import { reset } from '../features/quests/questSlice.js'
 
 const Register = () => {
-    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     // Set fields to blank
     const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ const Register = () => {
     })
 
     // Desconstruct data from form data
-    const { email, username, password, password2 } = formData; 
+    const { email, username, password, password2 } = formData 
 
     // Password criteria
     const passwordChecks = {
@@ -39,23 +40,23 @@ const Register = () => {
         uppercase: /[A-Z]/.test(password),
         number: /[0-9]/.test(password),
         symbol: /[^A-Za-z0-9]/.test(password)
-    };
+    }
 
     useEffect(() => {
         // Output error
         if (isError) {
-            toast.error(message);
+            toast.error(message)
         }
 
         // Navigate user to dashboard
         if (isSuccess || user) {
-            navigate('/');
+            navigate('/')
         }
 
         // Reset state to normal
-        dispatch(reset());
+        dispatch(reset())
 
-    }, [user, isError, isSuccess, message, navigate, dispatch]);
+    }, [user, isError, isSuccess, message, navigate, dispatch])
 
     const onChange = (e) => {
         setFormData((prevState) => ({
@@ -66,12 +67,12 @@ const Register = () => {
 
     // Submit form
     const onSubmit = (e) => {
-        e.preventDefault();
+        e.preventDefault()
 
         // Check passwords match 
         if(password !== password2) {
-            toast.error("Passwords do not match!");
-            return;
+            toast.error("Passwords do not match!")
+            return
         }
 
         // User data object
@@ -82,7 +83,7 @@ const Register = () => {
         }
 
         // Dispatch register
-        dispatch(register(userData));
+        dispatch(register(userData))
     }
 
     if(isLoading){
@@ -177,7 +178,7 @@ const Register = () => {
             </div>
         </>
     )
-};
+}
 
 // Export Register
-export default Register;
+export default Register

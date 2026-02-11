@@ -2,24 +2,24 @@
 // File to hold main app structure and functionality
 
 // Imports
-import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';   // Import router functions
-import { ToastContainer } from 'react-toastify';  // Import toast container
-import 'react-toastify/dist/ReactToastify.css';   // Import toast css
-import Spinner from './components/Spinner.jsx';
+import { Suspense, lazy } from 'react'
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'   // Import router functions
+import { ToastContainer } from 'react-toastify'  // Import toast container
+import 'react-toastify/dist/ReactToastify.css'   // Import toast css
+import Spinner from './components/spinners/Spinner.jsx'
 
 // Lazy load pages for performance optimization
-const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
-const Login = lazy(() => import('./pages/Login.jsx'));
-const Register = lazy(() => import('./pages/Register.jsx'));
-const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'));
-const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'));
-const Progress = lazy(() => import('./pages/Progress.jsx'));
-const Games = lazy(() => import('./pages/Games.jsx'));
-const Contact = lazy(() => import('./pages/Contact.jsx'));
-const Profile = lazy(() => import('./pages/Profile.jsx'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
-const Help = lazy(() => import('./pages/Help.jsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+const Login = lazy(() => import('./pages/Login.jsx'))
+const Register = lazy(() => import('./pages/Register.jsx'))
+const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'))
+const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'))
+const Progress = lazy(() => import('./pages/Progress.jsx'))
+const Games = lazy(() => import('./pages/Games.jsx'))
+const Contact = lazy(() => import('./pages/Contact.jsx'))
+const Profile = lazy(() => import('./pages/Profile.jsx'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'))
+const Help = lazy(() => import('./pages/Help.jsx'))
 
 // App
 const App = () => {
@@ -49,6 +49,6 @@ const App = () => {
       <ToastContainer />
     </>
   )
-};
+}
 
-export default App;
+export default App

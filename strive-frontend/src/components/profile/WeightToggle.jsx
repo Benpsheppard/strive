@@ -22,8 +22,8 @@ const WeightToggle = ({ useImperial, onToggle }) => {
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default WeightToggle;
+export default WeightToggle

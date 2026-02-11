@@ -1,8 +1,8 @@
 // PrivacyPolicy.jsx
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import Footer from '../components/dashboard/Footer.jsx';
+import Header from '../components/headers/Header.jsx'
+import Footer from '../components/dashboard/Footer.jsx'
 
 const PrivacyPolicy = () => {
     return (
@@ -88,8 +88,8 @@ const PrivacyPolicy = () => {
             <Footer />
         </>
         
-    );
-};
+    )
+}
 
 // Export
-export default PrivacyPolicy;
+export default PrivacyPolicy

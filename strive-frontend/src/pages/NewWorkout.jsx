@@ -13,11 +13,12 @@ import { parseWeight, formatWeight } from '../utils/weightUnits.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js'
 import { addPoints } from '../features/auth/authSlice.js'
+import { checkQuestCompletion } from '../features/quests/questSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
-import Spinner from '../components/Spinner.jsx'
+import Spinner from '../components/spinners/Spinner.jsx'
 import ExerciseList from '../components/workouts/ExerciseList.jsx'
 import SetList from '../components/workouts/SetList.jsx'
 import SetForm from '../components/workouts/SetForm.jsx'
@@ -280,13 +281,26 @@ const NewWorkout = () => {
 				}
 			}
 
+			// Check quest completion
+			try {
+				const { updatedQuests } = await dispatch(checkQuestCompletion(workoutData)).unwrap()
+				if (updatedQuests && updatedQuests.length > 0) {
+					for (const quest of updatedQuests) {
+						SP_REWARD += quest.reward
+						toast.success(`Quest Completed: ${quest.questName}! +${quest.reward} SP!`)
+					}
+				}
+			} catch (questError) {
+				console.error('Quest check failed:', questError)
+			}
+
 			// Apply all SP at once
 			if (SP_REWARD > 0) {
 				const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap()
 				toast.success(`Total +${SP_REWARD} SP earned this session!`)
 
 				if (result.level > user.level) {
-					toast.success(`🎉 Level Up! You are now Level ${result.level}!`)
+					toast.success(`Level Up! You are now Level ${result.level}!`)
 				}
 			}
 
@@ -294,6 +308,7 @@ const NewWorkout = () => {
 			resetWorkoutState()
 
 		} catch (error) {
+			console.error('Submit workout error: ', error)
 			toast.error(error.message || 'Failed to save workout')
 		}
 	}

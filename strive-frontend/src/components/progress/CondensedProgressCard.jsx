@@ -1,13 +1,13 @@
 // CondensedProgressCard.jsx
 
 // Imports
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight } from '../../utils/weightUnits.js';
+import { formatWeight } from '../../utils/weightUnits.js'
 
 const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, totalSets, totalWeight, totalReps }) => {
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth)
 
   return (
     <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center md:hidden">
@@ -23,8 +23,8 @@ const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, t
         <p>Total Reps - <span className="text-[#EF233C] font-bold">{totalReps}</span></p>
       </div>
     </div>
-  );
-};
+  )
+}
 
 // Export
-export default CondensedProgressCard;
+export default CondensedProgressCard

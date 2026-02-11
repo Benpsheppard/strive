@@ -1,48 +1,48 @@
 // Progress.jsx
 
 // Imports
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate, Link } from 'react-router-dom'
 
 // Function Imports
-import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
-import { formatWeight } from '../utils/weightUnits.js';
+import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+import { formatWeight } from '../utils/weightUnits.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import Spinner from '../components/Spinner.jsx';
-import PBChart from '../components/progress/PBChart.jsx';
-import ProgressCard from '../components/progress/ProgressCard.jsx';
-import MobileProgressCard from '../components/progress/CondensedProgressCard.jsx';
-import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx';
-import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx';
-import GuestHeader from '../components/headers/GuestHeader.jsx';
+import Header from '../components/headers/Header.jsx'
+import Spinner from '../components/spinners/Spinner.jsx'
+import PBChart from '../components/progress/PBChart.jsx'
+import ProgressCard from '../components/progress/ProgressCard.jsx'
+import MobileProgressCard from '../components/progress/CondensedProgressCard.jsx'
+import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
+import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
+import GuestHeader from '../components/headers/GuestHeader.jsx'
 
 const Progress = () => {
-    const { user } = useSelector((state) => state.auth);
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
+    const { user } = useSelector((state) => state.auth)
+    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (isError) {
-            console.log(message);
+            console.log(message)
         }
 
         if (!user){
-            navigate('/login');
-            return;
+            navigate('/login')
+            return
         }
 
-        dispatch(getWorkouts());
+        dispatch(getWorkouts())
 
         return () => {
-            dispatch(reset());
+            dispatch(reset())
         }
 
-    }, [user, isError, message, navigate, dispatch]);
+    }, [user, isError, message, navigate, dispatch])
 
     if(isLoading || !user){
         return (
@@ -51,40 +51,40 @@ const Progress = () => {
     }
 
     // Calculate stats
-    const totalWorkouts = workouts.length;
-    const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0);
+    const totalWorkouts = workouts.length
+    const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0)
 
-    let totalWeight = 0;
-    let totalReps = 0;
-    let totalSets = 0;
-    let totalExercises = 0;
-    let heaviestLift = 0;
+    let totalWeight = 0
+    let totalReps = 0
+    let totalSets = 0
+    let totalExercises = 0
+    let heaviestLift = 0
 
     workouts.forEach((w) => {
         w.exercises.forEach((ex) => {
-            totalExercises++; // count exercises
+            totalExercises++ // count exercises
 
             ex.sets.forEach((set) => {
-                const weight = Number(set.weight) || 0;
-                const reps = Number(set.reps) || 0;
+                const weight = Number(set.weight) || 0
+                const reps = Number(set.reps) || 0
 
-                totalWeight += weight * reps;
-                totalReps += reps;
-                totalSets++;
+                totalWeight += weight * reps
+                totalReps += reps
+                totalSets++
 
                 if (weight > heaviestLift) {
-                    heaviestLift = weight;
+                    heaviestLift = weight
                 }
-            });
-        });
-    });
+            })
+        })
+    })
 
     return (
         <section className="mt-15">
             <Header />
             {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
-            <div className="min-h-screen bg-[#2B2D42] px-6 py-12 mt-15">
-                <h1 className="text-[#EDF2F4] text-6xl font-semibold text-center mb-8">
+            <div className="min-h-screen bg-[#2B2D42] px-6">
+                <h1 className="p-4 text-[#EDF2F4] text-6xl font-semibold text-center">
                     Progress <span className="text-[#EF233C]">Summary</span>
                 </h1>
                 {workouts.length > 0 ? (
@@ -129,7 +129,7 @@ const Progress = () => {
             </div>
         </section>
     )
-};
+}
 
 // Export
-export default Progress;
+export default Progress

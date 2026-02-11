@@ -1,7 +1,7 @@
 // Header.jsx
 
 // Imports
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 const Header = () => {
 
@@ -17,8 +17,8 @@ const Header = () => {
                 </div>
             </div>
         </header>
-    );
-};
+    )
+}
 
 // Export
-export default Header;
+export default Header

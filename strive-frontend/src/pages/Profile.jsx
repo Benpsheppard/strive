@@ -1,65 +1,64 @@
 // Profile.jsx
 
 // Imports
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { FaUser } from 'react-icons/fa';
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { FaUser } from 'react-icons/fa'
 
 // Function Imports
-import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js';
+import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import Spinner from '../components/Spinner.jsx';
-import GuestHeader from '../components/headers/GuestHeader.jsx';
-import WeightToggle from '../components/profile/WeightToggle.jsx';
+import Header from '../components/headers/Header.jsx'
+import Spinner from '../components/spinners/Spinner.jsx'
+import GuestHeader from '../components/headers/GuestHeader.jsx'
+import WeightToggle from '../components/profile/WeightToggle.jsx'
 
 const Profile = () => {
-    const { user, isLoading, isError, message } = useSelector((state) => state.auth);
-    const { workouts } = useSelector((state) => state.workout);
+    const { user, isLoading, isError, message } = useSelector((state) => state.auth)
+    const { workouts } = useSelector((state) => state.workout)
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const onLogout = () => {
-        dispatch(logout());
-        dispatch(reset());
+        dispatch(logout())
     }
 
     const onDeleteAccount = () => {
         if (window.confirm('Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.')) {
-            dispatch(deleteUser(user._id));
-            dispatch(reset());
+            dispatch(deleteUser(user._id))
+            dispatch(reset())
         }
     }
 
     const onResetAccount = () => {
         if (window.confirm('Are you sure you want to reset your account? Doing so will permanently delete any workout data but keep your profile in tact. This action cannot be undone.')) {
-            dispatch(resetUser(user._id));
-            dispatch(reset());
+            dispatch(resetUser(user._id))
+            dispatch(reset())
         }
     }
 
     const onWeightToggle = () => {
-        dispatch(updateWeightPreference(!user.useImperial));
+        dispatch(updateWeightPreference(!user.useImperial))
     }
 
     useEffect(() => {
-            if (isError) {
-                console.log(message);
-            }
+        if (isError) {
+            console.log(message)
+        }
+
+        if (!user){
+            navigate('/login')
+            return
+        }
     
-            if (!user){
-                navigate('/login');
-                return;
-            }
-        
-            return () => {
-                dispatch(reset());
-            }
-    
-        }, [user, isError, message, navigate, dispatch]);
+        return () => {
+            dispatch(reset())
+        }
+
+    }, [user, isError, message, navigate, dispatch])
 
     if(isLoading || !user){
         return (
@@ -116,7 +115,7 @@ const Profile = () => {
                 </div>
             </div>
         </section>
-    );
-};
+    )
+}
 
-export default Profile;
+export default Profile

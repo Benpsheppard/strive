@@ -1,44 +1,44 @@
 // PrevWorkouts.jsx
 
 // Imports 
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect } from 'react'
 
 // Function Imports
-import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js';
+import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import WorkoutItem from '../components/workouts/WorkoutItem.jsx';
-import Spinner from '../components/Spinner.jsx';
-import GuestHeader from '../components/headers/GuestHeader.jsx';
+import Header from '../components/headers/Header.jsx'
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
+import Spinner from '../components/spinners/Spinner.jsx'
+import GuestHeader from '../components/headers/GuestHeader.jsx'
 
 // PrevWorkouts
 const PrevWorkouts = () => {
-    const { user } = useSelector((state) => state.auth);
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout);
+    const { user } = useSelector((state) => state.auth)
+    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (isError) {
-            console.log(message);
+            console.log(message)
         }
 
         if (!user){
-            navigate('/login');
-            return;
+            navigate('/login')
+            return
         }
 
-        dispatch(getWorkouts());
+        dispatch(getWorkouts())
 
         return () => {
-            dispatch(reset());
+            dispatch(reset())
         }
 
-    }, [user, isError, message, navigate, dispatch]);
+    }, [user, isError, message, navigate, dispatch])
 
     if(isLoading){
         return (
@@ -50,7 +50,7 @@ const PrevWorkouts = () => {
         <section className="bg-[#2B2D42] min-h-screen mt-15 flex flex-col items-center">
             <Header />
             {user?.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
-            <section className="mt-15 text-6xl text-[#EDF2F4] font-semibold text-center px-4 py-4">
+            <section className="text-6xl text-[#EDF2F4] font-semibold text-center p-4">
                 <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
             </section>
 
@@ -78,7 +78,7 @@ const PrevWorkouts = () => {
             </section>
         </section>
     )
-};
+}
 
 // Export PrevWorkouts
-export default PrevWorkouts;
+export default PrevWorkouts

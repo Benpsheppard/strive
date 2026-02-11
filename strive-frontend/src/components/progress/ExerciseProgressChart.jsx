@@ -1,56 +1,56 @@
 // ExerciseProgressChart.jsx
 
 // Imports
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react'
 import { 
     Chart as ChartJS, CategoryScale, LinearScale,
     PointElement, LineElement, Title, Tooltip, Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
 
 // Function Imports
-import { getWeightUnit, kgToLbs } from '../../utils/weightUnits';
+import { getWeightUnit, kgToLbs } from '../../utils/weightUnits'
 
 // Register Chart
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
-    const [selectedExercise, setSelectedExercise] = useState('');
+    const [selectedExercise, setSelectedExercise] = useState('')
 
     // Extract all unique exercises
     const allExercises = useMemo(() => {
-        const names = new Set();
-        workouts.forEach((w) => w.exercises.forEach((ex) => names.add(ex.name)));
-        return Array.from(names);
-    }, [workouts]);
+        const names = new Set()
+        workouts.forEach((w) => w.exercises.forEach((ex) => names.add(ex.name)))
+        return Array.from(names)
+    }, [workouts])
 
     // Get the weight unit for labels
-    const weightUnit = getWeightUnit(useImperial);
+    const weightUnit = getWeightUnit(useImperial)
 
     // Filter data for the selected exercise
     const exerciseData = useMemo(() => {
-        if (!selectedExercise) return [];
-        const dataPoints = [];
+        if (!selectedExercise) return []
+        const dataPoints = []
 
         workouts.forEach((w) => {
-            const found = w.exercises.find((ex) => ex.name === selectedExercise);
+            const found = w.exercises.find((ex) => ex.name === selectedExercise)
             if (found) {
-                const weights = found.sets.map((s) => Number(s.weight) || 0);
-                const maxWeight = Math.max(...weights);
-                const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length;
+                const weights = found.sets.map((s) => Number(s.weight) || 0)
+                const maxWeight = Math.max(...weights)
+                const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length
                 
                 dataPoints.push({
                     date: new Date(w.createdAt).toLocaleDateString(),
                     maxWeight: useImperial ? kgToLbs(maxWeight) : maxWeight,
                     avgWeight: useImperial ? kgToLbs(avgWeight) : avgWeight,
-                });
+                })
             }
-        });
+        })
 
         return dataPoints
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(-10); // Keep only the last 10 workouts
-    }, [selectedExercise, workouts, useImperial]);
+            .slice(-10) // Keep only the last 10 workouts
+    }, [selectedExercise, workouts, useImperial])
 
     // Chart data
     const data = {
@@ -75,7 +75,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 pointHoverRadius: 7,
             },
         ],
-    };
+    }
 
     const options = {
         responsive: true,
@@ -100,7 +100,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 },
             },
         },
-    };
+    }
 
     return (
         <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10">
@@ -129,8 +129,8 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Export
-export default ExerciseProgressChart;
+export default ExerciseProgressChart

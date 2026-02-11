@@ -1,59 +1,60 @@
 // Contact.jsx
 
 // Imports
-import { useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useSelector } from 'react-redux'
+import { useState } from 'react'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx';
-import Footer from '../components/dashboard/Footer.jsx';
-import GuestHeader from '../components/headers/GuestHeader.jsx';
+import Header from '../components/headers/Header.jsx'
+import Footer from '../components/dashboard/Footer.jsx'
+import GuestHeader from '../components/headers/GuestHeader.jsx'
+import Spinner from '../components/spinners/Spinner.jsx'
 
 // Contact
 const Contact = () => {
-    const { user, isLoading } = useSelector((state) => state.auth);
-    const { workouts } = useSelector((state) => state.workout);
+    const { user, isLoading } = useSelector((state) => state.auth)
+    const { workouts } = useSelector((state) => state.workout)
 
     // Form state
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         message: ''
-    });
+    })
 
     // Handle input changes
     const onChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
-        });
-    };
+        })
+    }
 
     // Handle form submission
     const onSubmit = (e) => {
-        e.preventDefault();
+        e.preventDefault()
 
         // Basic validation
         if (!formData.name || !formData.email || !formData.message) {
-            alert("Please fill in all fields.");
-            return;
+            alert("Please fill in all fields.")
+            return
         }
 
         // Create mailto link
-        const subject = encodeURIComponent(`Message from ${formData.name}`);
+        const subject = encodeURIComponent(`Message from ${formData.name}`)
         const body = encodeURIComponent(
             `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-        );
+        )
 
         // Open default mail client
-        window.location.href = `mailto:ben@bensheppard.co.uk?subject=${subject}&body=${body}`;
-        setFormData({ name: "", email: "", message: "" });
-    };
+        window.location.href = `mailto:ben@bensheppard.co.uk?subject=${subject}&body=${body}`
+        setFormData({ name: "", email: "", message: "" })
+    }
 
     if (isLoading) {
         return (
             <Spinner />
-        );
+        )
     }
 
     return (
@@ -126,8 +127,8 @@ const Contact = () => {
             </div>
             <Footer />
         </section>
-    );
-};
+    )
+}
 
 // Export Contact
-export default Contact;
+export default Contact
