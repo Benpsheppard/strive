@@ -4,28 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node strive-backend/server.js",
-    "server": "node --watch strive-backend/server.js",
+    "start": "npm run dev --prefix strive-backend",
+    "server": "npm run dev --prefix strive-backend",
     "client": "npm run dev --prefix strive-frontend",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "npm install && npm install --prefix strive-frontend && npm run build --prefix strive-frontend"
+    "build": "npm run build --prefix strive-frontend"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.67.0",
-    "bcryptjs": "^3.0.2",
-    "colors": "^1.4.0",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "express-async-handler": "^1.2.0",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongo-sanitize": "^1.1.0",
-    "mongoose": "^8.18.1",
-    "validator": "^13.15.15"
-  },
   "devDependencies": {
     "concurrently": "^9.2.1"
   }
