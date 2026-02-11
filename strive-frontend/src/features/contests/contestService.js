@@ -4,7 +4,7 @@
 import axios from 'axios'
 
 // API URL
-const API_URL = '/api/contests/'
+const API_URL = import.meta.env.VITE_API_URL + '/api/contests/'
 
 // Get current contest
 const getContest = async (token) => {

@@ -4,7 +4,7 @@
 import axios from 'axios'
 
 // API URL
-const API_URL = '/api/quests/'
+const API_URL = import.meta.env.VITE_API_URL + '/api/quests/'
 
 // Get user quests
 const getQuests = async (token) => {
