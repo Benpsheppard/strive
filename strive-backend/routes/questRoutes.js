@@ -2,7 +2,6 @@
 
 // Imports
 const express = require('express')
-const { completeQuest, deleteQuest } = require('../controllers/questController.js')
 const { getQuests, generateQuests, checkQuestCompletion } = require('../controllers/questControllerV2.js')
 const { protect } = require('../middleware/authMiddleware.js')
 
