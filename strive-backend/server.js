@@ -2,37 +2,38 @@
 // File to run server for Strive
 
 // Imports
-const express = require('express');                                     
-const dotenv = require('dotenv').config();                             
-const colors = require('colors');                                   
-const path = require('path');                                          
-const helmet = require('helmet');  
+const express = require('express')                                     
+const dotenv = require('dotenv').config()                             
+const colors = require('colors')                                   
+const path = require('path')                                          
+const helmet = require('helmet')  
 
 // Function Imports
-const connectDB = require('./config/db.js');                       
-const { errorHandler } = require('./middleware/errorMiddleware.js');   
+const connectDB = require('./config/db.js')                       
+const { errorHandler } = require('./middleware/errorMiddleware.js')   
 
 // Router Imports
-const { workoutRouter } = require('./routes/workoutRoutes.js');        
-const { userRouter } = require('./routes/userRoutes.js');              
-const { questRouter } = require('./routes/questRoutes.js');
-const { contestRouter } = require('./routes/contestRoutes.js');
+const { workoutRouter } = require('./routes/workoutRoutes.js')        
+const { userRouter } = require('./routes/userRoutes.js')              
+const { questRouter } = require('./routes/questRoutes.js')
+const { contestRouter } = require('./routes/contestRoutes.js')
+const { devRouter } = require('./routes/devRoutes.js')
 
 // Variables
-const port = process.env.PORT || 5050;  // port from .env file or default to 5050
+const port = process.env.PORT || 5050
 
 // Connect to database
-connectDB();
+connectDB()
 
 // Initialise app
-const app = express();
+const app = express()
 
 // Middleware
-app.use(express.json());    // middleware to allow server to read json data
-app.use(express.urlencoded({ extended: false }));      // middleware to allow server to read urlencoded data
+app.use(express.json()) 
+app.use(express.urlencoded({ extended: false }))
 
 // Helmet HTTP security
-app.use(helmet());
+app.use(helmet())
 
 // Custom Content Security Policy to allow Umami analytics
 app.use(
@@ -47,33 +48,28 @@ app.use(
       upgradeInsecureRequests: [],
     },
   })
-);
+)
 
-// Workouts routes
-app.use('/api/workouts', workoutRouter);
+// Routes
+app.use('/api/workouts', workoutRouter)
+app.use('/api/users', userRouter)
+app.use('/api/quests', questRouter)
+app.use('/api/contests', contestRouter)
+app.use('/api/dev', devRouter)
 
-// User routes
-app.use('/api/users', userRouter);
-
-// Quest routes
-app.use('/api/quests', questRouter);
-
-// Contest routes
-app.use('/api/contests', contestRouter);
-
-// Deployment configuration
+// Production configuration
 if (process.env.NODE_ENV === 'production') {
-    console.log("Production mode");
-    app.use(express.static(path.join(__dirname, '..', 'strive-frontend', 'dist')));
-    app.get(/.*/, (req, res) => {
-        res.sendFile(path.resolve(__dirname, '..', 'strive-frontend', 'dist', 'index.html'));
-    })
+	console.log("Production mode")
+	app.use(express.static(path.join(__dirname, '..', 'strive-frontend', 'dist')))
+	app.get(/.*/, (req, res) => {
+		res.sendFile(path.resolve(__dirname, '..', 'strive-frontend', 'dist', 'index.html'))
+	})
 }
 
 // Custom Error Handler initialisation
-app.use(errorHandler);
+app.use(errorHandler)
 
 // Port listener
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port}`)
 })
