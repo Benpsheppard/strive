@@ -52,7 +52,7 @@ app.use(
 )
 
 app.use(cors({
-  origin: '*'
+  origin: 'https://strive-frontend-1.onrender.com'
 }))
 
 // Routes
