@@ -13,7 +13,6 @@ import { register, reset } from '../features/auth/authSlice.js'
 // Component Imports
 import Spinner from '../components/spinners/Spinner.jsx'
 import AuthHeader from '../components/headers/AuthHeader.jsx'
-import { reset } from '../features/quests/questSlice.js'
 
 const Register = () => {
     const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
