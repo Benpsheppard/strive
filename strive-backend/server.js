@@ -7,6 +7,7 @@ const dotenv = require('dotenv').config()
 const colors = require('colors')                                   
 const path = require('path')                                          
 const helmet = require('helmet')  
+const cors = require('cors')
 
 // Function Imports
 const connectDB = require('./config/db.js')                       
@@ -49,6 +50,10 @@ app.use(
     },
   })
 )
+
+app.use(cors({
+  origin: '*'
+}))
 
 // Routes
 app.use('/api/workouts', workoutRouter)
