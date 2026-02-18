@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import Header from '../components/headers/Header'
 import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
+import ProgressBar from '../components/games/ProgressBar.jsx'
 
 const Games = () => {
     const { user, isLoading } = useSelector((state) => state.auth)
@@ -37,6 +38,9 @@ const Games = () => {
                         <p className='text-[#EDF2F4] text-xl font-semibold'>
                             Strive Points: <span className='text-[#EF233C]'>{user?.strivepoints} SP</span>
                         </p>
+
+                        {/* Progress Bar */}
+                        <ProgressBar />
                     </div>
 
                     {/* Quest lists */}
