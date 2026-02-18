@@ -25,8 +25,6 @@ const Quests = () => {
         }
     }, [dispatch])
 
-    console.log('isLoading:', isLoading, 'quests:', quests)
-
     return (
         <>
             {/* Daily Quests */}
