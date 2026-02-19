@@ -315,7 +315,7 @@ const NewWorkout = () => {
 
 	// Cancel workout
 	const onCancel = () => {
-		if (window.confirm('Are you sure you want to delete this workout?')) {
+		if (window.confirm('Are you sure you want to cancel this workout?')) {
 			resetWorkoutState()
 			toast.success('Workout cancelled successfully')
 		}

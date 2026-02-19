@@ -52,12 +52,10 @@ app.use(
 )
 
 if (process.env.NODE_ENV === 'production') {
-	console.log('Using prod origin')
     app.use(cors({
       	origin: 'https://strive-frontend-1.onrender.com'
     }))
 } else {
-	console.log('Using dev origin')
     app.use(cors({
       	origin: 'http://localhost:3000',
     }))
