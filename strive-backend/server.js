@@ -38,22 +38,31 @@ app.use(helmet())
 
 // Custom Content Security Policy to allow Umami analytics
 app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://cloud.umami.is"],
-      connectSrc: ["'self'", "https://cloud.umami.is", "https://api-gateway.umami.dev"],
-      imgSrc: ["'self'", "data:"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
-    },
-  })
+	helmet.contentSecurityPolicy({
+		directives: {
+			defaultSrc: ["'self'"],
+			scriptSrc: ["'self'", "https://cloud.umami.is"],
+			connectSrc: ["'self'", "https://cloud.umami.is", "https://api-gateway.umami.dev"],
+			imgSrc: ["'self'", "data:"],
+			styleSrc: ["'self'", "'unsafe-inline'"],
+			objectSrc: ["'none'"],
+			upgradeInsecureRequests: [],
+		},
+	})
 )
 
-app.use(cors({
-  origin: 'https://strive-frontend-1.onrender.com'
-}))
+if (process.env.NODE_ENV === 'production') {
+	console.log('Using prod origin')
+    app.use(cors({
+      	origin: 'https://strive-frontend-1.onrender.com'
+    }))
+} else {
+	console.log('Using dev origin')
+    app.use(cors({
+      	origin: 'http://localhost:3000',
+    }))
+}
+
 
 // Routes
 app.use('/api/workouts', workoutRouter)
