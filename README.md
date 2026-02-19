@@ -1,6 +1,6 @@
 # Strive - Deployed on Render
 - Strive is a Gym Tracker App. Create, log and review personalised workouts - built using the MERN stack
-- Now deployed on Render! Visit https://strive-ei2e.onrender.com/ to begin tracking your workouts
+- Now deployed on Render! Visit https://strive-frontend-1.onrender.com/ to begin tracking your workouts
 
 ## Features
 - Login / Register with MongoDB persistance and JWT authentication
@@ -27,7 +27,7 @@ npm run dev
 Open http://localhost:3000
 
 ## Usage
-- Visit https://strive-ei2e.onrender.com/
+- Visit https://strive-frontend-1.onrender.com/
 - Register an account with your email, username and password
 - Login using your username and password
 - Select 'Lets get started' or 'New Workout' in the header to start a workout
