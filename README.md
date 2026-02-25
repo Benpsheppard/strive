@@ -17,8 +17,8 @@
 ## Installation
 Clone the repo:
 ```bash
-git clone https://github.com/Benpsheppard/strive-mern.git
-cd strive-mern
+git clone https://github.com/Benpsheppard/strive.git
+cd strive
 ```
 Run the app:
 ```bash
