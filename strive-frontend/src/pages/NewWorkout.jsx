@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 
 // Function Imports
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
@@ -315,10 +316,21 @@ const NewWorkout = () => {
 
 	// Cancel workout
 	const onCancel = () => {
-		if (window.confirm('Are you sure you want to cancel this workout?')) {
-			resetWorkoutState()
-			toast.success('Workout cancelled successfully')
-		}
+		Swal.fire({
+			title: 'Cancel Workout?',
+			text: 'Are you sure you want to cancel this workout?',
+			icon: 'warning',
+			color: '#EDF2F4',
+			background: '#8D99AE',
+			showCancelButton: false,
+			confirmButtonText: 'Confirm Cancel',
+			confirmButtonColor: '#EF233C',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				resetWorkoutState()
+				toast.success('Workout cancelled successfully')
+			}
+		})
 	}
 
 	// Start workout

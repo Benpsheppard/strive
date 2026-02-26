@@ -13,7 +13,6 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/vite": "^4.1.13",
     "@vitejs/plugin-react": "^5.0.2",
-    "vite-plugin-pwa": "^1.1.0",
     "axios": "^1.12.2",
     "chart.js": "^4.5.0",
     "framer-motion": "^12.23.22",
@@ -24,7 +23,9 @@
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.1",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "sweetalert2": "^11.26.20",
+    "vite-plugin-pwa": "^1.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

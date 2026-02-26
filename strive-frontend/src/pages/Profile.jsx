@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaUser } from 'react-icons/fa'
+import Swal from 'sweetalert2'
 
 // Function Imports
 import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js'
@@ -23,21 +24,62 @@ const Profile = () => {
     const dispatch = useDispatch()
 
     const onLogout = () => {
-        dispatch(logout())
+        Swal.fire({
+            title: 'Log Out?',
+            text: 'Are you sure you want to log out?',
+            icon: 'warning',
+            color: '#EDF2F4',
+            background: '#8D99AE',
+            showCancelButton: true,
+            confirmButtonText: 'Logout',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#EF233C',
+            cancelButtonColor: '#2B2D42'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                dispatch(logout())
+            }
+        })
     }
 
     const onDeleteAccount = () => {
-        if (window.confirm('Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.')) {
-            dispatch(deleteUser(user._id))
-            dispatch(reset())
-        }
+        Swal.fire({
+            title: 'Delete Account?',
+            text: 'Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.',
+            icon: 'warning',
+            color: '#EDF2F4',
+            background: '#8D99AE',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#EF233C',
+            cancelButtonColor: '#2B2D42'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                dispatch(deleteUser(user._id))
+                dispatch(reset())
+            }
+        })
     }
 
     const onResetAccount = () => {
-        if (window.confirm('Are you sure you want to reset your account? Doing so will permanently delete any workout data but keep your profile in tact. This action cannot be undone.')) {
-            dispatch(resetUser(user._id))
-            dispatch(reset())
-        }
+        Swal.fire({
+            title: 'Reset Account?',
+            text: 'Are you sure you want to reset your account? Doing so will permanently delete any workout data but keep your profile in tact. This action cannot be undone.',
+            icon: 'warning',
+            color: '#EDF2F4',
+            background: '#8D99AE',
+            showCancelButton: true,
+            confirmButtonText: 'Reset',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#EF233C',
+            cancelButtonColor: '#2B2D42'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                dispatch(resetUser(user._id))
+                dispatch(reset())
+            }
+        })
     }
 
     const onWeightToggle = () => {
