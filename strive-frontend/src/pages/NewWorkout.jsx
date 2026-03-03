@@ -341,20 +341,20 @@ const NewWorkout = () => {
 			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
 			<section className="w-full px-4 py-4 sm:px-0 flex flex-col items-center">
 				{!started && (
-				<div>
-					<div className="text-6xl font-semibold text-[#EDF2F4]">
-						<h1>
-							Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
-						</h1>
-					</div>
-
-					{lastWorkout && (
-						<div>
-							<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
-							<WorkoutItem workout={lastWorkout} />
+					<div>
+						<div className="text-6xl font-semibold text-[#EDF2F4]">
+							<h1>
+								Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
+							</h1>
 						</div>
-					)}
-				</div>
+
+						{lastWorkout && (
+							<div>
+								<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
+								<WorkoutItem workout={lastWorkout} />
+							</div>
+						)}
+					</div>
 				)}
 
 				<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
