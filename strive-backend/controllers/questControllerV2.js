@@ -67,9 +67,17 @@ const genQuests = async (user, duration) => {
         Based on the user's recent workouts, generate EXACTLY ${count} unique, creative ${duration} fitness quest(s).
         The quests should be CHALLENGING but POSSIBLE to complete within the duration of the quest. 
         Do NOT generate multi-day or progressive goals.
+        Quest should take into consideration PROGRESSIVE OVERLOAD.
 
         DIFFICULTY LEVEL FOR ${duration.toUpperCase()} QUESTS:
         ${difficultyGuidelines[duration]}
+
+        EXERCISE SELECTION RULES:
+        - Do NOT prioritise most frequent or most recent exercises
+        - Prefer exercises that have NOT been used already
+        - If the user has 8+ exercises available to choose from:
+            - At least 50% of quests must use non-primary compound lifts
+            - Intentionally vary selection and avoid predictable patterns.
 
         CRITICAL UNIQUENESS RULES:
         - Each quest MUST target a DIFFERENT exercise
@@ -78,10 +86,35 @@ const genQuests = async (user, duration) => {
         - Choose exercises from different muscle groups when possible
         
         CHALLENGE SCALING:
-        - Daily: Set reps/weight close to their current performance (5-15% increase)
-        - Weekly: Set reps/weight notably higher (20-40% increase from current max)
-        - Monthly: Set ambitious targets (50-100% increase from current max)
+        - Daily: +2-3 reps OR small weight jump
+        - Weekly: push closer to 10-12 BEFORE weight increase
+        - Monthly: either hit 12 reps OR significant weight increase
         
+        PROGRESSIVE OVERLOAD RULES (MANDATORY):
+        - When generating a quest, you MUST analyse the user’s most recent workouts for the selected exercise and determine their current working performance.
+        - Follow this strict overload hierarchy:
+
+        PRIORITY 1 — Increase Reps First
+        - If the user is lifting the same weight consistently and has not reached 12 reps, increase reps at the SAME weight.
+        - Do NOT increase weight if reps can still increase (until 12 reps is reached).
+        - Stay within 1–12 rep range.
+
+        PRIORITY 2 — Increase Weight Only After Rep Ceiling
+        - If the user has reached 10–12 reps at a given weight consistently, then increase weight.
+        - When increasing weight, reduce reps to 3–6 depending on difficulty duration.
+        - Weight increases should be realistic (e.g. +2.5kg to +5kg for barbell/dumbbell lifts).
+
+        If Recent Workouts Show Mixed Weights:
+        - Identify the highest successfully completed weight.
+        - If reps at that weight are below 6 → increase reps at that same weight.
+        - If reps are already 6–12 → increase weight and lower reps appropriately.
+
+        NEVER:
+        - Increase weight and keep reps identical if reps are below 8.
+        - Suggest unrealistic jumps (no +10kg jumps unless clearly appropriate).
+        - Reduce reps unless increasing weight.
+        - The quest must represent the NEXT logical progression step from the user's current performance.
+
         The quests should be in valid JSON format with these fields:
         {
             "quests": [
