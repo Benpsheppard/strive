@@ -6,9 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 // Function / Component Imports
 import SetItem from './SetItem.jsx'
 
-import { formatWeight } from '../../utils/weightUnits.js'
-
-const SetList = ({ sets, useImperial = false }) => {
+const SetList = ({ sets, local, useImperial = false }) => {
     if (!sets || sets.length === 0) {
         return null
     }
@@ -17,7 +15,7 @@ const SetList = ({ sets, useImperial = false }) => {
         <AnimatePresence>
             <ul className="flex flex-wrap justify-center gap-2 mb-2">
                 {sets.map((s, i) => (
-                    <SetItem key={i} set={s} useImperial={useImperial} />
+                    <SetItem key={i} set={s} local={local} useImperial={useImperial} />
                 ))}
             </ul>
         </AnimatePresence>
