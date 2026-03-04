@@ -15,7 +15,7 @@ const SetList = ({ sets, useImperial = false }) => {
         <AnimatePresence>
             <ul className="flex flex-wrap justify-center gap-2 mb-2">
                 {sets.map((s, i) => (
-                    <SetItem key={i} set={s} local={local} useImperial={useImperial} />
+                    <SetItem key={i} set={s} useImperial={useImperial} />
                 ))}
             </ul>
         </AnimatePresence>
