@@ -6,7 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 // Function / Component Imports
 import SetItem from './SetItem.jsx'
 
-const SetList = ({ sets, local, useImperial = false }) => {
+const SetList = ({ sets, useImperial = false }) => {
     if (!sets || sets.length === 0) {
         return null
     }

@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion'
 import { formatWeight } from '../../utils/weightUnits.js'
 
-const SetItem = ({ set, local, useImperial = false }) => {
+const SetItem = ({ set, useImperial = false }) => {
 
     return (
         <>
