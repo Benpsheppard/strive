@@ -84,7 +84,7 @@ const Progress = () => {
             <Header />
             {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="min-h-screen bg-[#2B2D42] px-6">
-                <h1 className="p-4 text-[#EDF2F4] text-6xl font-semibold text-center">
+                <h1 className="p-4 text-[#EDF2F4] text-5xl md:text-6xl font-semibold text-center">
                     Progress <span className="text-[#EF233C]">Summary</span>
                 </h1>
                 {workouts.length > 0 ? (

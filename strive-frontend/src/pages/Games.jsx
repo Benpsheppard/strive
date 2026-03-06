@@ -22,7 +22,7 @@ const Games = () => {
 
             <section className='min-h-screen bg-[#2B2D42] text-[#EDF2F4] px-6 mt-15'>
                 {/* Title */}
-                <h1 className='p-4 text-[#EDF2F4] text-6xl font-semibold text-center'>
+                <h1 className='p-4 text-[#EDF2F4] text-5xl md:text-6xl font-semibold text-center'>
                     Strive <span className='text-[#EF233C]'>Games</span>
                 </h1>
                 

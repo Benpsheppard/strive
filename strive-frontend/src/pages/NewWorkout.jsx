@@ -342,7 +342,7 @@ const NewWorkout = () => {
 			<section className="w-full px-4 py-4 sm:px-0 flex flex-col items-center">
 				{!started && (
 					<div>
-						<div className="text-6xl font-semibold text-[#EDF2F4]">
+						<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center">
 							<h1>
 								Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
 							</h1>
