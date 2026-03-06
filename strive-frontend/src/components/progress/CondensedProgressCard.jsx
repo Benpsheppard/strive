@@ -4,7 +4,7 @@
 import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight } from '../../utils/formatValues.js'
+import { formatWeight, formatDuration, formatNumber } from '../../utils/formatValues.js'
 
 const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, totalSets, totalWeight, totalReps }) => {
   const { user } = useSelector((state) => state.auth)
@@ -15,12 +15,12 @@ const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, t
         Workout Summary
       </h2>
       <div className="text-[#EDF2F4] space-y-2">
-        <p>Total Workouts - <span className="text-[#EF233C] font-bold">{totalWorkouts}</span></p>
-        <p>Total Exercises - <span className="text-[#EF233C] font-bold">{totalExercises}</span></p>
-        <p>Total Duration - <span className="text-[#EF233C] font-bold">{totalDuration} min</span></p>
-        <p>Total Sets - <span className="text-[#EF233C] font-bold">{totalSets}</span></p>
+        <p>Total Workouts - <span className="text-[#EF233C] font-bold">{formatNumber(totalWorkouts)}</span></p>
+        <p>Total Exercises - <span className="text-[#EF233C] font-bold">{formatNumber(totalExercises)}</span></p>
+        <p>Total Duration - <span className="text-[#EF233C] font-bold">{formatDuration(totalDuration)}</span></p>
+        <p>Total Sets - <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
         <p>Total Weight - <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
-        <p>Total Reps - <span className="text-[#EF233C] font-bold">{totalReps}</span></p>
+        <p>Total Reps - <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
       </div>
     </div>
   )
