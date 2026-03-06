@@ -12,7 +12,7 @@ const About = () => {
                         Helping you <span className="text-[#EF233C]">stay consistent</span>, even when motivation is low
                     </p>
                     <p className="track">
-                        Track your progress from <span className="text-[#EF233C]">your first to your hundredth</span> workout
+                        Track your progress from <span className="text-[#EF233C]">your very first</span> workout
                     </p>
                     <p className="progress">
                         View your gym <span className="text-[#EF233C]">statistics and progress charts</span> to see how far you've come
