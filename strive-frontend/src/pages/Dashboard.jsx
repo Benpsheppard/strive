@@ -24,7 +24,7 @@ const Dashboard = () => {
     }
 
     return (
-        <section className="mt-15">
+        <section>
             <Header />
             {user && user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <Hero />
