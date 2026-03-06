@@ -17,6 +17,8 @@ const QUEST_CONFIG = {
     monthly: { count: 1, expiryDays: 30, reward: 1000}
 }
 
+const REP_BUFFER = 2
+
 const getExpiryDate = (expiryDays) => {
     const expiry = new Date()
 
@@ -312,7 +314,7 @@ const checkQuestCompletion = asyncHandler(async (req, res) => {
         if (!match) continue
 
         const completed = match.sets.some(s => 
-            s.weight >= weight && s.reps >= reps
+            s.weight >= weight && s.reps >= reps - REP_BUFFER
         )
         
         if (completed) {
