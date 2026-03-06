@@ -10,7 +10,7 @@ const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, t
   const { user } = useSelector((state) => state.auth)
 
   return (
-    <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center md:hidden">
+    <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center md:hidden w-full">
       <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
         Workout Summary
       </h2>

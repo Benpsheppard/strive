@@ -83,12 +83,13 @@ const PrevWorkouts = () => {
     }
 
     return (
-        <section className="bg-[#2B2D42] min-h-screen mt-15 flex flex-col items-center px-4">
-            <Header />
+        <section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4">
+            <Header /> 
             {user?.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
-            <section className="text-5xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
+
+            <div className="text-5xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
                 <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
-            </section>
+            </div>
 
             {/* Filter + Search */}
             <div className="text-[#EDF2F4] w-full max-w-2xl flex flex-col md:flex-row gap-4 m-4">
@@ -123,7 +124,7 @@ const PrevWorkouts = () => {
             </p>
 
             {/* Workout Display */}
-            <section className="workout-content w-full">
+            <div className="workout-content w-full">
                 {workouts.length > 0 ? 
                 (
                     <>
@@ -141,7 +142,7 @@ const PrevWorkouts = () => {
                         </button>
                     </div>
                 )}
-            </section>
+            </div>
         </section>
     )
 }

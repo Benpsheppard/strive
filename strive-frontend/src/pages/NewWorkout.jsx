@@ -335,131 +335,129 @@ const NewWorkout = () => {
 	}
 
 	return (
-		<section className="bg-[#2B2D42] mt-15 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
+		<section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4">
 			<Header />
-			
 			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
-			<section className="w-full px-4 py-4 sm:px-0 flex flex-col items-center">
-				{!started && (
-					<div>
-						<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center">
-							<h1>
-								Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
-							</h1>
+				
+			{!started && (
+				<div>
+					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+						<h1>
+							Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
+						</h1>
+					</div>
+
+					{lastWorkout && (
+						<div>
+							<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
+							<WorkoutItem workout={lastWorkout} />
+						</div>
+					)}
+				</div>
+			)}
+
+			<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
+			{!started ? (
+				<div>
+					<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
+					<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
+						Start Workout
+					</button>
+				</div>
+			) : (
+				<>
+					<h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
+						- New <span className="text-[#EF233C]">Workout</span> -
+					</h1>
+
+					<input
+						type="text"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+						placeholder="Workout Title *"
+						className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+						required
+					/>
+
+					{/* Exercise Form */}
+					<div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
+						<div className="relative" ref={suggestionsContainerRef}>
+							<input
+								type="text"
+								name="name"
+								value={currentExercise.name}
+								onChange={handleExerciseChange}
+								placeholder="Exercise Name *"
+								className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+								required
+							/>
+
+							{/* Suggestions dropdown */}
+							{showSuggestions && (
+								<ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+								{filteredExercises.map((exercise, index) => (
+									<li key={index} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
+										<div className="font-semibold">{exercise.name}</div>
+										{exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
+									</li>
+								))}
+								</ul>
+							)}
 						</div>
 
-						{lastWorkout && (
-							<div>
-								<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
-								<WorkoutItem workout={lastWorkout} />
-							</div>
-						)}
-					</div>
-				)}
-
-				<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
-				{!started ? (
-					<div>
-						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
-						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-							Start Workout
-						</button>
-					</div>
-				) : (
-					<>
-						<h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
-							- New <span className="text-[#EF233C]">Workout</span> -
-						</h1>
+						<select name="musclegroup" value={currentExercise.musclegroup} onChange={handleExerciseChange} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" required>
+							<option value="" className="placeholder-gray-300">
+								Select Muscle Group *
+							</option>
+							{MUSCLE_GROUPS.map((group) => (
+								<option key={group} value={group}>
+								{group}
+								</option>
+							))}
+						</select>
 
 						<input
 							type="text"
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							placeholder="Workout Title *"
-							className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-							required
+							name="description"
+							value={currentExercise.description}
+							onChange={handleExerciseChange}
+							placeholder="Description"
+							className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
 						/>
 
-						{/* Exercise Form */}
-						<div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
-							<div className="relative" ref={suggestionsContainerRef}>
-								<input
-									type="text"
-									name="name"
-									value={currentExercise.name}
-									onChange={handleExerciseChange}
-									placeholder="Exercise Name *"
-									className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-									required
-								/>
+						{/* Sets Form */}
+						<SetForm currentSet={currentSet} handleSetChange={handleSetChange} addSet={addSet} user={user} />
 
-								{/* Suggestions dropdown */}
-								{showSuggestions && (
-									<ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-									{filteredExercises.map((exercise, index) => (
-										<li key={index} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
-											<div className="font-semibold">{exercise.name}</div>
-											{exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
-										</li>
-									))}
-									</ul>
-								)}
-							</div>
+						{/* Sets List */}
+						<SetList sets={currentExercise.sets} useImperial={user.useImperial}
+							onSetsUpdate={() => {
+								const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
+								setCurrentExercise(updatedExercise)
+							}}
+						/>
 
-							<select name="musclegroup" value={currentExercise.musclegroup} onChange={handleExerciseChange} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" required>
-								<option value="" className="placeholder-gray-300">
-									Select Muscle Group *
-								</option>
-								{MUSCLE_GROUPS.map((group) => (
-									<option key={group} value={group}>
-									{group}
-									</option>
-								))}
-							</select>
+						{/* Add Exercise */}
+						<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+							Add Exercise
+						</button>
+					</div>
 
-							<input
-								type="text"
-								name="description"
-								value={currentExercise.description}
-								onChange={handleExerciseChange}
-								placeholder="Description"
-								className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-							/>
+					{/* Exercises List */}
+					<ExerciseList exercises={exercises} useImperial={user.useImperial} />
 
-							{/* Sets Form */}
-							<SetForm currentSet={currentSet} handleSetChange={handleSetChange} addSet={addSet} user={user} />
+					{/* Submit Workout */}
+					<div className="flex flex-col w-full items-center">
+						<button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
+							End Workout
+						</button>
 
-							{/* Sets List */}
-							<SetList sets={currentExercise.sets} useImperial={user.useImperial}
-								onSetsUpdate={() => {
-									const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-									setCurrentExercise(updatedExercise)
-								}}
-							/>
-
-							{/* Add Exercise */}
-							<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-								Add Exercise
-							</button>
-						</div>
-
-						{/* Exercises List */}
-						<ExerciseList exercises={exercises} useImperial={user.useImperial} />
-
-						{/* Submit Workout */}
-						<div className="flex flex-col w-full items-center">
-							<button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
-								End Workout
-							</button>
-
-							<button onClick={onCancel} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-								Cancel Workout
-							</button>
-						</div>
-					</>
-				)}
-				</div>
-			</section>
+						<button onClick={onCancel} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
+							Cancel Workout
+						</button>
+					</div>
+				</>
+			)}
+			</div>
 		</section>
 	)
 }
