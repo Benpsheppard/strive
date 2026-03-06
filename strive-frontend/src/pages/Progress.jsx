@@ -7,7 +7,7 @@ import { useNavigate, Link } from 'react-router-dom'
 
 // Function Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
-import { formatWeight } from '../utils/weightUnits.js'
+import { formatWeight, formatDuration, formatNumber } from '../utils/formatValues.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -91,12 +91,13 @@ const Progress = () => {
                     <>
                         {/* Summary grid */}
                         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                            <ProgressCard title="Total Workouts" value={totalWorkouts} />
-                            <ProgressCard title="Total Exercises" value={totalExercises} />
-                            <ProgressCard title="Total Duration" value={`${totalDuration} min`} />
-                            <ProgressCard title="Total Sets" value={totalSets} />
+                            <ProgressCard title="Total Workouts" value={formatNumber(totalWorkouts)} />
+                            <ProgressCard title="Total Exercises" value={formatNumber(totalExercises)} />
+                            <ProgressCard title="Total Duration" value={formatDuration(totalDuration || 0)} 
+                            />                            
+                            <ProgressCard title="Total Sets" value={formatNumber(totalSets)} />
                             <ProgressCard title="Total Weight Lifted" value={formatWeight(totalWeight, user.useImperial)} />
-                            <ProgressCard title="Total Reps" value={totalReps} />
+                            <ProgressCard title="Total Reps" value={formatNumber(totalReps)} />
                         </div>
 
                         {/* Mobile Summary card */}
