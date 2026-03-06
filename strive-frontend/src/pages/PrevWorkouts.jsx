@@ -83,7 +83,7 @@ const PrevWorkouts = () => {
     }
 
     return (
-        <section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4">
+        <section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
             <Header /> 
             {user?.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
 

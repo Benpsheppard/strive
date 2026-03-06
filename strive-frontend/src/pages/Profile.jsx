@@ -45,15 +45,23 @@ const Profile = () => {
     const onDeleteAccount = () => {
         Swal.fire({
             title: 'Delete Account?',
-            text: 'Are you sure you want to delete your account? This will permanently delete all your workouts and data. This action cannot be undone.',
+            html: 'This will permanently delete all your workouts and data. This action cannot be undone.<br><br>Type <strong>DELETE</strong> to confirm.',
             icon: 'warning',
             color: '#EDF2F4',
             background: '#8D99AE',
+            input: 'text',
+            inputPlaceholder: 'Type DELETE to confirm',
             showCancelButton: true,
             confirmButtonText: 'Delete',
             cancelButtonText: 'Cancel',
             confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42'
+            cancelButtonColor: '#2B2D42',
+            preConfirm: (value) => {
+                if (value !== 'DELETE') {
+                    Swal.showValidationMessage('You must type DELETE exactly to confirm')
+                    return false
+                }
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 dispatch(deleteUser(user._id))
@@ -65,15 +73,23 @@ const Profile = () => {
     const onResetAccount = () => {
         Swal.fire({
             title: 'Reset Account?',
-            text: 'Are you sure you want to reset your account? Doing so will permanently delete any workout data but keep your profile in tact. This action cannot be undone.',
+            html: 'This will permanently delete your workout data but keep your profile intact. This action cannot be undone.<br><br>Type <strong>RESET</strong> to confirm.',
             icon: 'warning',
             color: '#EDF2F4',
             background: '#8D99AE',
+            input: 'text',
+            inputPlaceholder: 'Type RESET to confirm',
             showCancelButton: true,
             confirmButtonText: 'Reset',
             cancelButtonText: 'Cancel',
             confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42'
+            cancelButtonColor: '#2B2D42',
+            preConfirm: (value) => {
+                if (value !== 'RESET') {
+                    Swal.showValidationMessage('You must type RESET exactly to confirm')
+                    return false
+                }
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 dispatch(resetUser(user._id))
@@ -109,7 +125,7 @@ const Profile = () => {
     }
 
     return (
-        <section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4">            
+        <section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
             <Header />
             {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
 
@@ -117,43 +133,43 @@ const Profile = () => {
                 Profile
             </h1>
 
-            <div className="bg-[#8D99AE] w-full md:max-w-[40%] p-6 item-center text-center shadow-md rounded-xl">
-                <FaUser className="text-8xl text-[#2B2D42] bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
-                <p className="text-lg mb-2 text-[#2B2D42]">
+            <div className="bg-[#8D99AE] w-full md:max-w-[40%] p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+                <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
+                <p className="text-lg mb-2">
                     <span className="font-semibold">Username:</span> {user.username}
                 </p>
-                <p className="text-lg mb-2 text-[#2B2D42]">
+                <p className="text-lg mb-2">
                     <span className="font-semibold">Email:</span> {user.email}
                 </p>
-                <p className="text-lg mb-6 text-[#2B2D42]">
+                <p className="text-lg mb-6">
                     <span className="font-semibold">User since:</span>{" "}
                     {new Date(user.createdAt).toLocaleDateString()}
                 </p>
-                <p className="text-lg mb-2 text-[#2B2D42]">
+                <p className="text-lg mb-2">
                     <span className="font-semibold">Level:</span> {user.level}
                 </p>
-                <p className="text-lg mb-2 text-[#2B2D42]">
+                <p className="text-lg mb-2">
                     <span className="font-semibold">Strive Points:</span> {user.strivepoints}
                 </p>
 
                 {/* Weight Unit Toggle */}
                 <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
+            </div>
 
-                {/* Account Control buttons */}
-                <div className="flex flex-col w-full items-center">
-                    <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
-                        Logout
-                    </button>
+            {/* Account Control buttons */}
+            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-[40%] p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+                <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded transition hover:bg-[#D90429]">
+                    Logout
+                </button>
+            </div>
 
-                    <div className="flex items-center gap-2 w-full">
-                        <button onClick={onDeleteAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-                            Delete Account
-                        </button>
-                        <button onClick={onResetAccount} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-                            Reset Account
-                        </button>
-                    </div>
-                </div>
+            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-[40%] p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+                <button onClick={onDeleteAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                    Delete Account
+                </button>
+                <button onClick={onResetAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                    Reset Account
+                </button>
             </div>
         </section>
     )

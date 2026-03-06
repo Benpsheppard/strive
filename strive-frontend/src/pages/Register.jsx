@@ -105,7 +105,7 @@ const Register = () => {
                     {/* Form */}
                     <form onSubmit={onSubmit} className="space-y-4">
                         <h2 className="mb-2 text-center text-xl font-semibold text-[#EDF2F4]">
-                            - Register -
+                            Register
                         </h2>
                         {/* Email input */}
                         <input

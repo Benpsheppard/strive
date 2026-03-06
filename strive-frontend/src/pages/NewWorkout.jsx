@@ -335,7 +335,7 @@ const NewWorkout = () => {
 	}
 
 	return (
-		<section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4">
+		<section className="bg-[#2B2D42] min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
 			<Header />
 			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
 				
@@ -367,7 +367,7 @@ const NewWorkout = () => {
 			) : (
 				<>
 					<h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
-						- New <span className="text-[#EF233C]">Workout</span> -
+						New <span className="text-[#EF233C]">Workout</span>
 					</h1>
 
 					<input
