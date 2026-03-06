@@ -1,7 +1,7 @@
 // ExerciseList.jsx
 
 // Function Imports
-import { formatWeight } from '../../utils/weightUnits.js'
+import { formatWeight } from '../../utils/formatValues.js'
 
 const ExerciseList = ({ exercises, useImperial }) => {
     if (!exercises || exercises.length === 0) return null

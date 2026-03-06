@@ -11,6 +11,7 @@ import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import SetList from './SetList.jsx'
+import { formatDuration } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
     const { user } = useSelector((state) => state.auth)
@@ -73,7 +74,7 @@ const WorkoutItem = ({ workout }) => {
 
             {/* Summary info */}
             <p className="text-sm text-[#2B2D42]">
-                Duration: <span className="font-medium">{workout.duration || 0} mins</span> 
+                Duration: <span className="font-medium">{formatDuration(workout.duration) || 0} mins</span> 
                 {" | "}
                 {exerciseCount} {exerciseCount === 1 ? "exercise" : "exercises"}
             </p>

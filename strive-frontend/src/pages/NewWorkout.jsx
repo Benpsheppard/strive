@@ -10,7 +10,7 @@ import Swal from 'sweetalert2'
 // Function Imports
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 import { detectNewPBs } from '../utils/pbDetection.js'
-import { parseWeight, formatWeight } from '../utils/weightUnits.js'
+import { parseWeight, formatWeight } from '../utils/formatValues.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js'
 import { addPoints } from '../features/auth/authSlice.js'

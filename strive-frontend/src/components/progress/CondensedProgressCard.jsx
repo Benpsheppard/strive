@@ -4,7 +4,7 @@
 import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight } from '../../utils/weightUnits.js'
+import { formatWeight } from '../../utils/formatValues.js'
 
 const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, totalSets, totalWeight, totalReps }) => {
   const { user } = useSelector((state) => state.auth)

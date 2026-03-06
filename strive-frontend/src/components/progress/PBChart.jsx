@@ -10,7 +10,7 @@ import { Bar } from 'react-chartjs-2'
 
 // Function Imports
 import { calculatePersonalBests } from '../../utils/pbDetection.js'
-import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js'
+import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
 // Register Chart
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)

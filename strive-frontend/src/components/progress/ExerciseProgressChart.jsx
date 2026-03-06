@@ -9,7 +9,7 @@ import {
 import { Line } from 'react-chartjs-2'
 
 // Function Imports
-import { getWeightUnit, kgToLbs } from '../../utils/weightUnits'
+import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
 
 // Register Chart
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)

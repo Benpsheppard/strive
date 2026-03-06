@@ -2,7 +2,7 @@
 
 // Imports
 import { motion } from 'framer-motion'
-import { formatWeight } from '../../utils/weightUnits.js'
+import { formatWeight } from '../../utils/formatValues.js'
 
 const SetItem = ({ set, useImperial = false }) => {
 

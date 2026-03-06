@@ -4,7 +4,7 @@
 import { FaPlus } from 'react-icons/fa'
 
 // Function Imports
-import { getWeightUnit } from '../../utils/weightUnits.js'
+import { getWeightUnit } from '../../utils/formatValues.js'
 
 const SetForm = ({ currentSet, handleSetChange, addSet, user }) => {
     const unit = getWeightUnit(user.useImperial)

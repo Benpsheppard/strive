@@ -6,7 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 
 // Function Imports
-import { kgToLbs, getWeightUnit } from '../../utils/weightUnits.js'
+import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
 // Register Chart
 ChartJS.register(ArcElement, Tooltip, Legend)
