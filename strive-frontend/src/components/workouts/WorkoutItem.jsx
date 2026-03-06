@@ -74,7 +74,7 @@ const WorkoutItem = ({ workout }) => {
 
             {/* Summary info */}
             <p className="text-sm text-[#2B2D42]">
-                Duration: <span className="font-medium">{formatDuration(workout.duration) || 0} mins</span> 
+                Duration: <span className="font-medium">{formatDuration(workout.duration) || 0}</span> 
                 {" | "}
                 {exerciseCount} {exerciseCount === 1 ? "exercise" : "exercises"}
             </p>
