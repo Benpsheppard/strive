@@ -1,65 +1,76 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap');
+
+:root {
+	--font-heading: 'Barlow Condensed', sans-serif;
+	--font-body: 'DM Sans', sans-serif;
+}
 
 * {
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+ 	 font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+ 	 font-family: var(--font-heading);
+ 	 font-weight: 700;
 }
 
 /* Global Styles */
 html, body {
-  background-color: #2B2D42;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  margin: 0;
-  height: 100%;
-  scrollbar-gutter: stable;
+	background-color: #2B2D42;
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	margin: 0;
+	height: 100%;
+	scrollbar-gutter: stable;
 }
 
 /* Override default toast styles to match your app */
 .Toastify__toast {
-  background-color: #8D99AE !important;
-  color: #EDF2F4 !important;
-  border-radius: 12px !important;
-  font-family: inherit !important;
+	background-color: #8D99AE !important;
+	color: #EDF2F4 !important;
+	border-radius: 12px !important;
+	font-family: inherit !important;
 }
 
 .Toastify__close-button {
-  color: #EDF2F4 !important;
+  	color: #EDF2F4 !important;
 }
 
 .Toastify__close-button:hover {
-  color: #EF233C !important;
+  	color: #EF233C !important;
 }
 
 /* Loading Spinner Styles */
 .loadingSpinnerContainer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: #2B2D42;
-  z-index: 5000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #2B2D42;
+	z-index: 5000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .loadingSpinner {
-  width: 128px;
-  height: 128px;
-  border: 16px solid;
-  border-color: #EF233C transparent #EDF2F4 transparent;
-  border-radius: 50%;
-  animation: spin 1.2s linear infinite;
+	width: 128px;
+	height: 128px;
+	border: 16px solid;
+	border-color: #EF233C transparent #EDF2F4 transparent;
+	border-radius: 50%;
+	animation: spin 1.2s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
