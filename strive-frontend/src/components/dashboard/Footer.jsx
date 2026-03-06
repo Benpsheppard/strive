@@ -2,7 +2,7 @@
 
 const Footer = () => {
     return (
-        <footer className="bg-[#2B2D42] text-[#8D99AE] py-6">
+        <footer className="bg-[#2B2D42] text-[#8D99AE] py-6 pb-20 md:pb-6">
             <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
                 <div className="mb-4 md:mb-0 text-center md:text-left">
                     <h2 className="text-lg font-bold text-[#EDF2F4]">Strive</h2>
