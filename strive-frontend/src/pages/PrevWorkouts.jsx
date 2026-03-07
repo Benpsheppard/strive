@@ -53,6 +53,10 @@ const PrevWorkouts = () => {
                 return filtered.sort((a, b) => a.title.localeCompare(b.title))
             case 'title-desc':
                 return filtered.sort((a, b) => b.title.localeCompare(a.title))
+            case 'l-duration':
+                return filtered.sort((a, b) => b.duration - a.duration)
+            case 's-duration':
+                return filtered.sort((a, b) => a.duration - b.duration)  
             default:
                 return filtered
         }
@@ -109,6 +113,8 @@ const PrevWorkouts = () => {
                     <option value="oldest">Oldest</option>
                     <option value="title-asc">Title (A–Z)</option>
                     <option value="title-desc">Title (Z–A)</option>
+                    <option value="l-duration">Longest Duration</option>
+                    <option value="s-duration">Shortest Duration</option>
                 </select>
             </div>
 
