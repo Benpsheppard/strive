@@ -28,7 +28,7 @@ const App = () => {
   return (
     <>
       <Router>
-        <div className="w-full min-h-screen bg-[#2B2D42]">
+        <div className="w-full min-h-screen">
           <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path='/' element={<Dashboard />} />
