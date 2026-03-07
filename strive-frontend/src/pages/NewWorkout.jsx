@@ -24,6 +24,7 @@ import ExerciseList from '../components/workouts/ExerciseList.jsx'
 import SetList from '../components/workouts/SetList.jsx'
 import SetForm from '../components/workouts/SetForm.jsx'
 import GuestHeader from '../components/headers/GuestHeader.jsx'
+import Timer from '../components/workouts/Timer.jsx'
 
 // Muscle groups
 const MUSCLE_GROUPS = [
@@ -53,22 +54,23 @@ const NewWorkout = () => {
 	const [currentSet, setCurrentSet] = useLocalStorage('newWorkout_currentSet', { weight: '', reps: '' })
 	const [started, setStarted] = useLocalStorage('newWorkout_started', false)
 	const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null)
+	const [restTimerDuration, setRestTimerDuration] = useLocalStorage('newWorkout_restTimer', 60)
 
 	// Use State
 	const [showSuggestions, setShowSuggestions] = useState(false)
 	const [filteredExercises, setFilteredExercises] = useState([])
+	const [restTimeRemaining, setRestTimeRemaining] = useState(0)
+
+	// Use Ref
+	const selectingRef = useRef(false)
+	const suggestionsContainerRef = useRef(null)
+	const restIntervalRef = useRef(null)
 
 	// Get unique exercises
 	const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts])
 
 	// Most recent workout
 	const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
-
-	// Ref to mark a click-selection
-	const selectingRef = useRef(false)
-
-	// Ref to container for click-outside
-	const suggestionsContainerRef = useRef(null)
   
 	// Reset workout state
 	const resetWorkoutState = () => {
@@ -145,6 +147,13 @@ const NewWorkout = () => {
 		}
 	}, [user, message, isError, navigate, dispatch])
 
+	// Clean up rest timer
+	useEffect(() => {
+		return () => {
+			if (restIntervalRef.current) clearInterval(restIntervalRef.current)
+		}
+	}, [])
+
 	// Select exercise from suggestions
 	const selectExercise = (exercise) => {
 		selectingRef.current = true
@@ -175,6 +184,41 @@ const NewWorkout = () => {
 		}))
 	}
 
+	// Start rest timer
+	const startRestTimer = () => {
+		// Clear any existing timer
+		if (restIntervalRef.current) clearInterval(restIntervalRef.current)
+		
+		setRestTimeRemaining(restTimerDuration)
+
+		restIntervalRef.current = setInterval(() => {
+			setRestTimeRemaining((prev) => {
+				if (prev <= 1) {
+					clearInterval(restIntervalRef.current)
+					restIntervalRef.current = null
+					notifyRestComplete()
+					return 0
+				}
+				return prev - 1
+			})
+		}, 1000)
+	}
+
+	// Send notif when rest timer complete
+	const notifyRestComplete = () => {
+		Swal.fire({
+			title: 'Rest Complete!',
+			text: 'Time for your next set. Get after it!',
+			icon: 'success',
+			color: '#EDF2F4',
+			background: '#8D99AE',
+			confirmButtonText: 'Lets Go!',
+			confirmButtonColor: '#EF233C',
+			timer: 10000,
+			timerProgressBar: true,
+		})
+	}	
+
 	// Add set to current exercise
 	const addSet = () => {
 		if (!currentSet.weight || currentSet.weight <= 0) {
@@ -195,6 +239,10 @@ const NewWorkout = () => {
 
 		setCurrentSet({ weight: '', reps: '' })
 		toast.success('Set saved successfully!')
+
+		if (restTimerDuration > 0) {
+			startRestTimer()
+		}
 	}
 
 	// Add exercise to workout
@@ -340,124 +388,145 @@ const NewWorkout = () => {
 			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
 				
 			{!started && (
-				<div>
-					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-						<h1>
-							Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
-						</h1>
-					</div>
-
-					{lastWorkout && (
-						<div>
-							<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
-							<WorkoutItem workout={lastWorkout} />
-						</div>
-					)}
-				</div>
-			)}
-
-			<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
-			{!started ? (
-				<div>
-					<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
-					<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-						Start Workout
-					</button>
-				</div>
-			) : (
 				<>
-					<h1 className="new-workout text-2xl sm:text-3xl text-center text-[#EDF2F4] mb-5">
-						New <span className="text-[#EF233C]">Workout</span>
-					</h1>
-
-					<input
-						type="text"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						placeholder="Workout Title *"
-						className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-						required
-					/>
-
-					{/* Exercise Form */}
-					<div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
-						<div className="relative" ref={suggestionsContainerRef}>
-							<input
-								type="text"
-								name="name"
-								value={currentExercise.name}
-								onChange={handleExerciseChange}
-								placeholder="Exercise Name *"
-								className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-								required
-							/>
-
-							{/* Suggestions dropdown */}
-							{showSuggestions && (
-								<ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-								{filteredExercises.map((exercise, index) => (
-									<li key={index} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
-										<div className="font-semibold">{exercise.name}</div>
-										{exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
-									</li>
-								))}
-								</ul>
-							)}
+					<div>
+						<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+							<h1>
+								Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
+							</h1>
 						</div>
 
-						<select name="musclegroup" value={currentExercise.musclegroup} onChange={handleExerciseChange} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" required>
-							<option value="" className="placeholder-gray-300">
-								Select Muscle Group *
-							</option>
-							{MUSCLE_GROUPS.map((group) => (
-								<option key={group} value={group}>
-								{group}
-								</option>
-							))}
-						</select>
-
-						<input
-							type="text"
-							name="description"
-							value={currentExercise.description}
-							onChange={handleExerciseChange}
-							placeholder="Description"
-							className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-						/>
-
-						{/* Sets Form */}
-						<SetForm currentSet={currentSet} handleSetChange={handleSetChange} addSet={addSet} user={user} />
-
-						{/* Sets List */}
-						<SetList sets={currentExercise.sets} useImperial={user.useImperial}
-							onSetsUpdate={() => {
-								const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-								setCurrentExercise(updatedExercise)
-							}}
-						/>
-
-						{/* Add Exercise */}
-						<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-							Add Exercise
-						</button>
+						{lastWorkout && (
+							<div>
+								<h2 className="text-[#EDF2F4] text-center text-xl mt-10">Last Session</h2>
+								<WorkoutItem workout={lastWorkout} />
+							</div>
+						)}
 					</div>
 
-					{/* Exercises List */}
-					<ExerciseList exercises={exercises} useImperial={user.useImperial} />
-
-					{/* Submit Workout */}
-					<div className="flex flex-col w-full items-center">
-						<button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded mt-4 transition hover:bg-[#D90429]">
-							End Workout
-						</button>
-
-						<button onClick={onCancel} className="w-1/2 bg-[#8D99AE] text-[#EDF2F4] py-2 rounded mt-2 transition hover:bg-[#D90429]">
-							Cancel Workout
+					<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
+						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
+						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
+							Start Workout
 						</button>
 					</div>
 				</>
 			)}
-			</div>
+
+			{started && (
+				<section className="space-y-3">
+					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+							<h1>
+								New <span className="text-[#EF233C]">Workout</span>
+							</h1>
+						</div>
+					<Timer started={started} startTime={startTime} restTimerDuration={restTimerDuration} setRestTimerDuration={setRestTimerDuration} />
+
+					<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">					
+						{restTimeRemaining > 0 && (
+							<div className="text-center mb-4 bg-[#2B2D42] rounded-xl p-3">
+								<p className="text-[#EDF2F4] text-sm mb-1">Rest Timer</p>
+								<p className="text-[#EF233C] text-3xl font-bold">{restTimeRemaining}s</p>
+								<button 
+									onClick={() => {
+										clearInterval(restIntervalRef.current)
+										setRestTimeRemaining(0)
+									}}
+									className="text-[#EDF2F4] text-xs mt-1 opacity-60 hover:opacity-100"
+								>
+									Skip
+								</button>
+							</div>
+						)}
+
+						<input
+							type="text"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+							placeholder="Workout Title *"
+							className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+							required
+						/>
+
+						{/* Exercise Form */}
+						<div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl">
+							<div className="relative" ref={suggestionsContainerRef}>
+								<input
+									type="text"
+									name="name"
+									value={currentExercise.name}
+									onChange={handleExerciseChange}
+									placeholder="Exercise Name *"
+									className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+									required
+								/>
+
+								{/* Suggestions dropdown */}
+								{showSuggestions && (
+									<ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+									{filteredExercises.map((exercise, index) => (
+										<li key={index} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
+											<div className="font-semibold">{exercise.name}</div>
+											{exercise.musclegroup && <div className="text-sm text-[#8D99AE]">{exercise.musclegroup}</div>}
+										</li>
+									))}
+									</ul>
+								)}
+							</div>
+
+							<select name="musclegroup" value={currentExercise.musclegroup} onChange={handleExerciseChange} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" required>
+								<option value="" className="placeholder-gray-300">
+									Select Muscle Group *
+								</option>
+								{MUSCLE_GROUPS.map((group) => (
+									<option key={group} value={group}>
+									{group}
+									</option>
+								))}
+							</select>
+
+							<input
+								type="text"
+								name="description"
+								value={currentExercise.description}
+								onChange={handleExerciseChange}
+								placeholder="Description"
+								className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+							/>
+
+							{/* Sets Form */}
+							<SetForm currentSet={currentSet} handleSetChange={handleSetChange} addSet={addSet} user={user} />
+
+							{/* Sets List */}
+							<SetList sets={currentExercise.sets} useImperial={user.useImperial}
+								onSetsUpdate={() => {
+									const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
+									setCurrentExercise(updatedExercise)
+								}}
+							/>
+
+							{/* Add Exercise */}
+							<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+								Add Exercise
+							</button>
+						</div>
+
+						{/* Exercises List */}
+						<ExerciseList exercises={exercises} useImperial={user.useImperial} />
+					</div>
+
+					{/* Submit Workout */}
+					<div className="space-y-4 p-4 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl flex flex-col w-full items-center">
+						<button onClick={onSubmit} className="w-full bg-[#EF233C] text-[#EDF2F4] p-2 rounded transition hover:bg-[#D90429]">
+							End Workout
+						</button>
+
+						<button onClick={onCancel} className="w-full bg-[#8D99AE] border-2 border-[#EF233C] text-[#EDF2F4] p-2 rounded transition hover:bg-[#EF233C]">
+							Cancel Workout
+						</button>
+					</div>
+				</section>
+			)}
 		</section>
 	)
 }
