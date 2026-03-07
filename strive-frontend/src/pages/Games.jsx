@@ -2,6 +2,7 @@
 
 // Imports
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 // Component Imports
 import Header from '../components/headers/Header'
@@ -16,10 +17,32 @@ const Games = () => {
         return <Spinner />
     }
 
+    if (user?.isGuest) {
+        return (
+            <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32"> 
+                <Header />
+
+                {/* Title */}
+                <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+                    Strive <span className='text-[#EF233C]'>Games</span>
+                </h1>
+
+                <p className="text-[#EDF2F4]">
+                    Create a Strive account to access Strive Games!
+                </p>
+
+                <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
+                    <Link to='/'>
+                        Return to Home
+                    </Link>
+                </button>
+            </section>
+        )
+    }
+
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
             <Header />
-            {user?.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
 
             {/* Title */}
             <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">

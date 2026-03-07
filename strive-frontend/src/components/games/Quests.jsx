@@ -14,11 +14,14 @@ import InlineSpinner from '../spinners/InlineSpinner'
 const Quests = () => {
     const dispatch = useDispatch()
 
+    const { user } = useSelector((state) => state.auth)
     const { quests, isLoading } = useSelector((state) => state.quest)
     const { daily, weekly, monthly } = quests
 
     useEffect(() => {
-        dispatch(getQuests())
+        if (!user?.isQuest) {
+            dispatch(getQuests())
+        }
 
         return () => {
             dispatch(reset())
