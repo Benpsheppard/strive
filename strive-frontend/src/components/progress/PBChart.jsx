@@ -102,7 +102,7 @@ const PBChart = ({ workouts, useImperial }) => {
     }
 
     return (
-        <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10">
+        <div className="bg-[#8D99AE] p-6 rounded-2xl">
             <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4 text-center">
                 Personal Bests
             </h2>
