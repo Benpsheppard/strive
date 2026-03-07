@@ -25,6 +25,8 @@ import SetList from '../components/workouts/SetList.jsx'
 import SetForm from '../components/workouts/SetForm.jsx'
 import GuestHeader from '../components/headers/GuestHeader.jsx'
 import Timer from '../components/workouts/Timer.jsx'
+import Calendar from '../components/progress/Calendar.jsx'
+import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
 
 // Muscle groups
 const MUSCLE_GROUPS = [
@@ -388,7 +390,7 @@ const NewWorkout = () => {
 			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
 				
 			{!started && (
-				<>
+				<section className="space-y-3">
 					<div>
 						<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
 							<h1>
@@ -404,17 +406,21 @@ const NewWorkout = () => {
 						)}
 					</div>
 
+					<Calendar workouts={workouts} />
+
 					<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
 						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
 						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
 							Start Workout
 						</button>
 					</div>
-				</>
+
+					<MuscleHeatmap workouts={workouts} />
+				</section>
 			)}
 
 			{started && (
-				<section className="space-y-3">
+				<section className="space-y-3 w-full max-w-2xl">
 					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
 							<h1>
 								New <span className="text-[#EF233C]">Workout</span>
