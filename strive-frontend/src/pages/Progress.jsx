@@ -18,6 +18,7 @@ import CondensedProgressCard from '../components/progress/CondensedProgressCard.
 import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
 import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
 import GuestHeader from '../components/headers/GuestHeader.jsx'
+import MonthCalendar from '../components/progress/MonthCalendar.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
@@ -88,7 +89,7 @@ const Progress = () => {
                 Progress <span className="text-[#EF233C]">Summary</span>
             </h1>
             {workouts.length > 0 ? (
-                <div className='w-full'>
+                <div className='w-full space-y-6'>
                     {/* Summary grid */}
                     <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                         <ProgressCard title="Total Workouts" value={formatNumber(totalWorkouts)} />
@@ -108,6 +109,8 @@ const Progress = () => {
                         totalWeight={totalWeight}
                         totalReps={totalReps}
                     />
+
+                    <MonthCalendar workouts={workouts} />
 
                     {/* Charts Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
