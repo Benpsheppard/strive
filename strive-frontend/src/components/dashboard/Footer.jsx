@@ -19,15 +19,15 @@ const Footer = () => {
                     </div>
 
                     {/* Bottom row */}
-                    <div className="flex justify-center space-x-4">
+                    {/* <div className="flex justify-center space-x-4">
                         <a href="/privacy-policy" className="hover:text-[#EF233C]">Privacy Policy</a>
                         <a href="/help" className="hover:text-[#EF233C]">Help</a>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
             <div className="text-center text-xs text-gray-500 mt-4">
-                © 2025 Strive. All rights reserved.
+                © 2026 Strive. All rights reserved.
             </div>
         </footer>
     )
