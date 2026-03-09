@@ -27,6 +27,7 @@ import GuestHeader from '../components/headers/GuestHeader.jsx'
 import Timer from '../components/workouts/Timer.jsx'
 import Calendar from '../components/progress/Calendar.jsx'
 import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
+import { FaUndoAlt } from 'react-icons/fa'
 
 // Muscle groups
 const MUSCLE_GROUPS = [
@@ -62,6 +63,7 @@ const NewWorkout = () => {
 	const [showSuggestions, setShowSuggestions] = useState(false)
 	const [filteredExercises, setFilteredExercises] = useState([])
 	const [restTimeRemaining, setRestTimeRemaining] = useState(0)
+	const [setHistory, setSetHistory] = useLocalStorage('newWorkout_setHistory', [])
 
 	// Use Ref
 	const selectingRef = useRef(false)
@@ -82,12 +84,15 @@ const NewWorkout = () => {
 		setCurrentSet({ weight: '', reps: '' })
 		setStarted(false)
 		setStartTime(null)
+		setSetHistory([])
+
 		localStorage.removeItem('newWorkout_title')
 		localStorage.removeItem('newWorkout_exercises')
 		localStorage.removeItem('newWorkout_currentExercise')
 		localStorage.removeItem('newWorkout_currentSet')
 		localStorage.removeItem('newWorkout_started')
 		localStorage.removeItem('newWorkout_startTime')
+		localStorage.removeItem('newWorkout_setHistory')
 	}
 
 	// Filter suggestions when input changes
@@ -234,6 +239,9 @@ const NewWorkout = () => {
 		}
 
 		const weightInKg = parseWeight(currentSet.weight, user.useImperial)
+
+		setSetHistory(prev => [...prev, currentExercise.sets || []])
+
 		setCurrentExercise((prev) => ({
 			...prev,
 			sets: [...(prev.sets || []), { weight: weightInKg, reps: Number(currentSet.reps) }]
@@ -245,6 +253,21 @@ const NewWorkout = () => {
 		if (restTimerDuration > 0) {
 			startRestTimer()
 		}
+	}
+
+	// Undo most recently added set
+	const undoLastSet = () => {
+		if (setHistory.length === 0) {
+			return
+		}
+
+		const previous = setHistory[setHistory.length - 1]
+		
+		setCurrentExercise(prev => ({ ...prev, sets: previous }))
+		
+		setSetHistory(prev => prev.slice(0, -1))
+
+		toast.info('Last set removed.')
 	}
 
 	// Add exercise to workout
@@ -266,6 +289,7 @@ const NewWorkout = () => {
 
 		setExercises((prev) => [...prev, normalizedExercise])
 		setCurrentExercise({ name: '', musclegroup: '', description: '', sets: [] })
+		setSetHistory([])
 		toast.success('Exercise saved successfully!')
 	}
 
@@ -504,12 +528,21 @@ const NewWorkout = () => {
 							<SetForm currentSet={currentSet} handleSetChange={handleSetChange} addSet={addSet} user={user} />
 
 							{/* Sets List */}
-							<SetList sets={currentExercise.sets} useImperial={user.useImperial}
-								onSetsUpdate={() => {
-									const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-									setCurrentExercise(updatedExercise)
-								}}
-							/>
+							<div className="flex flex-col items-center">
+								{setHistory.length > 0 && (
+									<button type="button" onClick={undoLastSet} className="flex flex-row items-center gap-2 text-[#EDF2F4]/40 hover:text-[#EF233C] text-sm transition mb-2">
+										<FaUndoAlt /> Undo last set
+									</button>
+								)}
+
+								<SetList sets={currentExercise.sets} useImperial={user.useImperial}
+									onSetsUpdate={() => {
+										const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
+										setCurrentExercise(updatedExercise)
+									}}
+								/>
+							</div>	
+							
 
 							{/* Add Exercise */}
 							<button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
