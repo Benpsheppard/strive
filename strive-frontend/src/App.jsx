@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'   // Im
 import { ToastContainer } from 'react-toastify'  // Import toast container
 import 'react-toastify/dist/ReactToastify.css'   // Import toast css
 import Spinner from './components/spinners/Spinner.jsx'
+import WorkoutComplete from './pages/WorkoutComplete.jsx'
 
 // Lazy load pages for performance optimization
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
@@ -27,26 +28,27 @@ const App = () => {
   // Visuals
   return (
     <>
-      <Router>
-        <div className="w-full min-h-screen">
-          <Suspense fallback={<Spinner />}>
-            <Routes>
-              <Route path='/' element={<Dashboard />} />
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Register />} />
-              <Route path='/new-workout' element={<NewWorkout />} />
-              <Route path='/prev-workouts' element={<PrevWorkouts />} />
-              <Route path='/progress' element={<Progress />} />
-              <Route path='/games' element={<Games />} />
-              <Route path='/contact' element={<Contact />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-              <Route path='/help' element={<Help />} />
-            </Routes>
-          </Suspense>
-        </div>
-      </Router>
-      <ToastContainer />
+		<Router>
+			<div className="w-full min-h-screen">
+				<Suspense fallback={<Spinner />}>
+					<Routes>
+					<Route path='/' element={<Dashboard />} />
+					<Route path='/login' element={<Login />} />
+					<Route path='/register' element={<Register />} />
+					<Route path='/new-workout' element={<NewWorkout />} />
+					<Route path='/workout-complete' element={<WorkoutComplete />} />
+					<Route path='/prev-workouts' element={<PrevWorkouts />} />
+					<Route path='/progress' element={<Progress />} />
+					<Route path='/games' element={<Games />} />
+					<Route path='/contact' element={<Contact />} />
+					<Route path='/profile' element={<Profile />} />
+					<Route path='/privacy-policy' element={<PrivacyPolicy />} />
+					<Route path='/help' element={<Help />} />
+					</Routes>
+				</Suspense>
+			</div>
+		</Router>
+      	<ToastContainer />
     </>
   )
 }
