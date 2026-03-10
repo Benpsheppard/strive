@@ -320,31 +320,39 @@ const NewWorkout = () => {
 
 			// Save workout
 			await dispatch(createWorkout(workoutData)).unwrap()
-			toast.success(`Workout saved successfully! +${WORKOUT_COMPLETE_SP} SP!`)
 
 			SP_REWARD += WORKOUT_COMPLETE_SP
 
 			// Detect new PBs and reward bonus SP
+			const pbResults = []
+			const newExercises = []
 			if (newPBs.length > 0) {
 				for (const pb of newPBs) {
-					SP_REWARD += PB_REWARD_SP
-					const oldWeightDisplay = formatWeight(pb.oldWeight, user.useImperial)
-					const newWeightDisplay = formatWeight(pb.newWeight, user.useImperial)
-
-					// Show PB + SP reward toast
-					toast.success(
-						`New PB for ${pb.exerciseName}! ${oldWeightDisplay} → ${newWeightDisplay}! +${PB_REWARD_SP} SP!`
-					)
+					if (pb.isFirstTime) {
+						newExercises.push(pb.exerciseName)
+					} else {
+						SP_REWARD += PB_REWARD_SP
+						pbResults.push({
+							exerciseName: pb.exerciseName,
+							oldWeight: formatWeight(pb.oldWeight, user.useImperial),
+							newWeight: formatWeight(pb.newWeight, user.useImperial),
+							sp: PB_REWARD_SP
+						})
+					}
 				}
 			}
 
 			// Check quest completion
+			const questResults = []
 			try {
 				const { updatedQuests } = await dispatch(checkQuestCompletion(workoutData)).unwrap()
 				if (updatedQuests && updatedQuests.length > 0) {
 					for (const quest of updatedQuests) {
 						SP_REWARD += quest.reward
-						toast.success(`Quest Completed: ${quest.questName}! +${quest.reward} SP!`)
+						questResults.push({
+							title: quest.title,
+							reward: quest.reward
+						})
 					}
 				}
 			} catch (questError) {
@@ -352,17 +360,29 @@ const NewWorkout = () => {
 			}
 
 			// Apply all SP at once
+			let levelUp = null
 			if (SP_REWARD > 0) {
 				const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap()
-				toast.success(`Total +${SP_REWARD} SP earned this session!`)
 
 				if (result.level > user.level) {
-					toast.success(`Level Up! You are now Level ${result.level}!`)
+					levelUp = result.level
 				}
 			}
 
 			// Reset workout state & localStorage
 			resetWorkoutState()
+
+			navigate('/workout-complete', {
+				state: {
+					workout: workoutData,
+					totalSP: SP_REWARD,
+					pbs: pbResults,
+					quests: questResults,
+					levelUp,
+					duration: durationMinutes,
+					newExercises
+				}
+			})
 
 		} catch (error) {
 			console.error('Submit workout error: ', error)
@@ -446,10 +466,10 @@ const NewWorkout = () => {
 			{started && (
 				<section className="space-y-3 w-full max-w-2xl">
 					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-							<h1>
-								New <span className="text-[#EF233C]">Workout</span>
-							</h1>
-						</div>
+						<h1>
+							New <span className="text-[#EF233C]">Workout</span>
+						</h1>
+					</div>
 					<Timer started={started} startTime={startTime} restTimerDuration={restTimerDuration} setRestTimerDuration={setRestTimerDuration} />
 
 					<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">					
