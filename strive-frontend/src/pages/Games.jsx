@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 // Component Imports
-import Header from '../components/headers/Header'
+import Header from '../components/headers/Header.jsx'
 import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
