@@ -60,7 +60,6 @@ const Contact = () => {
     return (
         <section className="mt-15">
             <Header />
-            {user.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="w-full max-w-lg bg-[#8D99AE] p-8 rounded-2xl shadow-lg">
                     <h1 className="text-[#EDF2F4] text-3xl font-semibold text-center mb-6">
