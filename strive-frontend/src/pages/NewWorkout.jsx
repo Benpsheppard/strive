@@ -431,7 +431,6 @@ const NewWorkout = () => {
 	return (
 		<section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
 			<Header />
-			{user.isGuest && <GuestHeader currentWorkouts={workouts.length} />}
 				
 			{!started && (
 				<section className="space-y-3">
@@ -449,6 +448,14 @@ const NewWorkout = () => {
 							</div>
 						)}
 					</div>
+
+					{/* Guest Card */}
+					{user?.isGuest && 
+						<div className="w-full bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2">
+							<p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
+							<p>Migrate to a Strive account for unlimited workout tracking.</p>
+						</div>
+					}
 
 					<Calendar workouts={workouts} />
 

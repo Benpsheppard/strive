@@ -12,6 +12,7 @@ import Header from "../components/headers/Header"
 const WorkoutComplete = () => {
     const { state } = useLocation()
     const { user } = useSelector((state) => state.auth)
+    const { workouts } = useSelector((state) => state.workout)
     const navigate = useNavigate()
 
     if (!state) {
@@ -38,6 +39,14 @@ const WorkoutComplete = () => {
             </div>            
 
             <div className="w-full max-w-2xl space-y-4">
+
+                {/* Guest Card */}
+                {user?.isGuest && 
+                    <div className="bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-2xl p-2">
+                        <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
+                        <p>Migrate to a Strive account for unlimited workout tracking.</p>
+                    </div>
+                }
 
                 {/* Level Up — show prominently if it happened */}
                 {levelUp && (

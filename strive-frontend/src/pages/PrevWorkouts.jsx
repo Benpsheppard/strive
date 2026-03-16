@@ -89,11 +89,18 @@ const PrevWorkouts = () => {
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
             <Header /> 
-            {user?.isGuest && <GuestHeader currentWorkouts={workouts.length}/>}
 
             <div className="text-5xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
                 <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
             </div>
+
+            {/* Guest Card */}
+            {user?.isGuest && 
+                <div className="w-full md:max-w-[50%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
+                    <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
+                    <p>Migrate to a Strive account for unlimited workout tracking.</p>
+                </div>
+            }
 
             {/* Filter + Search */}
             <div className="text-[#EDF2F4] w-full max-w-2xl flex flex-col md:flex-row gap-4 m-4">
@@ -130,7 +137,7 @@ const PrevWorkouts = () => {
             </p>
 
             {/* Workout Display */}
-            <div className="workout-content w-full">
+            <div className="workout-content w-full space-y-3">
                 {workouts.length > 0 ? 
                 (
                     <>
