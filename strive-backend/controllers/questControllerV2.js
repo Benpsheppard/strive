@@ -60,7 +60,7 @@ const genQuests = async (user, duration) => {
 
     const difficultyGuidelines = {
         daily: "These are short-term goals achievable in one workout session. Set moderate targets - slightly above their recent average.",
-        weekly: "These should be more challenging than daily quests. Set targets that require consistent effort over multiple sessions - significantly above their recent average.",
+        weekly: "These should be more challenging than daily quests. Set targets that require consistent effort over multiple sessions - above their recent average.",
         monthly: "These should be their most ambitious goals. Set targets that push their limits and require progressive training throughout the month - well above their current max."
     }
 
@@ -89,8 +89,8 @@ const genQuests = async (user, duration) => {
         
         CHALLENGE SCALING:
         - Daily: +2-3 reps OR small weight jump
-        - Weekly: push closer to 10-12 BEFORE weight increase
-        - Monthly: either hit 12 reps OR significant weight increase
+        - Weekly: If currently at 1-6 reps, increase to 10-12; If currently at 7-12 reps, increase weight
+        - Monthly: Significant weight increase
         
         PROGRESSIVE OVERLOAD RULES (MANDATORY):
         - When generating a quest, you MUST analyse the user’s most recent workouts for the selected exercise and determine their current working performance.
