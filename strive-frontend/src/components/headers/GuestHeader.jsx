@@ -5,7 +5,7 @@ const GuestHeader = ({ currentWorkouts }) => {
     const workoutsLeft = maxWorkouts - currentWorkouts
 
     return (
-        <div className="w-full bg-[#EF233C] text-[#EDF2F4] font-semibold px-4 py-3 flex flex-col items-center text-sm font-medium shadow-md">
+        <header className="w-full bg-[#EF233C] text-[#EDF2F4] font-semibold px-4 py-3 flex flex-col items-center text-sm font-medium shadow-md">
             <div className="flex flex-col sm:flex-row justify-center items-center text-center gap-1 sm:gap-0">
                 <span className="sm:mr-2">
                     Guest account: {currentWorkouts}/{maxWorkouts} workouts
@@ -20,7 +20,7 @@ const GuestHeader = ({ currentWorkouts }) => {
                     </span>
                 )}
             </div>
-        </div>
+        </header>
     )
 }
 

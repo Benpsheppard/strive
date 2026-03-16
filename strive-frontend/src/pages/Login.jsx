@@ -108,7 +108,7 @@ const Login = () => {
     return (
         <>
             <AuthHeader />
-            <div className="flex min-h-screen items-center justify-center bg-[#2B2D42] px-4">
+            <div className="flex min-h-screen items-center justify-center px-4">
                 <div className="w-full max-w-md rounded-2xl bg-[#8D99AE] p-8 shadow-lg">
                     
                     {/* Title */}
