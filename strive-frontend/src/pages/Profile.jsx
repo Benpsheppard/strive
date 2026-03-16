@@ -133,7 +133,7 @@ const Profile = () => {
                 Profile
             </h1>
 
-            <div className="bg-[#8D99AE] w-full md:max-w-[40%] p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+            <div className="card-theme bg-[#8D99AE] w-full md:max-w-[40%] p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
                 <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
                 <p className="text-lg mb-2">
                     <span className="font-semibold">Username:</span> {user.username}

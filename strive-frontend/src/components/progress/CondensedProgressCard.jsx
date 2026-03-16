@@ -7,23 +7,23 @@ import { useSelector } from 'react-redux'
 import { formatWeight, formatDuration, formatNumber } from '../../utils/formatValues.js'
 
 const CondensedProgressCard = ({ totalWorkouts, totalExercises, totalDuration, totalSets, totalWeight, totalReps }) => {
-  const { user } = useSelector((state) => state.auth)
+	const { user } = useSelector((state) => state.auth)
 
-  return (
-    <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center md:hidden w-full">
-      <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
-        Workout Summary
-      </h2>
-      <div className="text-[#EDF2F4] space-y-2">
-        <p>Total Workouts - <span className="text-[#EF233C] font-bold">{formatNumber(totalWorkouts)}</span></p>
-        <p>Total Exercises - <span className="text-[#EF233C] font-bold">{formatNumber(totalExercises)}</span></p>
-        <p>Total Duration - <span className="text-[#EF233C] font-bold">{formatDuration(totalDuration)}</span></p>
-        <p>Total Sets - <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
-        <p>Total Weight - <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
-        <p>Total Reps - <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
-      </div>
-    </div>
-  )
+	return (
+		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center md:hidden w-full">
+			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
+				Workout Summary
+			</h2>
+			<div className="text-[#EDF2F4] space-y-2">
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Workouts <span className="text-[#EF233C] font-bold">{formatNumber(totalWorkouts)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Exercises <span className="text-[#EF233C] font-bold">{formatNumber(totalExercises)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Duration <span className="text-[#EF233C] font-bold">{formatDuration(totalDuration)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Sets <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Weight <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Reps <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
+			</div>
+		</div>
+	)
 }
 
 // Export
