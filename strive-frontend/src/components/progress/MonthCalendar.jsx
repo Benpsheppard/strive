@@ -73,7 +73,7 @@ const MonthCalendar = ({ workouts }) => {
     const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()
 
     return (
-        <div className="w-full bg-[#8D99AE] shadow rounded-2xl px-6 py-4">
+        <div className="card-theme w-full bg-[#8D99AE] shadow rounded-2xl px-6 py-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <button onClick={prevMonth} className="text-[#EDF2F4] hover:text-[#EF233C] transition text-xl px-2">
