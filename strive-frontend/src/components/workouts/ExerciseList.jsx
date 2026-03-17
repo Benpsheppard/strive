@@ -11,24 +11,25 @@ const ExerciseList = ({ exercises, useImperial }) => {
     return (
         <div className="max-h-64 overflow-y-auto mb-4">
             {exercises.map((ex, i) => (
-                <div key={i} className="bg-[#8D99AE] p-2 rounded-lg mb-2 text-center shadow-lg">
-                <h4 className="font-bold text-[#EF233C]">
-                    {ex.name}
-                </h4>
+                <div key={i} className="bg-[#8D99AE] p-6 rounded-lg m-2 text-left shadow-lg">
+                    <h4 className="font-bold text-[#EF233C] text-lg mb-2">
+                        {ex.name}
+                    </h4>
 
-                <p className="text-[#EDF2F4]">
-                    {ex.musclegroup} {ex.description && `— ${ex.description}`} 
-                </p>
+                    <p className="text-[#EDF2F4]/40 italic mb-2">
+                        {ex.musclegroup} {ex.description && `— ${ex.description}`} 
+                    </p>
 
-                {ex.sets && ex.sets.length > 0 && (
-                    <ul>
-                        {ex.sets.map((s, idx) => (
-                            <li className="text-[#2B2D42]" key={idx}>
-                                {formatWeight(s.weight, useImperial)} × {s.reps} reps
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                    {ex.sets && ex.sets.length > 0 && (
+                        <ul className='space-y-3'>
+                            {ex.sets.map((s, idx) => (
+                                <li className="text-[#2B2D42] flex justify-between border-t border-[#EDF2F4]/40" key={idx}>
+                                    <span>Set {idx + 1}:</span>
+                                    <span>{formatWeight(s.weight, useImperial)} × {s.reps} reps</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             ))}
         </div>
