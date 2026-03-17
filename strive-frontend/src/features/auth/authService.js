@@ -27,6 +27,23 @@ const login = async (userData) => {
     return response.data
 }
 
+// Migrate user
+const migrate = async (userData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.put(API_URL + `migrate`, userData, config)
+
+    if(response.data){
+        localStorage.setItem('Strive:user', JSON.stringify(response.data))
+    }
+
+    return response.data
+}
+
 // Logout user
 const logout = () => {
     localStorage.removeItem('Strive:user')
@@ -98,6 +115,7 @@ const authService = {
     register,
     logout,
     login,
+    migrate,
     deleteUser,
     resetUser,
     updateWeightPreference,

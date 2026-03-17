@@ -19,6 +19,7 @@ const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
 const Contact = lazy(() => import('./pages/Contact.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
+const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'))
 const Help = lazy(() => import('./pages/Help.jsx'))
 
@@ -42,6 +43,7 @@ const App = () => {
 					<Route path='/games' element={<Games />} />
 					<Route path='/contact' element={<Contact />} />
 					<Route path='/profile' element={<Profile />} />
+					<Route path='/migrate' element={<GuestMigration />} />
 					<Route path='/privacy-policy' element={<PrivacyPolicy />} />
 					<Route path='/help' element={<Help />} />
 					</Routes>

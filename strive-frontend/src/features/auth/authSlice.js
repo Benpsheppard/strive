@@ -38,6 +38,18 @@ export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
     }
 })
 
+// Migrate user
+export const migrate = createAsyncThunk('auth/migrate', async (user, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.migrate(user, token)
+    } catch (error) {
+        const message = (error.response && error.response.data && error.response.data.message)
+        || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // Logout user
 export const logout = createAsyncThunk('auth/logout', async () => {
     await authService.logout()
@@ -137,6 +149,21 @@ export const authSlice = createSlice({
                 state.isError = true
                 state.message = action.payload
                 state.user = null
+            })
+
+        // Migrate User
+            .addCase(migrate.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(migrate.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.user = action.payload
+            })
+            .addCase(migrate.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
             })
 
         // Logout User

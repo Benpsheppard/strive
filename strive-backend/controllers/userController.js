@@ -132,6 +132,86 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 /**
+ *   @desc   Migrate guest user to strive user
+ *   @route  POST /api/users/migrate
+ *   @access Private
+ */
+const migrateUser = asyncHandler(async (req, res) => {
+    // Get new user info
+    let { username, email, password } = req.body
+
+    // Get old guest user info
+    const user = await User.findById(req.user.id)
+
+    // Account verification
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    if (!user.isGuest) {
+        res.status(400)
+        throw new Error('Only guest accounts can migrate')
+    }
+
+    // Check if all info exists
+    if (!username || !email || !password) {
+        res.status(400)
+        throw new Error('Please add all fields')
+    }
+
+    // Check email is in email format
+    if (!validator.isEmail(email)) {
+        res.status(400)
+        throw new Error('Invalid email address')
+    }
+
+    // Check password is long enough
+    if (!validator.isStrongPassword(password)) {
+        res.status(400)
+        throw new Error('Password must satisfy all criteria.')
+    }
+
+    // Normalize email
+    email = validator.normalizeEmail(email)
+
+    // Look if email and username exists already
+    const emailExists = await User.findOne({ email })
+    const usernameExists = await User.findOne({ username })
+
+    // Check if email already exists
+    if (emailExists && emailExists._id.toString() !== user._id.toString()){
+        res.status(400)
+        throw new Error('Email already exists')
+    }
+
+    // Check if username already exists
+    if (usernameExists && usernameExists._id.toString() !== user._id.toString()){
+        res.status(400)
+        throw new Error('Username already exists')
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10)  // generating a hash string to add to unhashed password
+    const hashPassword = await bcrypt.hash(password, salt)     // hash users password using salt
+
+    user.username = username
+    user.email = email
+    user.password = hashPassword
+    user.isGuest = false
+
+    await user.save()
+
+    res.status(200).json({
+        _id: user.id,
+        username: user.username,
+        email: user.email,
+        isGuest: user.isGuest,
+        token: genToken(user._id)
+    })
+})
+
+/**
  *   @desc    Get current user info
  *   @route   GET /api/users/me
  *   @access  Private
@@ -269,6 +349,7 @@ const genToken = (id) => {
 module.exports = { 
     registerUser, 
     loginUser, 
+    migrateUser,
     getMe, 
     deleteUser, 
     resetUser, 
