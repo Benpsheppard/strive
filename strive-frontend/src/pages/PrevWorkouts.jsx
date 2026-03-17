@@ -12,7 +12,6 @@ import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 import Header from '../components/headers/Header.jsx'
 import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
-import GuestHeader from '../components/headers/GuestHeader.jsx'
 
 // PrevWorkouts
 const PrevWorkouts = () => {

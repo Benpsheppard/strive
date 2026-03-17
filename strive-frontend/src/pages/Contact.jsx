@@ -7,7 +7,6 @@ import { useState } from 'react'
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import Footer from '../components/dashboard/Footer.jsx'
-import GuestHeader from '../components/headers/GuestHeader.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 
 // Contact

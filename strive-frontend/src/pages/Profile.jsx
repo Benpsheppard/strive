@@ -13,7 +13,6 @@ import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '..
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
-import GuestHeader from '../components/headers/GuestHeader.jsx'
 import WeightToggle from '../components/profile/WeightToggle.jsx'
 
 const Profile = () => {
@@ -98,6 +97,11 @@ const Profile = () => {
         })
     }
 
+    const onMigrateAccount = () => {
+        console.log(`Migrating account: ${user.username}`)
+        navigate('/migrate')
+    }
+
     const onWeightToggle = () => {
         dispatch(updateWeightPreference(!user.useImperial))
     }
@@ -137,6 +141,9 @@ const Profile = () => {
                 <div className="w-full md:max-w-[40%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
                     <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
                     <p>Migrate to a Strive account for unlimited workout tracking.</p>
+                    <button onClick={onMigrateAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                        Migrate Account
+                    </button>
                 </div>
             }
 

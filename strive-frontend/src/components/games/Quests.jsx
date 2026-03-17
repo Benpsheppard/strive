@@ -16,10 +16,11 @@ const Quests = () => {
 
     const { user } = useSelector((state) => state.auth)
     const { quests, isLoading } = useSelector((state) => state.quest)
+    const { workouts } = useSelector((state) => state.workout)
     const { daily, weekly, monthly } = quests
 
     useEffect(() => {
-        if (!user?.isQuest) {
+        if (!user?.isQuest && workouts.length >= 3) {
             dispatch(getQuests())
         }
 

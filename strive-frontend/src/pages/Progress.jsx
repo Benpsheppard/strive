@@ -17,7 +17,6 @@ import ProgressCard from '../components/progress/ProgressCard.jsx'
 import CondensedProgressCard from '../components/progress/CondensedProgressCard.jsx'
 import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
 import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
-import GuestHeader from '../components/headers/GuestHeader.jsx'
 import MonthCalendar from '../components/progress/MonthCalendar.jsx'
 
 const Progress = () => {

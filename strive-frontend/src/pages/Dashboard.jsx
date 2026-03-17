@@ -10,7 +10,6 @@ import About from '../components/dashboard/About.jsx'
 import Features from '../components/dashboard/Features.jsx'  
 import Footer from '../components/dashboard/Footer.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
-import GuestHeader from '../components/headers/GuestHeader.jsx'
 
 // Dashboard
 const Dashboard = () => {
