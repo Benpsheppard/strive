@@ -1,7 +1,7 @@
 // MuscleHeatmap.jsx
 
 const MuscleGroupHeatmap = ({ workouts }) => {
-    const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body', 'Other']
+    const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Legs', 'Core', 'Full Body', 'Other']
 
     // Get workouts from the last 7 days
     const getRecentWorkouts = () => {

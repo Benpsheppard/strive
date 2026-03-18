@@ -16,7 +16,7 @@ const exerciseSchema = mongoose.Schema({
         type: String,
         enum: [
             'Chest', 'Back', 'Shoulders',
-            'Arms', 'Legs', 'Core', 
+            'Biceps', 'Triceps', 'Legs', 'Core', 
             'Full body', 'Other'
         ],
         default: 'Other',
