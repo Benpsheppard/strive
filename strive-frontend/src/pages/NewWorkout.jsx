@@ -479,7 +479,8 @@ const NewWorkout = () => {
 					<Timer started={started} startTime={startTime} restTimerDuration={restTimerDuration} setRestTimerDuration={setRestTimerDuration} />
 
 					{/* Workout Form */}
-					<div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">					
+					<div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">	
+						{/* Rest Timer */}
 						{restTimeRemaining > 0 && (
 							<div className="text-center mb-4 bg-[#2B2D42] rounded-xl p-3">
 								<p className="text-[#EDF2F4] text-sm mb-1">Rest Timer</p>
