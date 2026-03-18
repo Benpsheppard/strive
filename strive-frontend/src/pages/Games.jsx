@@ -1,8 +1,12 @@
 // Games.jsx
 
 // Imports
-import { useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+
+// Function Imports
+import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -13,6 +17,12 @@ import ProgressBar from '../components/games/ProgressBar.jsx'
 const Games = () => {
     const { user, isLoading } = useSelector((state) => state.auth)
     const { workouts } = useSelector((state) => state.workout)
+
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(getWorkouts())
+    }, [dispatch])
 
     if (isLoading) {
         return <Spinner />
