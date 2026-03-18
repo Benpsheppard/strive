@@ -161,6 +161,21 @@ const NewWorkout = () => {
 		}
 	}, [])
 
+	useEffect(() => {
+		const savedEnd = localStorage.getItem('restTimerEnd')
+
+		if (savedEnd) {
+			const endTime = Number(savedEnd)
+			const remaining = Math.floor((endTime - Date.now()) / 1000)
+
+			if (remaining > 0) {
+				updateRestTimer(endTime)
+			} else {
+				localStorage.removeItem('restTimerEnd')
+			}
+		}
+	}, [])
+
 	// Select exercise from suggestions
 	const selectExercise = (exercise) => {
 		selectingRef.current = true
@@ -196,18 +211,26 @@ const NewWorkout = () => {
 		// Clear any existing timer
 		if (restIntervalRef.current) clearInterval(restIntervalRef.current)
 		
-		setRestTimeRemaining(restTimerDuration)
+		const endTime = Date.now() + restTimerDuration * 1000
+		localStorage.setItem('restTimerEnd', endTime)
+
+		updateRestTimer(endTime)
+	}
+
+	const updateRestTimer = (endTime) => {
+		setRestTimeRemaining(Math.max(0, Math.floor((endTime - Date.now()) / 1000)))
 
 		restIntervalRef.current = setInterval(() => {
-			setRestTimeRemaining((prev) => {
-				if (prev <= 1) {
-					clearInterval(restIntervalRef.current)
-					restIntervalRef.current = null
-					notifyRestComplete()
-					return 0
-				}
-				return prev - 1
-			})
+			const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+
+			setRestTimeRemaining(remaining)
+
+			if (remaining <= 0) {
+				clearInterval(restIntervalRef.current)
+				restIntervalRef.current = null
+				localStorage.removeItem('restTimerEnd')
+				notifyRestComplete()
+			}
 		}, 1000)
 	}
 
@@ -489,6 +512,7 @@ const NewWorkout = () => {
 								<button 
 									onClick={() => {
 										clearInterval(restIntervalRef.current)
+										localStorage.removeItem('restTimerEnd')
 										setRestTimeRemaining(0)
 									}}
 									className="text-[#EDF2F4] text-xs mt-1 opacity-60 hover:opacity-100"
