@@ -78,7 +78,7 @@ html, body {
 	}
 }
 
-/* Webkit browsers */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -95,4 +95,18 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #EDF2F4;
+}
+
+/* Scrollbar for Quests */
+.quest-scroll::-webkit-scrollbar {
+height: 6px;
+}
+
+.quest-scroll::-webkit-scrollbar-track {
+background: transparent;
+}
+
+.quest-scroll::-webkit-scrollbar-thumb {
+background: rgba(237, 242, 244, 0.25);
+border-radius: 999px;
 }

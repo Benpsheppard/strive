@@ -40,7 +40,7 @@ const Quests = () => {
                 {isLoading ? (
                     <InlineSpinner />
                 ) : quests.daily ? (
-                    <div className='flex md:grid md:grid-cols-3 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>                        
+                    <div className='quest-scroll flex md:grid md:grid-cols-3 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>                        
                     {daily.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
@@ -62,7 +62,7 @@ const Quests = () => {
                 {isLoading ? (
                     <InlineSpinner />
                 ) : quests.weekly ? (
-                    <div className='flex md:grid md:grid-cols-2 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>
+                    <div className='quest-scroll flex md:grid md:grid-cols-2 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>
                         {weekly.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
