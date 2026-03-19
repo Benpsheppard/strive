@@ -137,7 +137,7 @@ const Profile = () => {
             </h1>
 
             {/* Guest Card */}
-            {user?.isGuest && 
+            {user?.isGuest && (
                 <div className="w-full md:max-w-[40%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
                     <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
                     <p>Migrate to a Strive account for unlimited workout tracking.</p>
@@ -145,19 +145,19 @@ const Profile = () => {
                         Migrate Account
                     </button>
                 </div>
-            }
+            )}
 
-            <div className="card-theme bg-[#8D99AE] w-full md:max-w-[40%] p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+            <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
                 <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
                 <p className="text-lg mb-2">
                     <span className="font-semibold">Username:</span> {user.username}
                 </p>
 
-                {!user?.isGuest && 
+                {!user?.isGuest && (
                     <p className="text-lg mb-2">
                         <span className="font-semibold">Email:</span> {user.email}
                     </p>
-                }
+                )}
 
                 <p className="text-lg mb-6">
                    <span className="font-semibold">User since:</span>{" "}
@@ -175,13 +175,13 @@ const Profile = () => {
             </div>
 
             {/* Account Control buttons */}
-            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-[40%] p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
                 <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded transition hover:bg-[#D90429]">
                     Logout
                 </button>
             </div>
 
-            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-[40%] p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
                 <button onClick={onDeleteAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
                     Delete Account
                 </button>
