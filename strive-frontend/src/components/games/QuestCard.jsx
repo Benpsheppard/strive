@@ -2,7 +2,7 @@
 
 const QuestCard = ({ quest }) => {
     return (
-        <div key={quest._id} className={`flex flex-col justify-between p-5 rounded-2xl shadow-xl bg-[#2B2D42] text-[#EDF2F4] transform transition-transform duration-300 hover:scale-105 ${quest.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <div key={quest._id} className={`flex-shrink-0 w-[85%] md:w-auto snap-center flex flex-col justify-between p-5 rounded-2xl shadow-xl bg-[#2B2D42] text-[#EDF2F4] transform transition-transform duration-300 hover:scale-105 ${quest.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}>
             {/* Header */}
             <div>
                 <h3 className='text-lg text-[#EF233C] font-bold'>{quest.title}</h3>
