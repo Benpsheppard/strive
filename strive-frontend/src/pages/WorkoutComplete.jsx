@@ -151,8 +151,8 @@ const WorkoutComplete = () => {
                         </h2>
                         <div className="space-y-3">
                             {quests.map((quest, index) => (
-                                <div key={index} className="bg-[#2B2D42]/40 rounded-xl px-4 py-3 flex justify-between items-center">
-                                    <p className="text-[#EDF2F4] font-semibold">{quest.name}</p>
+                                <div key={index} className="bg-[#2B2D42] rounded-xl px-4 py-3 flex justify-between items-center">
+                                    <p className="text-[#EDF2F4] font-semibold">{quest.title}</p>
                                     <p className="text-[#EF233C] font-bold">+{quest.reward} SP</p>
                                 </div>
                             ))}

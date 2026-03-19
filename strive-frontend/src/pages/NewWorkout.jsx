@@ -374,6 +374,8 @@ const NewWorkout = () => {
 				const { updatedQuests } = await dispatch(checkQuestCompletion(workoutData)).unwrap()
 				if (updatedQuests && updatedQuests.length > 0) {
 					for (const quest of updatedQuests) {
+						console.log('raw updated quest:', quest)
+						console.log('quest.title:', quest.title)
 						SP_REWARD += quest.reward
 						questResults.push({
 							title: quest.title,

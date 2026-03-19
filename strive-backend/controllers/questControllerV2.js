@@ -322,8 +322,8 @@ const checkQuestCompletion = asyncHandler(async (req, res) => {
             await quest.save()
 
             updatedQuests.push({ 
-                questId: quest._id,
-                questName: quest.title,
+                id: quest._id,
+                title: quest.title,
                 completed: true, 
                 reward: quest.reward 
             })
