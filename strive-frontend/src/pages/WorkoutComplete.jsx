@@ -7,12 +7,13 @@ import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell } from 'react-icons/fa
 import { formatDuration, formatWeight } from '../utils/formatValues'
 
 // Component Imports
-import Header from "../components/headers/Header"
+import Header from '../components/headers/Header'
+import Spinner from '../components/spinners/Spinner'
 
 const WorkoutComplete = () => {
     const { state } = useLocation()
     const { user } = useSelector((state) => state.auth)
-    const { workouts } = useSelector((state) => state.workout)
+    const { workouts, isLoading } = useSelector((state) => state.workout)
     const navigate = useNavigate()
 
     if (!state) {
@@ -26,6 +27,12 @@ const WorkoutComplete = () => {
             return setTotal + (Number(set.weight) || 0) * (Number(set.reps) || 0)
         }, 0)
     }, 0)
+
+    if (isLoading) {
+        return (
+            <Spinner />
+        )
+    }
 
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">

@@ -64,6 +64,7 @@ const NewWorkout = () => {
 	const [filteredExercises, setFilteredExercises] = useState([])
 	const [restTimeRemaining, setRestTimeRemaining] = useState(0)
 	const [setHistory, setSetHistory] = useLocalStorage('newWorkout_setHistory', [])
+	const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
 
 	// Use Ref
 	const selectingRef = useRef(false)
@@ -328,6 +329,8 @@ const NewWorkout = () => {
 			return
 		}
 
+		setIsSubmittingWorkout(true)
+
 		const endTime = Date.now()
 		const durationMinutes = Math.round((endTime - startTime) / 60000)
 		const workoutData = { title, exercises, duration: durationMinutes }
@@ -410,6 +413,7 @@ const NewWorkout = () => {
 		} catch (error) {
 			console.error('Submit workout error: ', error)
 			toast.error(error.message || 'Failed to save workout')
+			setIsSubmittingWorkout(false)
 		}
 	}
 
@@ -447,7 +451,7 @@ const NewWorkout = () => {
 		setStartTime(Date.now())
 	}
 
-	if (isLoading || !user) {
+	if (isLoading || !user || isSubmittingWorkout) {
 		return <Spinner />
 	}
 
