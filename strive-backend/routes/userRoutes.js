@@ -7,20 +7,12 @@ const { body, param } = require('express-validator')
 const { registerUser, loginUser, getMe, deleteUser, updateWeightPreference, resetUser, addPoints, migrateUser } = require('../controllers/userController.js')   // Import user controllers
 const { protect } = require('../middleware/authMiddleware.js')     // Import protect function to protect routes
 const { validateObjectId } = require('../middleware/validateObjectId.js')  // Import ObjectId validation
-const validateRequest = require('../middleware/validateRequest.js')
 
 // Initialise router
 const userRouter = express.Router()
 
 // Register user route
-userRouter.post(
-  '/',
-  body('username').isString().trim().notEmpty().withMessage('Username is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isStrongPassword().withMessage('Password must be strong'),
-  validateRequest,
-  registerUser
-)
+userRouter.post('/', registerUser)
 
 // Login user route
 userRouter.post('/login', loginUser)

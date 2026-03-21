@@ -2,17 +2,14 @@
 // File to handle workout routes
 
 // Imports
-const express = require('express')  // Import express
-const { body, param } = require('express-validator')
+const express = require('express')
 const { 
     getWorkouts, setWorkout, updateWorkout, deleteWorkout,
     addExercise, updateExercise, deleteExercise,
     deleteAllWorkouts
- } = require('../controllers/workoutController.js')    // Import workout & exercise controllers for CRUD functionality
-const { protect } = require('../middleware/authMiddleware.js')    // Import protect function
-const { sanitiseInput } = require('../middleware/sanitiseMiddleware.js')    // Import sanitise body function
-const { validateObjectId } = require('../middleware/validateObjectId.js')  // Import ObjectId validation
-const validateRequest = require('../middleware/validateRequest.js')
+ } = require('../controllers/workoutController.js')    
+const { protect } = require('../middleware/authMiddleware.js')    
+const { validateObjectId } = require('../middleware/validateObjectId.js')  
 
 // Initialise router
 const workoutRouter = express.Router()
