@@ -5,7 +5,6 @@
 const asyncHandler = require('express-async-handler')  
 const Workout = require('../models/workoutModel.js')    
 const User = require('../models/userModel.js')  
-const Contest = require('../models/contestModel')
 const ContestProgress = require('../models/contestProgressModel')
 
 /**
@@ -53,50 +52,6 @@ const setWorkout = asyncHandler(async (req, res) => {
         req.user.id,
         { $push: { workouts: workout._id } }
     )
-
-    try {
-        const activeContest = await Contest.findOne({ active: true })
-        if (activeContest) {
-            console.log("Checking workout for contest muscle groups...")
-
-            // Find exercises in this workout that match the contest’s muscle groups
-            const matchingExercises = workout.exercises.filter(ex =>
-                activeContest.musclegroups.includes(ex.musclegroup)
-            )
-
-            if (matchingExercises.length > 0) {
-                console.log(`Matched ${matchingExercises.length} exercises for contest update`)
-
-                // Calculate total contest-relevant volume
-                const totalContestVol = matchingExercises.reduce((acc, ex) => {
-                    const exVol = ex.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0)
-                    return acc + exVol
-                }, 0)
-
-                // Find or create progress record
-                let progress = await ContestProgress.findOne({
-                    user: req.user.id,
-                    contest: activeContest._id
-                })
-
-                if (!progress) {
-                    progress = new ContestProgress({
-                        user: req.user.id,
-                        contest: activeContest._id,
-                        baselineVol: totalContestVol,
-                        currentVol: totalContestVol
-                    })
-                } else {
-                    progress.currentVol += totalContestVol
-                }
-
-                await progress.save()
-                console.log('Contest progress updated successfully!')
-            }
-        }
-    } catch (err) {
-        console.error('Error updating contest progress:', err.message)
-    }
 
     // Output created workout
     res.status(201).json(workout)

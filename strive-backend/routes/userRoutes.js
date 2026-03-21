@@ -23,31 +23,10 @@ userRouter.post(
 )
 
 // Login user route
-userRouter.post(
-  '/login',
-  body('password').isString().notEmpty().withMessage('Password is required'),
-  body('username').optional().isString().trim(),
-  body('email').optional().isEmail().withMessage('Valid email is required'),
-  body().custom((value) => {
-    if (!value.username && !value.email) {
-      throw new Error('Username or email is required')
-    }
-    return true
-  }),
-  validateRequest,
-  loginUser
-)
+userRouter.post('/login', loginUser)
 
 // Migrate guest user route
-userRouter.put(
-  '/migrate',
-  protect,
-  body('username').isString().trim().notEmpty().withMessage('Username is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isStrongPassword().withMessage('Password must be strong'),
-  validateRequest,
-  migrateUser
-)
+userRouter.put('/migrate', protect, migrateUser)
 
 // Get logged in user route
 userRouter.get('/me', protect, getMe)
@@ -59,23 +38,10 @@ userRouter.delete('/:id', protect, validateObjectId('id'), deleteUser)
 userRouter.delete('/:id/reset', protect, validateObjectId('id'), resetUser)
 
 // Update weight unit preference
-userRouter.put(
-  '/preference',
-  protect,
-  body('useImperial').isBoolean().withMessage('useImperial must be true or false'),
-  validateRequest,
-  updateWeightPreference
-)
+userRouter.put('/preference', protect, updateWeightPreference)
 
 // Add SP
-userRouter.post(
-  '/:id/points',
-  protect,
-  validateObjectId('id'),
-  body('points').isInt({ min: 0 }).withMessage('Points must be an integer >= 0'),
-  validateRequest,
-  addPoints
-)
+userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)
 
 // Export router
 module.exports = { userRouter }
