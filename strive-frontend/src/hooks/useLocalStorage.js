@@ -22,3 +22,16 @@ export function useLocalStorage(key, initialValue) {
 
 	return [value, setValue]
 }
+
+// Clear Local Storage
+export function clearLocalStorage() {
+	localStorage.removeItem('newWorkout_title')
+	localStorage.removeItem('newWorkout_exercises')
+	localStorage.removeItem('newWorkout_currentExercise')
+	localStorage.removeItem('newWorkout_currentSet')
+	localStorage.removeItem('newWorkout_started')
+	localStorage.removeItem('newWorkout_startTime')
+	localStorage.removeItem('newWorkout_restTimer')
+	localStorage.removeItem('newWorkout_setHistory')
+	localStorage.removeItem('restTimerEnd')
+}

@@ -2,6 +2,7 @@
 
 // Imports
 import axios from 'axios'
+import { clearLocalStorage } from '../../hooks/useLocalStorage'
 
 const API_URL = import.meta.env.VITE_API_URL + '/api/users/'
 
@@ -10,6 +11,9 @@ const register = async (userData) => {
     const response = await axios.post(API_URL, userData)
 
     if(response.data){
+        // Clear any existing workout data from previous user before setting new user
+        clearLocalStorage()
+        
         localStorage.setItem('Strive:user', JSON.stringify(response.data))
     }
 
@@ -21,6 +25,9 @@ const login = async (userData) => {
     const response = await axios.post(API_URL + 'login', userData)
 
     if(response.data){
+        // Clear any existing workout data from previous user before setting new user
+        clearLocalStorage()
+        
         localStorage.setItem('Strive:user', JSON.stringify(response.data))
     }
 
@@ -38,6 +45,9 @@ const migrate = async (userData, token) => {
     const response = await axios.put(API_URL + `migrate`, userData, config)
 
     if(response.data){
+        // Clear any existing workout data from previous user before setting new user
+        clearLocalStorage()
+        
         localStorage.setItem('Strive:user', JSON.stringify(response.data))
     }
 
@@ -47,6 +57,9 @@ const migrate = async (userData, token) => {
 // Logout user
 const logout = () => {
     localStorage.removeItem('Strive:user')
+    
+    // Clear workout-related localStorage to prevent data leakage between users
+    clearLocalStorage()
 }
 
 // Delete user
@@ -60,7 +73,8 @@ const deleteUser = async (userId, token) => {
     const response = await axios.delete(API_URL + userId, config)
 
     if (response.data) {
-        localStorage.removeItem('Strive:user')
+        // Clear user data and workout data
+        clearLocalStorage()
     }
 
     return response.data
