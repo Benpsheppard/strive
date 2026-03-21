@@ -20,6 +20,31 @@ const { questRouter } = require('./routes/questRoutes.js')
 const { contestRouter } = require('./routes/contestRoutes.js')
 const { devRouter } = require('./routes/devRoutes.js')
 
+// .env variables validation
+const requiredEnv = [
+  'NODE_ENV',
+  'PORT',
+  'MONGO_URI',
+  'JWT_SECRET',
+  'FRONTEND_URL'
+]
+
+const missing = requiredEnv.filter(key => !process.env[key])
+if (missing.length > 0) {
+	console.error(`Missing .env keys: ${missing.join(', ')}`)
+	process.exit(1)
+}
+
+if (!['development','production','test'].includes(process.env.NODE_ENV)) {
+	console.error(`NODE_ENV invalid: ${process.env.NODE_ENV}`)
+	process.exit(1)
+}
+
+if (process.env.NODE_ENV === 'production' && !/^https?:\/\/.+/.test(process.env.FRONTEND_URL)) {
+	console.error(`FRONTEND_URL invalid: ${process.env.FRONTEND_URL}`)
+	process.exit(1)
+}
+
 // Variables
 const port = process.env.PORT || 5050
 
@@ -51,16 +76,24 @@ app.use(
 	})
 )
 
+// CORS
 if (process.env.NODE_ENV === 'production') {
     app.use(cors({
-      	origin: 'https://strive-frontend-1.onrender.com'
+      	origin: process.env.FRONTEND_URL,
+		methods: ['GET', 'POST', 'PUT', 'DELETE'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+		credentials: true,
+		optionsSuccessStatus: 200
     }))
 } else {
     app.use(cors({
       	origin: 'http://localhost:3000',
+		methods: ['GET', 'POST', 'PUT', 'DELETE'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+		credentials: true,
+		optionsSuccessStatus: 200
     }))
 }
-
 
 // Routes
 app.use('/api/workouts', workoutRouter)
