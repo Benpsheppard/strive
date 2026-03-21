@@ -9,7 +9,6 @@
 - View previously created workouts in a clean and easily accessible way
 - Review progress such as total workouts and other stats
 - Complete AI-generated challenges to push yourself
-- Compete in monthly contests
 - Contact form for feedback and support
 - Data persistance using MongoDB
 - Deployed on render for use on mobile in the gym

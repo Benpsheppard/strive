@@ -5,7 +5,6 @@
 const asyncHandler = require('express-async-handler')  
 const Workout = require('../models/workoutModel.js')    
 const User = require('../models/userModel.js')  
-const ContestProgress = require('../models/contestProgressModel')
 
 /**
  *  @desc   Get workouts for the authenticated user

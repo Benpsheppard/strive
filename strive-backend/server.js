@@ -17,7 +17,6 @@ const { errorHandler } = require('./middleware/errorMiddleware.js')
 const { workoutRouter } = require('./routes/workoutRoutes.js')        
 const { userRouter } = require('./routes/userRoutes.js')              
 const { questRouter } = require('./routes/questRoutes.js')
-const { contestRouter } = require('./routes/contestRoutes.js')
 const { devRouter } = require('./routes/devRoutes.js')
 
 // .env variables validation
@@ -99,7 +98,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/api/workouts', workoutRouter)
 app.use('/api/users', userRouter)
 app.use('/api/quests', questRouter)
-app.use('/api/contests', contestRouter)
 app.use('/api/dev', devRouter)
 
 // Production configuration
