@@ -99,14 +99,14 @@ html, body {
 
 /* Scrollbar for Quests */
 .quest-scroll::-webkit-scrollbar {
-height: 6px;
+	height: 6px;
 }
 
 .quest-scroll::-webkit-scrollbar-track {
-background: transparent;
+	background: transparent;
 }
 
 .quest-scroll::-webkit-scrollbar-thumb {
-background: rgba(237, 242, 244, 0.25);
-border-radius: 999px;
+	background: rgba(237, 242, 244, 0.25);
+	border-radius: 999px;
 }
