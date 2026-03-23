@@ -155,7 +155,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 			</div>
 
 			{/* Stats Summary */}
-			<div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+			<div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
 				{muscleGroupData.map((item, index) => (
 				<div key={item.group} className="bg-[#2B2D42]/80 p-3 rounded-lg" style={{ borderLeft: `4px solid ${backgroundCOLOURS[index]}` }}>
 					<div className="text-[#EDF2F4] font-semibold text-sm">
