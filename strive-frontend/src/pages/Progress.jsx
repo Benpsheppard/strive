@@ -13,11 +13,13 @@ import { formatWeight, formatDuration, formatNumber } from '../utils/formatValue
 import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import PBChart from '../components/progress/PBChart.jsx'
-import ProgressCard from '../components/progress/ProgressCard.jsx'
-import CondensedProgressCard from '../components/progress/CondensedProgressCard.jsx'
+import ProgressCard from '../components/progress/TotalProgressCard.jsx'
+import CondensedProgressCard from '../components/progress/TotalProgressCard.jsx'
 import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
 import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
 import MonthCalendar from '../components/progress/MonthCalendar.jsx'
+import MonthlyProgressCard from '../components/progress/MonthlyProgressCard.jsx'
+import TotalProgressCard from '../components/progress/TotalProgressCard.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
@@ -50,34 +52,7 @@ const Progress = () => {
         )
     }
 
-    // Calculate stats
-    const totalWorkouts = workouts.length
-    const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0)
-
-    let totalWeight = 0
-    let totalReps = 0
-    let totalSets = 0
-    let totalExercises = 0
-    let heaviestLift = 0
-
-    workouts.forEach((w) => {
-        w.exercises.forEach((ex) => {
-            totalExercises++ // count exercises
-
-            ex.sets.forEach((set) => {
-                const weight = Number(set.weight) || 0
-                const reps = Number(set.reps) || 0
-
-                totalWeight += weight * reps
-                totalReps += reps
-                totalSets++
-
-                if (weight > heaviestLift) {
-                    heaviestLift = weight
-                }
-            })
-        })
-    })
+    
 
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
@@ -87,27 +62,14 @@ const Progress = () => {
                 Progress <span className="text-[#EF233C]">Summary</span>
             </h1>
             {workouts.length > 0 ? (
-                <div className='w-full space-y-6'>
-                    {/* Summary grid */}
-                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                        <ProgressCard title="Total Workouts" value={formatNumber(totalWorkouts)} />
-                        <ProgressCard title="Total Exercises" value={formatNumber(totalExercises)} />
-                        <ProgressCard title="Total Duration" value={formatDuration(totalDuration || 0)} />                            
-                        <ProgressCard title="Total Sets" value={formatNumber(totalSets)} />
-                        <ProgressCard title="Total Weight Lifted" value={formatWeight(totalWeight, user.useImperial)} />
-                        <ProgressCard title="Total Reps" value={formatNumber(totalReps)} />
-                    </div>
+                <div className='w-full space-y-6'> 
+                    {/* Summary Cards */}
+                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 text-xl'>
+                        <MonthlyProgressCard workouts={workouts} />
+                        <TotalProgressCard workouts={workouts}/>
+                    </div>                   
 
-                    {/* Mobile Summary card */}
-                    <CondensedProgressCard
-                        totalWorkouts={totalWorkouts}
-                        totalExercises={totalExercises}
-                        totalDuration={totalDuration}
-                        totalSets={totalSets}
-                        totalWeight={totalWeight}
-                        totalReps={totalReps}
-                    />
-
+                    {/* Monthly Consistency Calendar */}
                     <MonthCalendar workouts={workouts} />
 
                     {/* Charts Section */}

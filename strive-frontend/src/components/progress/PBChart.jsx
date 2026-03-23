@@ -77,7 +77,11 @@ const PBChart = ({ workouts, useImperial }) => {
         },
         scales: {
             x: {
-                ticks: { color: '#EDF2F4' },
+                ticks: { 
+                    color: '#EDF2F4', 
+                    maxRotation: labels.length > 10 ? 90 : 0,
+                    minRotation: labels.length > 10 ? 90 : 0
+                },
                 grid: { color: 'rgba(237, 242, 244, 0.3)' },
             },
             y: {

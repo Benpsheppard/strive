@@ -6,7 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 
 // Function Imports
-import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
+import { kgToLbs, getWeightUnit, formatNumber } from '../../utils/formatValues.js'
 
 // Register Chart
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -87,11 +87,11 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 			legend: {
 				position: 'bottom',
 				labels: {
-				color: '#EDF2F4',
-				padding: 15,
-				font: {
-					size: 12,
-				},
+					color: '#EDF2F4',
+					padding: 15,
+					font: {
+						size: 12,
+					},
 				},
 			},
 			tooltip: {
@@ -105,7 +105,10 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 						else if (viewMode === 'sets') unit = 'sets'
 						else unit = weightUnit
 						
-						const displayValue = viewMode === 'weight' ? count.toFixed(1) : count
+						const displayValue =
+							viewMode === 'weight'
+								? formatNumber(count, 1)
+								: formatNumber(count)
 						return ` ${displayValue} ${unit} (${percentage}%)`
 					},
 				},
@@ -155,12 +158,14 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 			<div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
 				{muscleGroupData.map((item, index) => (
 				<div key={item.group} className="bg-[#2B2D42] p-3 rounded-lg" style={{ borderLeft: `4px solid ${backgroundCOLOURS[index]}` }}>
-					<div className="text-[#EDF2F4] font-semibold text-sm">{item.group}</div>
-					<div className="text-[#EDF2F4] text-lg font-bold">{item.percentage}%</div>
+					<div className="text-[#EDF2F4] font-semibold text-sm">
+						{item.group}
+					</div>
+					<div className="text-[#EDF2F4] text-lg font-bold">
+						{item.percentage}%
+					</div>
 					<div className="text-[#EDF2F4] text-xs opacity-80">
-						{viewMode === 'weight' 
-							? `${item.displayCount.toFixed(1)} ${weightUnit}` 
-							: `${item.count} ${viewMode === 'exercises' ? 'exercises' : 'sets'}`}
+						{viewMode === 'weight' ? `${formatNumber(item.displayCount, 1)} ${weightUnit}` : `${formatNumber(item.count)} ${viewMode === 'exercises' ? 'exercises' : 'sets'}`}
 					</div>
 				</div>
 				))}
