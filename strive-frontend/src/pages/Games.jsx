@@ -15,8 +15,8 @@ import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
 
 const Games = () => {
-    const { user, isLoading } = useSelector((state) => state.auth)
-    const { workouts } = useSelector((state) => state.workout)
+    const { user } = useSelector((state) => state.auth)
+    const { workouts, isLoading } = useSelector((state) => state.workout)
 
     const dispatch = useDispatch()
 
@@ -51,16 +51,18 @@ const Games = () => {
         )
     }
 
-    if (workouts.length < 3) {
-        return (
-            <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32"> 
-                <Header />
+    return (
+        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
+            <Header />
 
-                {/* Title */}
-                <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                    Strive <span className='text-[#EF233C]'>Games</span>
-                </h1>
-
+            
+            {/* Title */}
+            <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+                Strive <span className='text-[#EF233C]'>Games</span>
+            </h1>
+            
+            {workouts.length < 3 ? (
+            <>
                 <p className="text-[#EDF2F4]">
                     Complete at least 3 workouts to access Strive Games!
                 </p>
@@ -70,19 +72,8 @@ const Games = () => {
                         New Workout
                     </Link>
                 </button>
-            </section>
-        )
-    }
-
-    return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
-            <Header />
-
-            {/* Title */}
-            <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                Strive <span className='text-[#EF233C]'>Games</span>
-            </h1>
-            
+            </>
+            ) : (
             <div className='space-y-6 w-full'>
                 {/* User Games' Summary */}
                 <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
@@ -103,6 +94,7 @@ const Games = () => {
                 {/* Quest lists */}
                 <Quests />
             </div>
+            )}
         </section>
     )
 }
