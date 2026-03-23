@@ -1,7 +1,7 @@
 // ExerciseProgressChart.jsx
 
 // Imports
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { 
     Chart as ChartJS, CategoryScale, LinearScale,
     PointElement, LineElement, Title, Tooltip, Legend,
@@ -51,6 +51,12 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .slice(-10) // Keep only the last 10 workouts
     }, [selectedExercise, workouts, useImperial])
+
+    useEffect(() => {
+        if (allExercises.length > 0 && !selectedExercise) {
+            setSelectedExercise(allExercises[0])
+        }
+    }, [allExercises, selectedExercise])
 
     // Chart data
     const data = {
@@ -110,11 +116,10 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
 
             {/* Dropdown Menu */}
             <select className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
-                <option value="">Select an exercise</option>
                 {allExercises.map((name) => (
-                <option key={name} value={name}>
-                    {name}
-                </option>
+                    <option key={name} value={name}>
+                        {name}
+                    </option>
                 ))}
             </select>
 
