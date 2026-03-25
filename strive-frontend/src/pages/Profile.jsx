@@ -189,7 +189,7 @@ const Profile = () => {
                     Reset Account
                 </button>
             </div>
-        </section>
+        </section> 
     )
 }
 
