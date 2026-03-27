@@ -1,8 +1,7 @@
 // userModel.js
-// File to create user schema
 
 // Imports
-const mongoose = require('mongoose')      // import mongoose
+const mongoose = require('mongoose')
 
 // User schema
 const userSchema = mongoose.Schema ({
@@ -27,8 +26,8 @@ const userSchema = mongoose.Schema ({
     // Workouts
     workouts: [
         {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Workout"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Workout"
         }
     ],
     // User level
