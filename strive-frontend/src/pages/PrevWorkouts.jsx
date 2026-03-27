@@ -148,7 +148,7 @@ const PrevWorkouts = () => {
                     <div className="text-[#EDF2F4] text-xl text-center mt-10">
                         <h3>You have not completed any workouts!</h3>
                         <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                            <Link to='/new-workout'>
+                            <Link to='/'>
                                 New Workout 
                             </Link>
                         </button>

@@ -33,10 +33,10 @@ const App = () => {
 			<div className="w-full min-h-screen">
 				<Suspense fallback={<Spinner />}>
 					<Routes>
-					<Route path='/' element={<Dashboard />} />
+					{/* <Route path='/' element={<Dashboard />} /> */}
 					<Route path='/login' element={<Login />} />
 					<Route path='/register' element={<Register />} />
-					<Route path='/new-workout' element={<NewWorkout />} />
+					<Route path='/' element={<NewWorkout />} />
 					<Route path='/workout-complete' element={<WorkoutComplete />} />
 					<Route path='/prev-workouts' element={<PrevWorkouts />} />
 					<Route path='/progress' element={<Progress />} />

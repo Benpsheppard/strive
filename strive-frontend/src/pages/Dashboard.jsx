@@ -13,8 +13,7 @@ import Spinner from '../components/spinners/Spinner.jsx'
 
 // Dashboard
 const Dashboard = () => {
-    const { user, isLoading } = useSelector((state) => state.auth)
-    const { workouts } = useSelector((state) => state.workout)
+    const { isLoading } = useSelector((state) => state.auth)
 
     if(isLoading){
         return (

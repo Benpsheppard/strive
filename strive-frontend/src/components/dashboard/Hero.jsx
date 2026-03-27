@@ -15,7 +15,7 @@ const Hero = () => {
                 </h1>
                 <button className="bg-[#EF233C] hover:bg-red-700 text-[#EDF2F4] font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-300">
                     {user ? (
-                        <Link to='/new-workout'>Let's Get Started</Link>
+                        <Link to='/'>Let's Get Started</Link>
                     ) : (
                         <Link to='/login'>Log in</Link>
                     )}

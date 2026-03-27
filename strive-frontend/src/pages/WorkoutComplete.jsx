@@ -162,7 +162,7 @@ const WorkoutComplete = () => {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-3 pt-2">
-                    <button onClick={() => navigate('/new-workout')} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
+                    <button onClick={() => navigate('/')} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
                         Back to Home
                     </button>
                     <button onClick={() => navigate('/progress')} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">

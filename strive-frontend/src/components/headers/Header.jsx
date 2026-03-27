@@ -12,7 +12,7 @@ const Header = () => {
     const navOps = "text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110"
 
     const mobileNavItems = [
-        { to: "/new-workout", label: "Workout", icon: Dumbbell },
+        { to: "/", label: "Workout", icon: Dumbbell },
         { to: "/prev-workouts", label: "History", icon: Clock },
         { to: "/progress", label: "Progress", icon: BarChart2 },
         { to: "/games", label: "Games", icon: Gamepad2 },
@@ -32,7 +32,7 @@ const Header = () => {
                     {/* Desktop Navbar */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-6 text-lg">
-                            <li><Link to="/new-workout" className={navOps}>New Workout</Link></li>
+                            <li><Link to="/" className={navOps}>New Workout</Link></li>
                             <li><Link to="/prev-workouts" className={navOps}>Previous Workouts</Link></li>
                             <li><Link to="/progress" className={navOps}>Progress</Link></li>
                             <li><Link to="/games" className={navOps}>Games</Link></li>
