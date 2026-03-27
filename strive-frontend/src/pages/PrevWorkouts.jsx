@@ -89,7 +89,7 @@ const PrevWorkouts = () => {
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
             <Header /> 
 
-            <div className="text-5xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
+            <div className="text-4xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
                 <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
             </div>
 

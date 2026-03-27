@@ -501,7 +501,7 @@ const NewWorkout = () => {
 
 			{started && (
 				<section className="space-y-3 w-full max-w-2xl">
-					<div className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+					<div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
 						<h1>
 							New <span className="text-[#EF233C]">Workout</span>
 						</h1>

@@ -58,7 +58,7 @@ const Progress = () => {
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
             <Header />
 
-            <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+            <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
                 Progress <span className="text-[#EF233C]">Summary</span>
             </h1>
             {workouts.length > 0 ? (

@@ -34,7 +34,7 @@ const Games = () => {
                 <Header />
 
                 {/* Title */}
-                <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+                <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
                     Strive <span className='text-[#EF233C]'>Games</span>
                 </h1>
 
@@ -57,7 +57,7 @@ const Games = () => {
 
             
             {/* Title */}
-            <h1 className="text-5xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
+            <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
                 Strive <span className='text-[#EF233C]'>Games</span>
             </h1>
             
