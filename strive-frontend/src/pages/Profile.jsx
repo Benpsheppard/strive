@@ -130,79 +130,81 @@ const Profile = () => {
     }
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32 space-y-3">            
+        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
             <Header />
 
             <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
                 Profile
             </h1>
 
-            {/* Guest Card */}
-            {user?.isGuest && (
-                <div className="w-full md:max-w-[40%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
-                    <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
-                    <p>Migrate to a Strive account for unlimited workout tracking.</p>
-                    <button onClick={onMigrateAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
-                        Migrate Account
-                    </button>
-                </div>
-            )}
-
-            <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">
-                <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
-                <p className='text-[#EF233C] text-3xl font-semibold'>
-                    {user?.username}
-                </p>
-
-                {!user?.isGuest && (
-                    <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Email:<span className="text-[#EF233C]">{user.email}</span>
-                    </p>
+            <div className='space-y-3 w-full flex flex-col items-center'>
+                {/* Guest Card */}
+                {user?.isGuest && (
+                    <div className="w-full md:max-w-[40%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
+                        <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
+                        <p>Migrate to a Strive account for unlimited workout tracking.</p>
+                        <button onClick={onMigrateAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                            Migrate Account
+                        </button>
+                    </div>
                 )}
 
-                <p className='text-[#EDF2F4] text-xl font-semibold'>
-                    User since:<span className="text-[#EF233C]">{new Date(user.createdAt).toLocaleDateString()}</span>
-                </p>
+                <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">
+                    <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
+                    <p className='text-[#EF233C] text-3xl font-semibold'>
+                        {user?.username}
+                    </p>
 
-                {/* Weight Unit Toggle */}
-                <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
-            </div>
+                    {!user?.isGuest && (
+                        <p className='text-[#EDF2F4] text-xl font-semibold'>
+                            Email:<span className="text-[#EF233C]">{user.email}</span>
+                        </p>
+                    )}
 
-            <div className='bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
-                <p className='text-[#EDF2F4] text-xl font-semibold'>
-                    Level: <span className='text-[#EF233C]'>{user?.level}</span>
-                </p>
-                <p className='text-[#EDF2F4] text-xl font-semibold'>
-                    Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
-                </p>
-            </div>
+                    <p className='text-[#EDF2F4] text-xl font-semibold'>
+                        User since:<span className="text-[#EF233C]">{new Date(user.createdAt).toLocaleDateString()}</span>
+                    </p>
 
-            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
-                <p className="text-[#EDF2F4] text-xl font-semibold">
-                    Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
-                </p>
-                <p className="text-[#EDF2F4] text-xl font-semibold">
-                    Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
-                </p>
-                <p className="text-[#EDF2F4] text-xl font-semibold">
-                    Weight: <span className="text-[#EF233C]"> {formatWeight(user.weight, user.useImperial)}</span>
-                </p>
-            </div>
+                    {/* Weight Unit Toggle */}
+                    <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
+                </div>
 
-            {/* Account Control buttons */}
-            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
-                <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded transition hover:bg-[#D90429]">
-                    Logout
-                </button>
-            </div>
+                <div className='bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
+                    <p className='text-[#EDF2F4] text-xl font-semibold'>
+                        Level: <span className='text-[#EF233C]'>{user?.level}</span>
+                    </p>
+                    <p className='text-[#EDF2F4] text-xl font-semibold'>
+                        Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
+                    </p>
+                </div>
 
-            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
-                <button onClick={onDeleteAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
-                    Delete Account
-                </button>
-                <button onClick={onResetAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
-                    Reset Account
-                </button>
+                <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+                    <p className="text-[#EDF2F4] text-xl font-semibold">
+                        Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
+                    </p>
+                    <p className="text-[#EDF2F4] text-xl font-semibold">
+                        Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
+                    </p>
+                    <p className="text-[#EDF2F4] text-xl font-semibold">
+                        Weight: <span className="text-[#EF233C]"> {formatWeight(user.weight, user.useImperial)}</span>
+                    </p>
+                </div>
+
+                {/* Account Control buttons */}
+                <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+                    <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded transition hover:bg-[#D90429]">
+                        Logout
+                    </button>
+                </div>
+
+                <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+                    <button onClick={onDeleteAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                        Delete Account
+                    </button>
+                    <button onClick={onResetAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
+                        Reset Account
+                    </button>
+                </div>
             </div>
         </section> 
     )
