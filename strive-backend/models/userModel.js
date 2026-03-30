@@ -73,7 +73,8 @@ const userSchema = mongoose.Schema ({
     },
     // Weight
     weight: {
-        type: Number
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

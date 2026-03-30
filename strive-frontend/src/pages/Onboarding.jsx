@@ -16,7 +16,7 @@ const Onboarding = () => {
             feet: '5',
             inches: '8'
         },
-        weight: ''
+        weight: '0'
     })
 
     const navigate = useNavigate()
