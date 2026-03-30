@@ -3,7 +3,7 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { updateTarget } from '../features/auth/authSlice.js'
+import { updateProfile } from '../features/auth/authSlice.js'
 import Picker from 'react-mobile-picker'
 import AuthHeader from '../components/headers/AuthHeader'
 
@@ -25,10 +25,8 @@ const Onboarding = () => {
     const onSubmit = (e) => {
         e.preventDefault()
 
-        console.log('Submitting:', formData)
-
         try {
-            dispatch(updateTarget(formData))
+            dispatch(updateProfile(formData))
         } catch (error) {
             console.error('Error during onboarding submission:', error)
         }

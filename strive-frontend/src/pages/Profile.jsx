@@ -23,8 +23,6 @@ const Profile = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    console.log(`useImperial: ${user?.useImperial}`)
-
     const onLogout = () => {
         Swal.fire({
             title: 'Log Out?',
