@@ -82,7 +82,11 @@ const registerUser = asyncHandler(async (req, res) => {
             token: genToken(user._id),
             isGuest: user.isGuest,
             level: user.level,
-            strivepoints: user.strivepoints
+            strivepoints: user.strivepoints,
+            streak: user.streak,
+            target: user.target,
+            height: user.height,
+            weight: user.weight
         })
     } else {
         res.status(400)
@@ -123,6 +127,10 @@ const loginUser = asyncHandler(async (req, res) => {
             useImperial: user.useImperial,
             level: user.level,
             strivepoints: user.strivepoints,
+            streak: user.streak,
+            target: user.target,
+            height: user.height,
+            weight: user.weight,
             token: genToken(user._id)
         })
     } else {
@@ -283,24 +291,24 @@ const resetUser = asyncHandler(async (req, res) => {
  *   @access  Private
  */
 const updateWeightPreference = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user.id)
 
-  if (!user) {
-    res.status(404)
-    throw new Error('User not found')
-  }
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
 
-  user.useImperial = req.body.useImperial
-  const updatedUser = await user.save()
+    user.useImperial = req.body.useImperial
+    const updatedUser = await user.save()
 
-  res.status(200).json({
-    _id: updatedUser.id,
-    username: updatedUser.username,
-    email: updatedUser.email,
-    useImperial: updatedUser.useImperial,
-    createdAt: updatedUser.createdAt,
-    token: genToken(updatedUser._id)
-  })
+    res.status(200).json({
+        _id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        useImperial: updatedUser.useImperial,
+        createdAt: updatedUser.createdAt,
+        token: genToken(updatedUser._id)
+    })
 })
 
 /**
@@ -338,6 +346,59 @@ const addPoints = asyncHandler(async (req, res) => {
     })
 })
 
+/**
+ *   @desc    Update user's profile information
+ *   @route   PUT /api/users/profile
+ *   @access  Private
+ */
+const updateProfile = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id)
+
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    const { target, height, weight } = req.body
+
+    if (target !== undefined) {
+        if (isNaN(Number(target)) || Number(target) < 1 || Number(target) > 7) {
+            res.status(400)
+            throw new Error('Target must be a number between 1 and 7')
+        }
+        user.target = target
+    }
+
+    if (height !== undefined) {
+        if (typeof height !== 'object' || isNaN(Number(height.feet)) || isNaN(Number(height.inches))) {
+            res.status(400)
+            throw new Error('Height must be an object with numeric feet and inches')
+        }
+        user.height = height
+    }
+
+    if (weight !== undefined) {
+        if (isNaN(Number(weight)) || Number(weight) <= 0) {
+            res.status(400)
+            throw new Error('Weight must be a positive number')
+        }
+        user.weight = weight
+    }
+
+    const updatedUser = await user.save()
+
+    res.status(200).json({
+        _id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        target: updatedUser.target,
+        height: updatedUser.height,
+        weight: updatedUser.weight,
+        createdAt: updatedUser.createdAt,
+        token: genToken(updatedUser._id)
+    })
+}) 
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -354,5 +415,6 @@ module.exports = {
     deleteUser, 
     resetUser, 
     updateWeightPreference, 
-    addPoints 
+    addPoints,
+    updateProfile
 }

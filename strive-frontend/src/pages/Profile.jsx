@@ -9,6 +9,7 @@ import Swal from 'sweetalert2'
 
 // Function Imports
 import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js'
+import { formatWeight } from '../utils/formatValues.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -21,6 +22,8 @@ const Profile = () => {
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
+
+    console.log(`useImperial: ${user?.useImperial}`)
 
     const onLogout = () => {
         Swal.fire({
@@ -129,7 +132,7 @@ const Profile = () => {
     }
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
+        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32 space-y-3">            
             <Header />
 
             <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
@@ -147,41 +150,55 @@ const Profile = () => {
                 </div>
             )}
 
-            <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+            <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">
                 <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
-                <p className="text-lg mb-2">
-                    <span className="font-semibold">Username:</span> {user.username}
+                <p className='text-[#EF233C] text-3xl font-semibold'>
+                    {user?.username}
                 </p>
 
                 {!user?.isGuest && (
-                    <p className="text-lg mb-2">
-                        <span className="font-semibold">Email:</span> {user.email}
+                    <p className='text-[#EDF2F4] text-xl font-semibold'>
+                        Email:<span className="text-[#EF233C]">{user.email}</span>
                     </p>
                 )}
 
-                <p className="text-lg mb-6">
-                   <span className="font-semibold">User since:</span>{" "}
-                    {new Date(user.createdAt).toLocaleDateString()}
-                </p> 
-                <p className="text-lg mb-2">
-                    <span className="font-semibold">Level:</span> {user.level}
-                </p>
-                <p className="text-lg mb-2">
-                    <span className="font-semibold">Strive Points:</span> {user.strivepoints}
+                <p className='text-[#EDF2F4] text-xl font-semibold'>
+                    User since:<span className="text-[#EF233C]">{new Date(user.createdAt).toLocaleDateString()}</span>
                 </p>
 
                 {/* Weight Unit Toggle */}
                 <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
             </div>
 
+            <div className='bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
+                <p className='text-[#EDF2F4] text-xl font-semibold'>
+                    Level: <span className='text-[#EF233C]'>{user?.level}</span>
+                </p>
+                <p className='text-[#EDF2F4] text-xl font-semibold'>
+                    Strive Points: <span className='text-[#EF233C]'>{user?.strivepoints} SP</span>
+                </p>
+            </div>
+
+            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
+                <p className="text-[#EDF2F4] text-xl font-semibold">
+                    Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
+                </p>
+                <p className="text-[#EDF2F4] text-xl font-semibold">
+                    Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
+                </p>
+                <p className="text-[#EDF2F4] text-xl font-semibold">
+                    Weight: <span className="text-[#EF233C]"> {formatWeight(user.weight, user.useImperial)}</span>
+                </p>
+            </div>
+
             {/* Account Control buttons */}
-            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
                 <button onClick={onLogout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 rounded transition hover:bg-[#D90429]">
                     Logout
                 </button>
             </div>
 
-            <div className="bg-[#8D99AE] w-full mt-6 md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
+            <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
                 <button onClick={onDeleteAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
                     Delete Account
                 </button>

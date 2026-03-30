@@ -2,7 +2,7 @@
 
 const WeightToggle = ({ useImperial, onToggle }) => {
     return (
-        <div className="bg-[#2B2D42] rounded-lg p-4 mb-6">
+        <div className="bg-[#2B2D42] rounded-lg p-4">
             <div className="flex items-center justify-between">
                 <span className="text-[#EDF2F4] font-semibold">Weight Unit:</span>
                 <div className="flex items-center gap-3">

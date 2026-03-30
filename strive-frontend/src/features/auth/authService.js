@@ -96,15 +96,15 @@ const resetUser = async (userId, token) => {
 // Update user weight unit preference
 const updateWeightPreference = async (useImperial, token) => {
   const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
   }
 
   const response = await axios.put(API_URL + 'preference', { useImperial }, config)
 
   if (response.data) {
-    localStorage.setItem('Strive:user', JSON.stringify(response.data))
+    	localStorage.setItem('Strive:user', JSON.stringify(response.data))
   }
 
   return response.data
@@ -112,17 +112,33 @@ const updateWeightPreference = async (useImperial, token) => {
 
 // Add Strive Points (SP)
 const addPoints = async (userId, amount, token) => {
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
+	const config = {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	}
 
-  const response = await axios.post(API_URL + `${userId}/points`, { amount }, config)
+	const response = await axios.post(API_URL + `${userId}/points`, { amount }, config)
 
-  return response.data
+	return response.data
 }
 
+// Update user profile
+const updateProfile = async (profileData, token) => {
+	const config = {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	}
+
+	const response = await axios.put(API_URL + `profile`, profileData, config)
+
+	if (response.data) {
+		localStorage.setItem('Strive:user', JSON.stringify(response.data))
+	}
+
+	return response.data
+}
 
 // Export functions
 const authService = {
@@ -133,7 +149,8 @@ const authService = {
     deleteUser,
     resetUser,
     updateWeightPreference,
-    addPoints
+    addPoints,
+	updateProfile
 }
 
 export default authService

@@ -49,7 +49,7 @@ const Register = () => {
 
         // Navigate user to dashboard
         if (isSuccess || user) {
-            navigate('/')
+            navigate('/onboarding')
         }
 
         // Reset state to normal

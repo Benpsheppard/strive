@@ -2,11 +2,10 @@
 // File to handle user routes
 
 // Imports
-const express = require('express')     // Import express
-const { body, param } = require('express-validator')
-const { registerUser, loginUser, getMe, deleteUser, updateWeightPreference, resetUser, addPoints, migrateUser } = require('../controllers/userController.js')   // Import user controllers
-const { protect } = require('../middleware/authMiddleware.js')     // Import protect function to protect routes
-const { validateObjectId } = require('../middleware/validateObjectId.js')  // Import ObjectId validation
+const express = require('express')
+const { registerUser, loginUser, getMe, deleteUser, updateWeightPreference, resetUser, addPoints, migrateUser, updateProfile } = require('../controllers/userController.js')
+const { protect } = require('../middleware/authMiddleware.js')
+const { validateObjectId } = require('../middleware/validateObjectId.js')
 
 // Initialise router
 const userRouter = express.Router()
@@ -34,6 +33,9 @@ userRouter.put('/preference', protect, updateWeightPreference)
 
 // Add SP
 userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)
+
+// Update profile information
+userRouter.put('/profile', protect, updateProfile)
 
 // Export router
 module.exports = { userRouter }

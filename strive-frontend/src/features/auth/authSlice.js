@@ -105,6 +105,19 @@ export const addPoints = createAsyncThunk('auth/addPoints', async ({ userId, amo
     }
 })
 
+// Update users profile
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (profileData, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.updateProfile(profileData, token)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -127,6 +140,7 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isSuccess = true
                 state.user = action.payload
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(register.rejected, (state, action) => {
                 state.isLoading = false
@@ -143,6 +157,7 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isSuccess = true
                 state.user = action.payload
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false
@@ -159,6 +174,7 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isSuccess = true
                 state.user = action.payload
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(migrate.rejected, (state, action) => {
                 state.isLoading = false
@@ -212,6 +228,7 @@ export const authSlice = createSlice({
                     ...state.user,      
                     ...action.payload
                 }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateWeightPreference.rejected, (state, action) => {
                 state.isLoading = false
@@ -233,6 +250,25 @@ export const authSlice = createSlice({
                 }
             })
             .addCase(addPoints.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+
+        // Update Target
+            .addCase(updateProfile.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.user = {
+                    ...state.user,      
+                    ...action.payload
+                }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload

@@ -7,13 +7,14 @@ import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'   // Im
 import { ToastContainer } from 'react-toastify'  // Import toast container
 import 'react-toastify/dist/ReactToastify.css'   // Import toast css
 import Spinner from './components/spinners/Spinner.jsx'
-import WorkoutComplete from './pages/WorkoutComplete.jsx'
 
 // Lazy load pages for performance optimization
-const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+// const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
+const Onboarding = lazy(() => import('./pages/Onboarding.jsx'))
 const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'))
+const WorkoutComplete = lazy(() => import('./pages/WorkoutComplete.jsx'))
 const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'))
 const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
@@ -34,9 +35,10 @@ const App = () => {
 				<Suspense fallback={<Spinner />}>
 					<Routes>
 					{/* <Route path='/' element={<Dashboard />} /> */}
+					<Route path='/' element={<NewWorkout />} />
 					<Route path='/login' element={<Login />} />
 					<Route path='/register' element={<Register />} />
-					<Route path='/' element={<NewWorkout />} />
+					<Route path='/onboarding' element={<Onboarding />} />
 					<Route path='/workout-complete' element={<WorkoutComplete />} />
 					<Route path='/prev-workouts' element={<PrevWorkouts />} />
 					<Route path='/progress' element={<Progress />} />

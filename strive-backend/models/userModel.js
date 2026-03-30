@@ -40,6 +40,11 @@ const userSchema = mongoose.Schema ({
         type: Number,
         default: 0
     },
+    // Streak
+    streak: {
+        type: Number,
+        default: 0
+    },
     // User unit preference
     useImperial: {
         type: Boolean,
@@ -49,6 +54,26 @@ const userSchema = mongoose.Schema ({
     isGuest: {
         type: Boolean,
         default: false
+    },
+    // Consistency Target
+    target: {
+        type: Number,
+        default: 3
+    },
+    // Height
+    height: {
+        feet: {
+            type: Number,
+            default: 5
+        },
+        inches: {
+            type: Number,
+            default: 8
+        }
+    },
+    // Weight
+    weight: {
+        type: Number
     }
 }, {
     timestamps: true

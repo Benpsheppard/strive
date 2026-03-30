@@ -1,8 +1,5 @@
 // Header.jsx
 
-// Imports
-import { Link } from 'react-router-dom'
-
 const Header = () => {
 
     return (
@@ -11,9 +8,9 @@ const Header = () => {
                 
                 {/* Logo / Title */}
                 <div className="text-2xl font-bold tracking-wide">
-                    <Link to="/" className="text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110">
+                    <h1 className="text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110">
                         STRIVE
-                    </Link>
+                    </h1>
                 </div>
             </div>
         </header>
