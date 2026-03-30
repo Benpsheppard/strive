@@ -9,7 +9,7 @@ import Swal from 'sweetalert2'
 
 // Function Imports
 import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js'
-import { formatWeight } from '../utils/formatValues.js'
+import { formatWeight, formatNumber } from '../utils/formatValues.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -173,7 +173,7 @@ const Profile = () => {
                     Level: <span className='text-[#EF233C]'>{user?.level}</span>
                 </p>
                 <p className='text-[#EDF2F4] text-xl font-semibold'>
-                    Strive Points: <span className='text-[#EF233C]'>{user?.strivepoints} SP</span>
+                    Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
                 </p>
             </div>
 

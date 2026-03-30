@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 
 // Function Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
+import { formatNumber } from '../utils/formatValues.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -84,7 +85,7 @@ const Games = () => {
                         Level: <span className='text-[#EF233C]'>{user?.level}</span>
                     </p>
                     <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Strive Points: <span className='text-[#EF233C]'>{user?.strivepoints} SP</span>
+                        Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
                     </p>
 
                     {/* Progress Bar */}
