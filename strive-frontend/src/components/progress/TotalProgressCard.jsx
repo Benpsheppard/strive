@@ -39,7 +39,7 @@ const TotalProgressCard = ({ workouts }) => {
     })
 
 	return (
-		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center w-full">
+		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center text-xl w-full">
 			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
                 <span className="text-[#EF233C] font-bold">All Time</span> Summary
 			</h2>
