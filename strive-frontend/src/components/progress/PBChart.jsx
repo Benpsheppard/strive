@@ -1,7 +1,7 @@
 // PBChart.jsx
 
 // Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
     BarElement, Title, Tooltip, Legend,
@@ -30,6 +30,8 @@ const MUSCLE_GROUPS = [
 
 const PBChart = ({ workouts, useImperial }) => {
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
+    const [expanded, setExpanded] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
     const exercisePBs = calculatePersonalBests(workouts)
 
@@ -112,10 +114,19 @@ const PBChart = ({ workouts, useImperial }) => {
         )
     }
 
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768)
+        }
+
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     return (
-        <div className="bg-[#8D99AE] p-6 rounded-2xl">
-            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4 text-center">
-                Personal Bests
+        <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
+                Personal <span className="text-[#EF233C]"> Bests</span>
             </h2>
 
             {/* Dropdown Menu */}

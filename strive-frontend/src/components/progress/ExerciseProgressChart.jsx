@@ -16,6 +16,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
     const [selectedExercise, setSelectedExercise] = useState('')
+    const [expanded, setExpanded] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
     // Extract all unique exercises
     const allExercises = useMemo(() => {
@@ -108,10 +110,19 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         },
     }
 
+    useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 768)
+		}
+
+		window.addEventListener('resize', handleResize)
+		return () => window.removeEventListener('resize', handleResize)
+	}, [])
+
     return (
-        <div className="bg-[#8D99AE] p-6 rounded-2xl">
-            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4 text-center">
-                Exercise Progress
+        <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
+                Exercise<span className="text-[#EF233C]"> Progress</span>
             </h2>
 
             {/* Dropdown Menu */}

@@ -1,7 +1,7 @@
 // MuscleGroupSplit.jsx
 
 // Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 
@@ -24,6 +24,8 @@ const COLOURS = [
 
 const MuscleGroupSplit = ({ workouts, useImperial }) => {
   	const [viewMode, setViewMode] = useState('exercises')
+	const [expanded, setExpanded] = useState(false)
+	const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
 	// Count muscle groups based on selected view mode
 	const muscleGroupCounts = {}
@@ -125,10 +127,19 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 		)
 	}
 
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 768)
+		}
+
+		window.addEventListener('resize', handleResize)
+		return () => window.removeEventListener('resize', handleResize)
+	}, [])
+
 	return (
-		<div className="card-theme bg-[#8D99AE] p-6 rounded-2xl">
-			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4 text-center">
-				Muscle Group Split
+		<div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`card-theme bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
+				Muscle Group <span className="text-[#EF233C]"> Split</span>
 			</h2>
 
 			{/* Toggle between exercises, sets, and weight */}
