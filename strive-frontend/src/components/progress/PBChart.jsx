@@ -130,7 +130,7 @@ const PBChart = ({ workouts, useImperial }) => {
             </h2>
 
             {/* Dropdown Menu */}
-            <select className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedMuscleGroup} onChange={(e) => setSelectedMuscleGroup(e.target.value)}>
+            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedMuscleGroup} onChange={(e) => setSelectedMuscleGroup(e.target.value)}>
                 <option value="">Select a Muscle Group</option>
                 {MUSCLE_GROUPS.map((group) => (
                     <option key={group} value={group}>
@@ -147,7 +147,7 @@ const PBChart = ({ workouts, useImperial }) => {
                 </div>
             ) : (
                 <div className="h-[300px] md:h-[400px] relative">
-                    <Bar data={data} options={options} />
+                    <Bar onClick={(e) => e.stopPropagation()} data={data} options={options} />
                 </div>
             )}
             </div>

@@ -143,7 +143,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 			</h2>
 
 			{/* Toggle between exercises, sets, and weight */}
-			<div className="flex gap-2 mb-6 justify-center flex-wrap">
+			<div onClick={(e) => e.stopPropagation()} className="flex gap-2 mb-6 justify-center flex-wrap">
 				{/* Exercises View Mode */}
 				<button className={`px-4 py-2 rounded-lg font-medium transition-COLOURS ${viewMode === 'exercises' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('exercises')}>
 					By Exercises
@@ -162,7 +162,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 
 			{/* Chart Area */}
 			<div className="relative h-[350px] md:h-[450px] flex items-center justify-center">
-				<Pie data={data} options={options} />
+				<Pie onClick={(e) => e.stopPropagation()} data={data} options={options} />
 			</div>
 
 			{/* Stats Summary */}

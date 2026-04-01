@@ -126,7 +126,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             </h2>
 
             {/* Dropdown Menu */}
-            <select className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
+            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
                 {allExercises.map((name) => (
                     <option key={name} value={name}>
                         {name}
@@ -137,7 +137,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             {/* Chart Area */}
             <div className="relative h-[300px] md:h-[400px]">
                 {selectedExercise && exerciseData.length > 0 ? (
-                <Line data={data} options={options} />
+                <Line onClick={(e) => e.stopPropagation()}data={data} options={options} />
                 ) : (
                 <p className="text-center text-[#EDF2F4] opacity-70">
                     Select an exercise to view your progress
