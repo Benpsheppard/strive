@@ -64,13 +64,12 @@ const Progress = () => {
             {workouts.length > 0 ? (
                 <div className='w-full space-y-6'> 
                     {/* Summary Cards */}
-                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 text-xl'>
+                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
                         <MonthlyProgressCard workouts={workouts} />
-                        <TotalProgressCard workouts={workouts}/>
+                        <MonthCalendar workouts={workouts} />
                     </div>                   
 
-                    {/* Monthly Consistency Calendar */}
-                    <MonthCalendar workouts={workouts} />
+                    <TotalProgressCard workouts={workouts}/>
 
                     {/* Charts Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
