@@ -73,7 +73,7 @@ const MonthCalendar = ({ workouts }) => {
     const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()
 
     return (
-        <div className="card-theme w-full bg-[#8D99AE] shadow rounded-2xl px-6 py-4">
+        <div className="card-theme w-full h-full bg-[#8D99AE] flex flex-col shadow rounded-2xl px-6 py-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <button onClick={prevMonth} className="text-[#EDF2F4] hover:text-[#EF233C] transition text-xl px-2">
@@ -99,7 +99,7 @@ const MonthCalendar = ({ workouts }) => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1 flex-1 auto-rows-fr">
                 {cells.map((date, index) => {
                     if (!date) return <div key={index} />
 
