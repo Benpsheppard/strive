@@ -16,6 +16,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
     const [selectedExercise, setSelectedExercise] = useState('')
+    const [workoutLimit, setWorkoutLimit] = useState(10)
     const [expanded, setExpanded] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
@@ -51,8 +52,8 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
 
         return dataPoints
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(-10) // Keep only the last 10 workouts
-    }, [selectedExercise, workouts, useImperial])
+            .slice(-workoutLimit) // Keep only the last workoutLimit workouts
+    }, [selectedExercise, workouts, useImperial, workoutLimit])
 
     useEffect(() => {
         if (allExercises.length > 0 && !selectedExercise) {
@@ -90,12 +91,25 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         maintainAspectRatio: false,
         scales: {
             x: {
-                ticks: { color: '#EDF2F4' },
+                ticks: { 
+                    color: '#EDF2F4',
+                    display: workoutLimit < 15
+                },
                 grid: { color: 'rgba(255,255,255,0.1)' },
+                title: {
+                    display: workoutLimit >= 15,
+                    text: `Workout Date`,
+                    color: '#EDF2F4'
+                }
             },
             y: {
                 ticks: { color: '#EDF2F4' },
                 grid: { color: 'rgba(255,255,255,0.1)' },
+                title: {
+                    display: true,
+                    text: `Weight (${weightUnit})`,
+                    color: '#EDF2F4'
+                }
             },
         },
         plugins: {
@@ -126,7 +140,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             </h2>
 
             {/* Dropdown Menu */}
-            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
+            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-2 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
                 {allExercises.map((name) => (
                     <option key={name} value={name}>
                         {name}
@@ -134,14 +148,27 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 ))}
             </select>
 
+            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={workoutLimit} onChange={(e) => setWorkoutLimit(Number(e.target.value))}>
+                <option value={5}>Last 5 Workouts</option>
+                <option value={10}>Last 10 Workouts</option>
+                <option value={15}>Last 15 Workouts</option>
+                <option value={20}>Last 20 Workouts</option>
+                {!isMobile && (
+                    <> 
+                        <option value={50}>Last 50 Workouts</option>
+                        <option value={100}>Last 100 Workouts</option>
+                    </>
+                )}
+            </select>
+
             {/* Chart Area */}
             <div className="relative h-[300px] md:h-[400px]">
                 {selectedExercise && exerciseData.length > 0 ? (
-                <Line onClick={(e) => e.stopPropagation()}data={data} options={options} />
+                    <Line onClick={(e) => e.stopPropagation()} data={data} options={options} />
                 ) : (
-                <p className="text-center text-[#EDF2F4] opacity-70">
-                    Select an exercise to view your progress
-                </p>
+                    <p className="text-center text-[#EDF2F4] opacity-70">
+                        Select an exercise to view your progress
+                    </p>
                 )}
             </div>
         </div>
