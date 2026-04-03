@@ -32,23 +32,9 @@ const generateQuests = async (duration, token) => {
     return response.data
 }
 
-// Check quest completion
-const checkQuestCompletion = async (workoutData, token) => {
-    const config = {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    }
-
-    const response = await axios.post(API_URL + 'check-completion', { newWorkout: workoutData }, config)
-
-    return response.data
-}
-
 const questService = {
     getQuests,
-    generateQuests,
-    checkQuestCompletion
+    generateQuests
 }
 
 export default questService

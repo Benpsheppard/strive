@@ -33,17 +33,6 @@ export const generateQuests = createAsyncThunk('quests/generate', async (duratio
     }
 })
 
-export const checkQuestCompletion = createAsyncThunk('quests/checkCompletion', async (workoutData, thunkAPI) => {
-    try {
-        const token = thunkAPI.getState().auth.user.token
-        return await questService.checkQuestCompletion(workoutData, token)
-    } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) 
-        || error.message || error.toString()
-        return thunkAPI.rejectWithValue(message)
-    }
-})
-
 export const questSlice = createSlice({
     name: 'quest',
     initialState,
@@ -86,22 +75,7 @@ export const questSlice = createSlice({
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload
-            })
-
-        // Check Quest Completion
-            .addCase(checkQuestCompletion.pending, (state) => {
-                state.isLoading = true
-            })
-            .addCase(checkQuestCompletion.fulfilled, (state, action) => {
-                state.isLoading = false
-                state.isSuccess = true
-                // Update quests with completion status
-            })
-            .addCase(checkQuestCompletion.rejected, (state, action) => {
-                state.isLoading = false
-                state.isError = true
-                state.message = action.payload
-            })                
+            })              
     }
 })
 
