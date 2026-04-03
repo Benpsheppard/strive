@@ -32,7 +32,7 @@ const Quests = () => {
     return (
         <>
             {/* Daily Quests */}
-            <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
+            <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center items-center'>
                 <h2 className='text-[#EDF2F4] text-2xl font-bold'>
                     Daily Quests
                 </h2>
@@ -40,8 +40,8 @@ const Quests = () => {
                 {isLoading ? (
                     <InlineSpinner />
                 ) : quests.daily ? (
-                    <div className='quest-scroll flex md:grid md:grid-cols-3 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>                        
-                    {daily.map(q => (
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>                        
+                        {daily.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
@@ -62,15 +62,15 @@ const Quests = () => {
                 {isLoading ? (
                     <InlineSpinner />
                 ) : quests.weekly ? (
-                    <div className='quest-scroll flex md:grid md:grid-cols-2 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-2'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                         {weekly.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
                 ) : (
                     <>
-                    <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Weekly Quests</h1>
-                    <p>Come back next week for new Quests!</p>
+                        <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Weekly Quests</h1>
+                        <p>Come back next week for new Quests!</p>
                     </>
                 )}
             </div>
@@ -84,15 +84,15 @@ const Quests = () => {
                 {isLoading ? (
                     <InlineSpinner />
                 ) : quests.monthly ? (
-                    <div className='flex justify-center w-full'>
+                    <div className='grid grid-cols-1 md:grid-cols-1 gap-4'>
                         {monthly.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
                 ) : (
                     <>
-                    <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Monthly Quests</h1>
-                    <p>Come back next month for a new Quest!</p>
+                        <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Monthly Quests</h1>
+                        <p>Come back next month for a new Quest!</p>
                     </>
                 )}
             </div>
