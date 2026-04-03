@@ -56,6 +56,14 @@ const PrevWorkouts = () => {
                 return filtered.sort((a, b) => b.duration - a.duration)
             case 's-duration':
                 return filtered.sort((a, b) => a.duration - b.duration)  
+            case 'weight':
+                return filtered.sort( (a, b) => (b.summary?.totalWeight || 0) - (a.summary?.totalWeight || 0) )
+            case 'reps':
+                return filtered.sort( (a, b) => (b.summary?.totalReps || 0) - (a.summary?.totalReps || 0) )
+            case 'sets':
+                return filtered.sort( (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) )
+            case 'sp':
+                return filtered.sort( (a, b) => (b.summary?.totalStrivePoints || 0) - (a.summary?.totalStrivePoints || 0) )
             default:
                 return filtered
         }
@@ -121,6 +129,10 @@ const PrevWorkouts = () => {
                     <option value="title-desc">Title (Z–A)</option>
                     <option value="l-duration">Longest Duration</option>
                     <option value="s-duration">Shortest Duration</option>
+                    <option value="weight">Weight</option>
+                    <option value="reps">Reps</option>
+                    <option value="sets">Sets</option>
+                    <option value="sp">Strive Points</option>
                 </select>
             </div>
 
