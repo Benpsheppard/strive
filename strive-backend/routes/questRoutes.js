@@ -16,7 +16,4 @@ questRouter.get('/', getQuests)
 // Generate quest route
 questRouter.post('/generate/:duration', generateQuests)
 
-// Check quest completion route
-questRouter.post('/check-completion', checkQuestCompletion)
-
 module.exports = { questRouter }

@@ -288,53 +288,7 @@ const getQuests = asyncHandler(async (req, res) => {
     res.status(200).json({ quests: groupedQuests })
 })
 
-/**
- * Check if quests are completed
- * @route   POST /api/quests/check-completion
- * @access  Private
- */
-const checkQuestCompletion = asyncHandler(async (req, res) => {
-    const { newWorkout } = req.body // the workout just submitted
-    const userId = req.user.id
-
-    const quests = await Quest.find({ user: userId, status: 'active' })
-    if (!quests.length) return res.status(200).json({ updatedQuests: [] })
-
-    const updatedQuests = []
-
-    for (const quest of quests) {
-        const { exercise, weight, reps } = quest.completion
-
-        const normalizedQuestExercise = exercise.toLowerCase().trim()
-        
-        const match = newWorkout.exercises.find(e => 
-            e.name.toLowerCase().trim() === normalizedQuestExercise
-        )
-        
-        if (!match) continue
-
-        const completed = match.sets.some(s => 
-            s.weight >= weight && s.reps >= reps - REP_BUFFER
-        )
-        
-        if (completed) {
-            quest.status = 'completed'
-            await quest.save()
-
-            updatedQuests.push({ 
-                id: quest._id,
-                title: quest.title,
-                completed: true, 
-                reward: quest.reward 
-            })
-        }
-    }
-
-    res.status(200).json({ updatedQuests })
-})
-
 module.exports = {
     getQuests,
-    generateQuests,
-    checkQuestCompletion
+    generateQuests
 }
