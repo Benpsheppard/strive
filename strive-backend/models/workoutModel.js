@@ -1,8 +1,7 @@
 // workoutModel.js
-// File to create workout schema
 
 // Imports
-const mongoose = require('mongoose')   // import mongoose
+const mongoose = require('mongoose')
 
 // Exercise Schema
 const exerciseSchema = mongoose.Schema({
@@ -36,6 +35,69 @@ const exerciseSchema = mongoose.Schema({
     timestamps: true
 })
 
+// Summary Schema
+const summarySchema = mongoose.Schema({
+    // Total weight
+    totalWeight: {
+        type: Number,
+        required: [true, 'Please add a total weight value']
+    },
+    // Total reps    
+    totalReps: {
+        type: Number,
+        required: [true, 'Please add a total reps value']
+    },
+    // Total sets
+    totalSets: {
+        type: Number,
+        required: [true, 'Please add a total sets value']
+    },
+    // Total exercises
+    totalExercises: {
+        type: Number,
+        required: [true, 'Please add a total exercises value']
+    },
+    // Total SP earned 
+    totalStrivePoints: {
+        type: Number,
+        required: [true, 'Please add a total SP value']
+    },
+    // Quests Completed
+    questsCompleted: [
+        {
+            questId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Quest'
+            },
+            title: {
+                type: String,
+                required: true
+            },
+            reward: {
+                type: Number,
+                required: true
+            }
+        }
+    ],
+    // Personal Bests
+    personalBests: [
+        {
+            exercise: {
+                type: String
+            },
+            metric: {
+                type: String
+            },
+            previousValue: {
+                type: Number
+            },
+            newValue: {
+                type: Number
+            }
+        }
+    ]
+})
+
 // Workout Schema
 const workoutSchema = mongoose.Schema({
     // User
@@ -60,7 +122,9 @@ const workoutSchema = mongoose.Schema({
         required: [true, 'Timer error']
     },
     // Exercises
-    exercises: [exerciseSchema]
+    exercises: [exerciseSchema],
+    // Summary
+    summary: summarySchema
 }, {
     timestamps: true
 })
