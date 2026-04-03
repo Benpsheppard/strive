@@ -33,7 +33,7 @@ const Quests = () => {
         <>
             {/* Daily Quests */}
             <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center items-center'>
-                <h2 className='text-[#EDF2F4] text-2xl font-bold'>
+                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
                     Daily Quests
                 </h2>
 
@@ -55,7 +55,7 @@ const Quests = () => {
 
             {/* Weekly Quests */}
             <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
-                <h2 className='text-[#EDF2F4] text-2xl font-bold'>
+                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
                     Weekly Quests
                 </h2>
 
@@ -77,7 +77,7 @@ const Quests = () => {
 
             {/* Monthly Quest */}
             <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
-                <h2 className='text-[#EDF2F4] text-2xl font-bold'>
+                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
                     Monthly Quests
                 </h2>
 
