@@ -9,12 +9,10 @@ import Swal from 'sweetalert2'
 
 // Function Imports
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
-import { detectNewPBs } from '../utils/pbDetection.js'
-import { parseWeight, formatWeight } from '../utils/formatValues.js'
+import { parseWeight } from '../utils/formatValues.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js'
 import { addPoints } from '../features/auth/authSlice.js'
-import { checkQuestCompletion } from '../features/quests/questSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -330,68 +328,20 @@ const NewWorkout = () => {
 		}
 
 		setIsSubmittingWorkout(true)
-
 		const endTime = Date.now()
 		const durationMinutes = Math.round((endTime - startTime) / 60000)
+
 		const workoutData = { title, exercises, duration: durationMinutes }
 
 		try {
-			// Add fixed Strive Points for completing workout
-			let SP_REWARD = 0
-			const WORKOUT_COMPLETE_SP = 200
-			const PB_REWARD_SP = 500
-
-			// Detect PBs
-			const newPBs = detectNewPBs(workoutData, workouts)
-
 			// Save workout
-			await dispatch(createWorkout(workoutData)).unwrap()
+			const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
+			const { summary } = savedWorkout
 
-			SP_REWARD += WORKOUT_COMPLETE_SP
-
-			// Detect new PBs and reward bonus SP
-			const pbResults = []
-			const newExercises = []
-			if (newPBs.length > 0) {
-				for (const pb of newPBs) {
-					if (pb.isFirstTime) {
-						newExercises.push(pb.exerciseName)
-					} else {
-						SP_REWARD += PB_REWARD_SP
-						pbResults.push({
-							exerciseName: pb.exerciseName,
-							oldWeight: formatWeight(pb.oldWeight, user.useImperial),
-							newWeight: formatWeight(pb.newWeight, user.useImperial),
-							sp: PB_REWARD_SP
-						})
-					}
-				}
-			}
-
-			// Check quest completion
-			const questResults = []
-			try {
-				const { updatedQuests } = await dispatch(checkQuestCompletion(workoutData)).unwrap()
-				if (updatedQuests && updatedQuests.length > 0) {
-					for (const quest of updatedQuests) {
-						console.log('raw updated quest:', quest)
-						console.log('quest.title:', quest.title)
-						SP_REWARD += quest.reward
-						questResults.push({
-							title: quest.title,
-							reward: quest.reward
-						})
-					}
-				}
-			} catch (questError) {
-				console.error('Quest check failed:', questError)
-			}
-
-			// Apply all SP at once
+			// Apply SP reward
 			let levelUp = null
-			if (SP_REWARD > 0) {
-				const result = await dispatch(addPoints({ userId: user._id, amount: SP_REWARD })).unwrap()
-
+			if (summary.totalStrivePoints > 0) {
+				const result = await dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints })).unwrap()
 				if (result.level > user.level) {
 					levelUp = result.level
 				}
@@ -399,18 +349,7 @@ const NewWorkout = () => {
 
 			// Reset workout state & localStorage
 			resetWorkoutState()
-
-			navigate('/workout-complete', {
-				state: {
-					workout: workoutData,
-					totalSP: SP_REWARD,
-					pbs: pbResults,
-					quests: questResults,
-					levelUp,
-					duration: durationMinutes,
-					newExercises
-				}
-			})
+			navigate('/workout-complete', { state: { workout: savedWorkout, levelUp } })
 
 		} catch (error) {
 			console.error('Submit workout error: ', error)
