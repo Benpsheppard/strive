@@ -79,10 +79,41 @@ const WorkoutItem = ({ workout }) => {
                 {exerciseCount} {exerciseCount === 1 ? "exercise" : "exercises"}
             </p>
 
-
             {/* Workout Expanded content */}
             {workoutExpanded && (
                 <>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Weight</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalWeight}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Reps</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalReps}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Sets</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalSets}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">SP</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalStrivePoints}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.questsCompleted.length}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
+                            <p className="font-semibold text-[#EF233C]">{workout.summary.personalBests.length}</p>
+                        </div>
+                    </div>
+
                     {exerciseCount > 0 && (
                         <div>
                             <h3 className="text-sm font-semibold text-[#EDF2F4] mb-2">Exercises</h3>
