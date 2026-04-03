@@ -17,8 +17,6 @@ const QUEST_CONFIG = {
     monthly: { count: 1, expiryDays: 30, reward: 1000}
 }
 
-const REP_BUFFER = 2
-
 const getExpiryDate = (expiryDays) => {
     const expiry = new Date()
 
