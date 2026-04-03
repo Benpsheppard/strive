@@ -4,7 +4,8 @@
 // Imports
 const asyncHandler = require('express-async-handler')  
 const Workout = require('../models/workoutModel.js')    
-const User = require('../models/userModel.js')  
+const User = require('../models/userModel.js') 
+const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 
 /**
  *  @desc   Get workouts for the authenticated user
@@ -39,12 +40,16 @@ const setWorkout = asyncHandler(async (req, res) => {
         throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
     }
 
+    const exercises = req.body.exercises
+    const summary = await calculateWorkoutSummary(req.user.id, exercises)
+
     // Create new workout with given req data
     const workout = await Workout.create({
         user: req.user.id,
         title: req.body.title,
         duration: req.body.duration,
-        exercises: req.body.exercises
+        exercises,
+        summary
     })
 
     await User.findByIdAndUpdate(
