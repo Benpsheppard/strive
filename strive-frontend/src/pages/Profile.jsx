@@ -149,7 +149,7 @@ const Profile = () => {
                     </div>
                 )}
 
-                <div className="card-theme bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">
+                <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">
                     <FaUser className="text-8xl bg-[#EDF2F4] rounded-full mx-auto mb-3"/>
                     <p className='text-[#EDF2F4] text-3xl font-semibold'>
                         {user?.username}

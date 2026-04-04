@@ -7,11 +7,11 @@ import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 
 // Function Imports
-import { deleteWorkout, reset } from '../../features/workouts/workoutsSlice.js'
+import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import SetList from './SetList.jsx'
-import { formatDuration } from '../../utils/formatValues.js'
+import { formatDuration, formatNumber, formatWeight } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
     const { user } = useSelector((state) => state.auth)
@@ -85,32 +85,32 @@ const WorkoutItem = ({ workout }) => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalWeight}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Reps</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalReps}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalReps)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Sets</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalSets}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalSets)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">SP</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.totalStrivePoints}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.questsCompleted.length}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
-                            <p className="font-semibold text-[#EF233C]">{workout.summary.personalBests.length}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.personalBests.length)}</p>
                         </div>
                     </div>
 

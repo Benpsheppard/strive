@@ -137,7 +137,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 	}, [])
 
 	return (
-		<div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`card-theme bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+		<div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
 			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
 				Muscle Group <span className="text-[#EF233C]"> Split</span>
 			</h2>
