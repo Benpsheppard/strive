@@ -3,6 +3,7 @@
 // Imports
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import authService from './authService.js'
+import { deleteWorkout } from '../workouts/workoutsSlice.js'
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('Strive:user'))
@@ -273,6 +274,15 @@ export const authSlice = createSlice({
                 state.isError = true
                 state.message = action.payload
             })
+        
+        // Delete Workout
+        .addCase(deleteWorkout.fulfilled, (state, action) => {
+            if (state.user && action.payload?.user) {
+                state.user.strivepoints = action.payload.user.strivepoints
+                state.user.level = action.payload.user.level
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            }
+        })
     }
 })
 

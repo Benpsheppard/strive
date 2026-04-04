@@ -122,16 +122,38 @@ const deleteWorkout = asyncHandler(async (req, res) => {
         throw new Error('User not authorised')
     }
 
-    // Delete workout with given id
-    await workout.deleteOne()
+    // Remove SP earned
+    const user = await User.findById(req.user.id)
 
-    // Remove workout from user's workouts array
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    const pointsToDeduct = workout.summary.totalStrivePoints
+    console.log(`Deducting ${pointsToDeduct} SP from user ${user.username}`)
+
+    const newSP = Math.max(0, user.strivepoints - pointsToDeduct)
+    console.log(`User ${user.username} now has ${newSP} SP`)
+
+    const newLevel = Math.floor(Math.sqrt(newSP / 100)) + 1
+    console.log(`User ${user.username} is now level ${newLevel}`)
+
     await User.findByIdAndUpdate(
         req.user.id,
-        { $pull: { workouts: workout._id } }
+        {
+            strivepoints: newSP,
+            level: newLevel,
+            $pull: { workouts: workout._id }
+        }
     )
+    await workout.deleteOne()
 
-    res.status(200).json(`The workout with id: ${req.params.id} was deleted`)
+    const updatedUser = await User.findById(req.user.id)
+    res.status(200).json({
+        user: updatedUser,
+        message: 'Workout deleted successfully' 
+    })
 })
 
 /**
