@@ -119,6 +119,19 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (profi
     }
 })
 
+// Update streak
+export const updateStreak = createAsyncThunk('auth/updateStreak', async (id, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.updateStreak(id, token)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -267,7 +280,6 @@ export const authSlice = createSlice({
                     ...state.user,      
                     ...action.payload
                 }
-                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateProfile.rejected, (state, action) => {
                 state.isLoading = false
@@ -276,13 +288,31 @@ export const authSlice = createSlice({
             })
         
         // Delete Workout
-        .addCase(deleteWorkout.fulfilled, (state, action) => {
-            if (state.user && action.payload?.user) {
-                state.user.strivepoints = action.payload.user.strivepoints
-                state.user.level = action.payload.user.level
-                localStorage.setItem('Strive:user', JSON.stringify(state.user))
-            }
-        })
+            .addCase(deleteWorkout.fulfilled, (state, action) => {
+                if (state.user && action.payload?.user) {
+                    state.user.strivepoints = action.payload.user.strivepoints
+                    state.user.level = action.payload.user.level
+                    localStorage.setItem('Strive:user', JSON.stringify(state.user))
+                }
+            })
+
+            // Update Streak
+            .addCase(updateStreak.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(updateStreak.fulfilled, (state, action) => {
+                state.isLoading = false,
+                state.isSuccess = true
+                state.user = {
+                    ...state.user,
+                    ...action.payload
+                }
+            })
+            .addCase(updateStreak.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
     }
 })
 

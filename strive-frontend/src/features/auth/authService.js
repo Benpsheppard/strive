@@ -140,6 +140,23 @@ const updateProfile = async (profileData, token) => {
 	return response.data
 }
 
+// Update streak
+const updateStreak = async (userId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    }
+
+    const response = await axios.put(API_URL + `${userId}/streak`, {}, config)
+
+    if (response.data) {
+		localStorage.setItem('Strive:user', JSON.stringify(response.data))
+	}
+
+    return response.data
+}
+
 // Export functions
 const authService = {
     register,
@@ -150,7 +167,8 @@ const authService = {
     resetUser,
     updateWeightPreference,
     addPoints,
-	updateProfile
+	updateProfile,
+    updateStreak
 }
 
 export default authService
