@@ -42,8 +42,22 @@ const userSchema = mongoose.Schema ({
     },
     // Streak
     streak: {
-        type: Number,
-        default: 0
+        current: {
+            type: Number,
+            default: 0
+        },
+        shield: {
+            type: Boolean,
+            default: false
+        },
+        lastEvaluatedWeek: {
+            type: String,
+            default: null
+        },
+        best: {
+            type: Number,
+            default: 0
+        }
     },
     // User unit preference
     useImperial: {
