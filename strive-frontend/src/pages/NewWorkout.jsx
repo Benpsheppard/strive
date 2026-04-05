@@ -12,7 +12,7 @@ import { createWorkout, getWorkouts, reset } from '../features/workouts/workouts
 import { parseWeight } from '../utils/formatValues.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { normaliseExercise, arraysEqualByName, getUniqueExercises } from '../utils/exerciseUtils.js'
-import { addPoints } from '../features/auth/authSlice.js'
+import { addPoints, updateStreak } from '../features/auth/authSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -349,9 +349,28 @@ const NewWorkout = () => {
 				}
 			}
 
+			const oldStreak = user.streak.current
+			const oldShield = user.streak.shield
+
+			const updatedUser = await dispatch(updateStreak(user._id)).unwrap()
+
+			let streakIncreased = updatedUser.streak.current > oldStreak
+			let shieldEarned = !oldShield && updatedUser.streak.shield
+			let shieldUsed = oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak
+			let streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
+
 			// Reset workout state & localStorage
 			resetWorkoutState()
-			navigate('/workout-complete', { state: { workout: savedWorkout, levelUp } })
+			navigate('/workout-complete', {
+				state: {
+					workout: savedWorkout,
+					levelUp,
+					streakIncreased,
+					shieldEarned,
+					shieldUsed,
+					streakBroken
+				}
+			})
 
 		} catch (error) {
 			console.error('Submit workout error: ', error)
@@ -414,7 +433,23 @@ const NewWorkout = () => {
 					</div>
 
 					{/* Streak Info */}
-					<StreakCard user={user} />
+					<StreakCard />
+
+					{/* Guest Card */}
+					{user?.isGuest && 
+						<GuestCard workouts={workouts} isMigrate={false} />
+					}
+
+					{/* Start Workout Button */}
+					<div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
+						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
+						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
+							Start Workout
+						</button>
+					</div>
+
+					{/* Weekly Calendar */}
+					<Calendar workouts={workouts} />
 					
 					{/* Last Workout */}
 					{lastWorkout && (
@@ -424,22 +459,6 @@ const NewWorkout = () => {
 						</div>
 					)}
 
-					{/* Guest Card */}
-					{user?.isGuest && 
-						<GuestCard workouts={workouts} isMigrate={false} />
-					}
-
-					{/* Weekly Calendar */}
-					<Calendar workouts={workouts} />
-					
-					{/* Start Workout Button */}
-					<div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
-						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
-						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-							Start Workout
-						</button>
-					</div>
-					
 					{/* Muscle Heatmap */}
 					<MuscleHeatmap workouts={workouts} />
 				</section>
