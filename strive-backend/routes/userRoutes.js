@@ -3,7 +3,12 @@
 
 // Imports
 const express = require('express')
-const { registerUser, loginUser, getMe, deleteUser, updateWeightPreference, resetUser, addPoints, migrateUser, updateProfile } = require('../controllers/userController.js')
+const { 
+    registerUser, loginUser, getMe, 
+    deleteUser, updateWeightPreference, 
+    resetUser, addPoints, migrateUser, 
+    updateProfile, updateStreak 
+} = require('../controllers/userController.js')
 const { protect } = require('../middleware/authMiddleware.js')
 const { validateObjectId } = require('../middleware/validateObjectId.js')
 
@@ -36,6 +41,9 @@ userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)
 
 // Update profile information
 userRouter.put('/profile', protect, updateProfile)
+
+// Update streak
+userRouter.put('/:id/streak', protect, updateStreak)
 
 // Export router
 module.exports = { userRouter }

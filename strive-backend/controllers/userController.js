@@ -1,11 +1,13 @@
 // userController.js
-// File to handle user functionality
 
 // Imports
 const asyncHandler = require('express-async-handler')
 const jwt = require('jsonwebtoken')  
 const bcrypt = require('bcryptjs')    
 const validator = require('validator')    
+
+// Function Imports
+const { getWeekNumber, getStartOfWeek, getEndOfWeek } = require('../utils/dateFormat.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -347,9 +349,9 @@ const addPoints = asyncHandler(async (req, res) => {
 })
 
 /**
- *   @desc    Update user's profile information
- *   @route   PUT /api/users/profile
- *   @access  Private
+ * @desc    Update user's profile information
+ * @route   PUT /api/users/profile
+ * @access  Private
  */
 const updateProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id)
@@ -399,6 +401,61 @@ const updateProfile = asyncHandler(async (req, res) => {
     })
 }) 
 
+/**
+ * @desc   Update user's streak count (increment or reset)
+ * @route  POST /api/users/:id/streak
+ * @access Private
+ */
+const updateStreak = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id)
+
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    const now = new Date()
+    const currentWeek = `${now.getFullYear()}-W${getWeekNumber(now)}`
+
+    if (user.streak.lastEvaluatedWeek === currentWeek) {
+        return res.json(user)
+    }
+
+    const startOfWeek = getStartOfWeek(now)
+    const endOfWeek = getEndOfWeek(now)
+
+    const workoutsThisWeek = await Workout.countDocuments({
+        user: user._id,
+        createdAt: {
+            $gte: startOfWeek,
+            $lte: endOfWeek
+        }
+    })
+
+    if (workoutsThisWeek >= user.target) {
+        user.streak.current += 1
+
+        if (user.streak.current > user.streak.best) {
+            user.streak.best = user.streak.current
+        }
+
+        if (user.streak.current % 4 === 0 && !user.streak.shield) {
+            user.streak.shield = true
+        }
+    } else {
+        if (user.streak.shield) {
+            user.streak.shield = false
+        } else {
+            user.streak.current = 0
+        }
+    }
+
+    user.streak.lastEvaluatedWeek = currentWeek
+
+    await user.save()
+    res.json(user)
+})
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -416,5 +473,6 @@ module.exports = {
     resetUser, 
     updateWeightPreference, 
     addPoints,
-    updateProfile
+    updateProfile,
+    updateStreak
 }
