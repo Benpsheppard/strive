@@ -99,10 +99,6 @@ const Profile = () => {
         })
     }
 
-    const onWeightToggle = () => {
-        dispatch(updateWeightPreference(!user.useImperial))
-    }
-
     useEffect(() => {
         if (isError) {
             console.log(message)
@@ -156,7 +152,7 @@ const Profile = () => {
                     </p>
 
                     {/* Weight Unit Toggle */}
-                    <WeightToggle useImperial={user.useImperial} onToggle={onWeightToggle} />
+                    <WeightToggle useImperial={user.useImperial} />
                 </div>
 
                 <div className='bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
