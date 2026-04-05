@@ -4,12 +4,14 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell } from 'react-icons/fa'
+import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire } from 'react-icons/fa'
 import { formatDuration, formatWeight } from '../utils/formatValues'
 
 // Component Imports
 import Header from '../components/headers/Header'
 import Spinner from '../components/spinners/Spinner'
+import StreakCard from '../components/games/StreakCard'
+import GuestCard from '../components/guest/GuestCard'
 
 const WorkoutComplete = () => {
     const { state } = useLocation()
@@ -20,6 +22,10 @@ const WorkoutComplete = () => {
 
     const workout = state?.workout
     const levelUp = state?.levelUp
+    const streakIncreased = state?.streakIncreased
+    const shieldEarned = state?.shieldEarned
+    const shieldUsed = state?.shieldUsed
+    const streakBroken = state?.streakBroken
 
     useEffect(() => {
         if (!isLoading && !workout) {
@@ -59,6 +65,52 @@ const WorkoutComplete = () => {
                         <p className="text-[#EDF2F4] opacity-80 text-lg">You are now Level {levelUp}!</p>
                     </div>
                 )}
+
+                {/* Streak Maintained */}
+                {streakIncreased && (
+                    <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
+                        <FaFire className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <p className="text-[#EDF2F4] text-2xl font-bold">Streak Maintained!</p>
+                        <p className="text-[#EDF2F4] opacity-80 text-lg">
+                            You are now on a {user.streak.current} week streak!
+                        </p>
+                    </div>
+                )}
+
+                {/* Shield Earned */}
+                {shieldEarned && (
+                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg">
+                        <FaShieldAlt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <p className="text-[#EDF2F4] text-xl font-bold">Streak Shield Earned!</p>
+                        <p className="text-[#EDF2F4]/70">
+                            This shield will protect your streak if you miss a week.
+                        </p>
+                    </div>
+                )}
+
+                {/* Shield Used */}
+                {shieldUsed && (
+                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg">
+                        <FaShieldAlt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <p className="text-[#EDF2F4] text-xl font-bold">Shield Activated</p>
+                        <p className="text-[#EDF2F4]/70">
+                            Your streak was protected this week.
+                        </p>
+                    </div>
+                )}
+
+                {/* Streak Broken */}
+                {streakBroken && (
+                    <div className="bg-[#2B2D42] rounded-2xl px-6 py-5 text-center shadow-lg">
+                        <FaExclamationTriangle className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <p className="text-[#EDF2F4] text-xl font-bold">Streak Reset</p>
+                        <p className="text-[#EDF2F4]/70">
+                            Missed your weekly target. Start a new streak this week!
+                        </p>
+                    </div>
+                )}
+
+                <StreakCard />
 
                 {/* Workout Stats */}
                 <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
