@@ -25,6 +25,7 @@ import Timer from '../components/workouts/Timer.jsx'
 import Calendar from '../components/progress/Calendar.jsx'
 import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
 import { FaUndoAlt } from 'react-icons/fa'
+import GuestCard from '../components/guest/GuestCard.jsx'
 
 // Muscle groups
 const MUSCLE_GROUPS = [
@@ -401,39 +402,51 @@ const NewWorkout = () => {
 			<Header />
 				
 			{!started && (
-				<section className="space-y-3 w-full">
+				<section className="space-y-3 w-full max-w-2xl">
+					{/* Title */}
 					<div>
 						<div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
 							<h1>
 								Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span>
 							</h1>
 						</div>
+					</div>
 
-						{lastWorkout && (
-							<div>
-								<h2 className="text-[#EDF2F4] text-center text-xl">Last Session</h2>
-								<WorkoutItem workout={lastWorkout} />
-							</div>
+					{/* Streak Info */}
+					<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
+						<h2 className="text-bold text-2xl">Current Streak: {user.streak}</h2>
+						{user.streakShield ? (
+							<p className="text-sm text-[#EDF2F4]">Streak Shield Active</p>
+						) : (
+							<p className="text-sm text-[#EDF2F4]">No Streak Shield Active</p>
 						)}
 					</div>
+					
+					{/* Last Workout */}
+					{lastWorkout && (
+						<div className="p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
+							<h2 className="text-[#EDF2F4] text-center text-xl">Last Session</h2>
+							<WorkoutItem workout={lastWorkout} />
+						</div>
+					)}
 
 					{/* Guest Card */}
 					{user?.isGuest && 
-						<div className="w-full bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2">
-							<p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
-							<p>Migrate to a Strive account for unlimited workout tracking.</p>
-						</div>
+						<GuestCard workouts={workouts} isMigrate={false} />
 					}
 
+					{/* Weekly Calendar */}
 					<Calendar workouts={workouts} />
-
+					
+					{/* Start Workout Button */}
 					<div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
 						<h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
 						<button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
 							Start Workout
 						</button>
 					</div>
-
+					
+					{/* Muscle Heatmap */}
 					<MuscleHeatmap workouts={workouts} />
 				</section>
 			)}

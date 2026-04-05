@@ -15,6 +15,7 @@ import { formatWeight, formatNumber } from '../utils/formatValues.js'
 import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import WeightToggle from '../components/profile/WeightToggle.jsx'
+import GuestCard from '../components/guest/GuestCard.jsx'
 
 const Profile = () => {
     const { user, isLoading, isError, message } = useSelector((state) => state.auth)
@@ -98,11 +99,6 @@ const Profile = () => {
         })
     }
 
-    const onMigrateAccount = () => {
-        console.log(`Migrating account: ${user.username}`)
-        navigate('/migrate')
-    }
-
     const onWeightToggle = () => {
         dispatch(updateWeightPreference(!user.useImperial))
     }
@@ -140,13 +136,7 @@ const Profile = () => {
             <div className='space-y-3 w-full flex flex-col items-center'>
                 {/* Guest Card */}
                 {user?.isGuest && (
-                    <div className="w-full md:max-w-[40%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
-                        <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
-                        <p>Migrate to a Strive account for unlimited workout tracking.</p>
-                        <button onClick={onMigrateAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
-                            Migrate Account
-                        </button>
-                    </div>
+                    <GuestCard workouts={workouts} isMigrate={true} />
                 )}
 
                 <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl space-y-3">

@@ -12,6 +12,7 @@ import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 import Header from '../components/headers/Header.jsx'
 import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
+import GuestCard from '../components/guest/GuestCard.jsx'
 
 // PrevWorkouts
 const PrevWorkouts = () => {
@@ -103,10 +104,7 @@ const PrevWorkouts = () => {
 
             {/* Guest Card */}
             {user?.isGuest && 
-                <div className="w-full md:max-w-[50%] bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-xl p-2 mb-2">
-                    <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
-                    <p>Migrate to a Strive account for unlimited workout tracking.</p>
-                </div>
+                <GuestCard workouts={workouts} isMigrate={false} />
             }
 
             {/* Filter + Search */}
