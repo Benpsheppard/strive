@@ -21,6 +21,18 @@ const Games = () => {
 
     const dispatch = useDispatch()
 
+    const currentLevel = user.level
+
+    const currentLevelMinSP = 100 * Math.pow(currentLevel - 1, 2)
+    const nextLevelMinSP = 100 * Math.pow(currentLevel, 2)
+
+    const progressWithinLevel = user.strivepoints - currentLevelMinSP
+    const totalSPForLevel = nextLevelMinSP - currentLevelMinSP
+
+    const progressPercentage = (progressWithinLevel / totalSPForLevel) * 100
+
+    const spToNextLevel = nextLevelMinSP - user.strivepoints
+
     useEffect(() => {
         dispatch(getWorkouts())
     }, [dispatch])
@@ -89,7 +101,15 @@ const Games = () => {
                     </p>
 
                     {/* Progress Bar */}
-                    <ProgressBar />
+                    <div className='mt-4'>
+                        <ProgressBar progressPercentage={progressPercentage} numerator={progressWithinLevel} denominator={`${totalSPForLevel} SP`} />
+
+                        {/* SP needed for next level */}
+                        <p className='mt-2 text-sm text-[#EDF2F4]/80'>
+                            {spToNextLevel} SP until Level {currentLevel + 1}
+                        </p>
+                    </div>
+                    
                 </div>
 
                 {/* Quest lists */}
