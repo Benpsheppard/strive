@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 const validator = require('validator')    
 
 // Function Imports
-const { getWeekNumber, getStartOfWeek, getEndOfWeek } = require('../utils/dateFormat.js')
+const { getWeekNumber, getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -415,10 +415,33 @@ const updateStreak = asyncHandler(async (req, res) => {
     }
 
     const now = new Date()
-    const currentWeek = `${now.getFullYear()}-W${getWeekNumber(now)}`
+    const currentWeek = getISOWeekString(now)
+    const lastEvaluated = user.streak.lastEvaluatedWeek
 
-    if (user.streak.lastEvaluatedWeek === currentWeek) {
-        return res.json(user)
+    if (lastEvaluated && lastEvaluated !== currentWeek) {
+        const weeksMissed = getWeeksBetween(lastEvaluated, currentWeek)
+
+        if (weeksMissed > 0) {
+            const startOfLastWeek = isoWeekToDate(lastEvaluated)
+            const endOfLastWeek = new Date(startOfLastWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+            const workoutsLastWeek = await Workout.countDocuments({
+                user: user._id,
+                createdAt: {
+                    $gte: startOfLastWeek,
+                    $lte: endOfLastWeek
+                }
+            })
+            const missedTarget = workoutsLastWeek < user.target
+
+            if (missedTarget) {
+                if (user.streak.shield) {
+                    user.streak.shield = false
+                } else {
+                    user.streak.current = 0
+                }
+            }
+        }   
     }
 
     const startOfWeek = getStartOfWeek(now)
@@ -432,7 +455,10 @@ const updateStreak = asyncHandler(async (req, res) => {
         }
     })
 
-    if (workoutsThisWeek >= user.target) {
+    const hitTarget = workoutsThisWeek >= user.target
+    const alreadyIncrementedThisWeek = lastEvaluated === currentWeek
+
+    if (hitTarget && !alreadyIncrementedThisWeek) {
         user.streak.current += 1
 
         if (user.streak.current > user.streak.best) {
@@ -442,18 +468,27 @@ const updateStreak = asyncHandler(async (req, res) => {
         if (user.streak.current % 4 === 0 && !user.streak.shield) {
             user.streak.shield = true
         }
-    } else {
-        if (user.streak.shield) {
-            user.streak.shield = false
-        } else {
-            user.streak.current = 0
-        }
     }
 
-    user.streak.lastEvaluatedWeek = currentWeek
+    if (hitTarget) {
+        user.streak.lastEvaluatedWeek = currentWeek
+    }
 
     await user.save()
-    res.json(user)
+    res.json({
+        _id: user.id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt,
+        useImperial: user.useImperial,
+        level: user.level,
+        strivepoints: user.strivepoints,
+        streak: user.streak,
+        target: user.target,
+        height: user.height,
+        weight: user.weight,
+        token: genToken(user._id)
+    })
 })
 
 // Generate JWT token
