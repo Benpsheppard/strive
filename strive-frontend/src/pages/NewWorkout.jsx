@@ -70,6 +70,7 @@ const NewWorkout = () => {
 	const selectingRef = useRef(false)
 	const suggestionsContainerRef = useRef(null)
 	const restIntervalRef = useRef(null)
+	const hasCheckedStreak = useRef(false)
 
 	// Get unique exercises
 	const uniqueExercises = useMemo(() => getUniqueExercises(workouts), [workouts])
@@ -95,6 +96,53 @@ const NewWorkout = () => {
 		localStorage.removeItem('newWorkout_startTime')
 		localStorage.removeItem('newWorkout_setHistory')
 	}
+
+	// Check streak
+	useEffect(() => {
+		if (user && !hasCheckedStreak.current) {
+			hasCheckedStreak.current = true
+
+			const oldStreak = user.streak.current
+			const hadShield = user.streak.shield
+
+			console.log('=== Streak Check ===')
+			console.log('oldStreak:', oldStreak)
+			console.log('hadShield:', hadShield)
+
+			dispatch(updateStreak(user._id)).unwrap().then((updatedUser) => {
+				console.log('updatedUser.streak.current:', updatedUser.streak.current)
+            	console.log('updatedUser.streak.shield:', updatedUser.streak.shield)
+
+				const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
+				const shieldUsed = hadShield && !updatedUser.streak.shield
+
+				console.log('streakBroken:', streakBroken)
+            	console.log('shieldUsed:', shieldUsed)
+
+				if (shieldUsed) {
+					Swal.fire({
+						title: 'Shield Used!',
+						text: 'You missed your target last week, but your shield protected your streak!',
+						icon: 'warning',
+						confirmButtonText: 'Phew!',
+						color: '#EDF2F4',
+						background: '#8D99AE',
+						confirmButtonColor: '#EF233C',
+					})
+				} else if (streakBroken) {
+					Swal.fire({
+						title: 'Streak Lost!',
+						text: `Your ${oldStreak} week streak has been reset. Time to start again!`,
+						icon: 'error',
+						confirmButtonText: "Let's go again",
+						color: '#EDF2F4',
+						background: '#8D99AE',
+						confirmButtonColor: '#EF233C',
+					})
+				}
+			})
+		}
+	}, [user, dispatch])
 
 	// Filter suggestions when input changes
 	useEffect(() => {
@@ -141,6 +189,7 @@ const NewWorkout = () => {
 	useEffect(() => {
 		if (isError) {
 			console.log(message)
+			return
 		}
 
 		if (!user) {
