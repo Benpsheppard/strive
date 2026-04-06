@@ -296,7 +296,7 @@ export const authSlice = createSlice({
                 }
             })
 
-            // Update Streak
+        // Update Streak
             .addCase(updateStreak.pending, (state) => {
                 state.isLoading = true
             })
@@ -307,6 +307,7 @@ export const authSlice = createSlice({
                     ...state.user,
                     ...action.payload
                 }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateStreak.rejected, (state, action) => {
                 state.isLoading = false

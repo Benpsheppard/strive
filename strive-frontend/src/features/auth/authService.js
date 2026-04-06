@@ -95,20 +95,20 @@ const resetUser = async (userId, token) => {
 
 // Update user weight unit preference
 const updateWeightPreference = async (useImperial, token) => {
-  const config = {
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
-  }
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    }
 
-  const response = await axios.put(API_URL + 'preference', { useImperial }, config)
+    const response = await axios.put(API_URL + 'preference', { useImperial }, config)
 
-  if (response.data) {
-    	localStorage.setItem('Strive:user', JSON.stringify(response.data))
-  }
+    if (response.data) {
+        localStorage.setItem('Strive:user', JSON.stringify(response.data))
+    }
 
-  return response.data
-}
+    return response.data
+    }
 
 // Add Strive Points (SP)
 const addPoints = async (userId, amount, token) => {
@@ -149,10 +149,6 @@ const updateStreak = async (userId, token) => {
     }
 
     const response = await axios.put(API_URL + `${userId}/streak`, {}, config)
-
-    if (response.data) {
-		localStorage.setItem('Strive:user', JSON.stringify(response.data))
-	}
 
     return response.data
 }
