@@ -44,7 +44,7 @@ const MUSCLE_GROUPS = [
 // New Workout
 const NewWorkout = () => {
 	const { user } = useSelector((state) => state.auth)
-	const { workouts = [], isLoading, isError, message } = useSelector((state) => state.workout)
+	const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
 
 	// Redux & Routing
 	const dispatch = useDispatch()
@@ -104,20 +104,10 @@ const NewWorkout = () => {
 
 			const oldStreak = user.streak.current
 			const hadShield = user.streak.shield
-
-			console.log('=== Streak Check ===')
-			console.log('oldStreak:', oldStreak)
-			console.log('hadShield:', hadShield)
-
+			
 			dispatch(updateStreak(user._id)).unwrap().then((updatedUser) => {
-				console.log('updatedUser.streak.current:', updatedUser.streak.current)
-            	console.log('updatedUser.streak.shield:', updatedUser.streak.shield)
-
 				const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
 				const shieldUsed = hadShield && !updatedUser.streak.shield
-
-				console.log('streakBroken:', streakBroken)
-            	console.log('shieldUsed:', shieldUsed)
 
 				if (shieldUsed) {
 					Swal.fire({
