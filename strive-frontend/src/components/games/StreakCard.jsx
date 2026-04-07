@@ -10,10 +10,7 @@ import { getStartOfWeek, getEndOfWeek } from "../../utils/dateFormat"
 import ProgressBar from "./ProgressBar.jsx"
 import { FaFire } from "react-icons/fa"
 
-const StreakCard = () => {
-    const { user } = useSelector((state) => state.auth)
-    const { workouts } = useSelector((state) => state.workout) 
-
+const StreakCard = ({ user, workouts }) => {
     // Calculate number of workouts this week
     const now = new Date()
     const startOfWeek = getStartOfWeek(now)

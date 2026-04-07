@@ -472,7 +472,7 @@ const NewWorkout = () => {
 					</div>
 
 					{/* Streak Info */}
-					<StreakCard />
+					<StreakCard user={user} workouts={workouts} />
 
 					{/* Guest Card */}
 					{user?.isGuest && 

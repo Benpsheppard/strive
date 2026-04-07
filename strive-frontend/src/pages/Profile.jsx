@@ -8,8 +8,8 @@ import { FaUser } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 
 // Function Imports
-import { logout, reset, deleteUser, resetUser, updateWeightPreference } from '../features/auth/authSlice.js'
-import { formatWeight, formatNumber } from '../utils/formatValues.js'
+import { logout, reset, deleteUser, resetUser } from '../features/auth/authSlice.js'
+import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -110,6 +110,8 @@ const Profile = () => {
             navigate('/login')
             return
         }
+
+        dispatch(getWorkouts())
     
         return () => {
             dispatch(reset())
@@ -157,7 +159,7 @@ const Profile = () => {
                     <WeightToggle useImperial={user.useImperial} />
                 </div>
 
-                <StreakCard />
+                <StreakCard user={user} workouts={workouts} />
                 <ProfileStats user={user} />
 
                 {/* Account Control buttons */}

@@ -110,7 +110,7 @@ const WorkoutComplete = () => {
                     </div>
                 )}
 
-                <StreakCard />
+                <StreakCard user={user} workouts={workouts} />
 
                 {/* Workout Stats */}
                 <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
