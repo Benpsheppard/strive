@@ -50,24 +50,40 @@ const questSchema = mongoose.Schema({
         type: Date,
         required: [true, 'Missing end date']
     },
+    // Quest type
+    questType: {
+        type: String,
+        enum: ['strength', 'consistency', 'volume', 'progressive'],
+        required: [true, 'Missing quest type'],
+        default: 'strength'
+    },
     // Completion data
     completion: {
-        exercise: { 
-            type: String, 
-            required: true 
-        },
-        weight: { 
-            type: Number, 
-            required: true 
-        },
-        reps: { 
-            type: Number,
-            enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            required: true 
+        type: mongoose.Schema.Types.Mixed,
+        required: [true, 'Missing completion data']
+    },
+    // Progress log
+    progressLog: [
+        {
+            workoutId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Workout",
+            },
+            loggedAt: {
+                type: Date,
+            },
+            value: {
+                type: Number
+            }
         }
-    }
+    ]
 }, {
     timestamps: true
 })
 
 module.exports = mongoose.model('Quest', questSchema)
+
+// Strength - exercise, weight, reps
+// Consistency - targetCount, currentCount, filterTag
+// Volume - targetVolume, currentVolume, filterTag
+// Progressive - exercise, metric, baseline

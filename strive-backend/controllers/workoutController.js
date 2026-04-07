@@ -41,16 +41,18 @@ const setWorkout = asyncHandler(async (req, res) => {
     }
 
     const exercises = req.body.exercises
-    const summary = await calculateWorkoutSummary(req.user.id, exercises)
 
     // Create new workout with given req data
     const workout = await Workout.create({
         user: req.user.id,
         title: req.body.title,
         duration: req.body.duration,
-        exercises,
-        summary
+        exercises
     })
+
+    const summary = await calculateWorkoutSummary(req.user.id, exercises, workout)
+    workout.summary = summary
+    await workout.save()
 
     await User.findByIdAndUpdate(
         req.user.id,
@@ -131,13 +133,10 @@ const deleteWorkout = asyncHandler(async (req, res) => {
     }
 
     const pointsToDeduct = workout.summary.totalStrivePoints
-    console.log(`Deducting ${pointsToDeduct} SP from user ${user.username}`)
 
     const newSP = Math.max(0, user.strivepoints - pointsToDeduct)
-    console.log(`User ${user.username} now has ${newSP} SP`)
 
     const newLevel = Math.floor(Math.sqrt(newSP / 100)) + 1
-    console.log(`User ${user.username} is now level ${newLevel}`)
 
     await User.findByIdAndUpdate(
         req.user.id,

@@ -11,10 +11,77 @@ const Workout = require('../models/workoutModel')
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+const QUEST_TYPE_DISTRIBUTION = {
+    daily: ['strength', 'consistency', 'strength'],
+    weekly: ['progressive', 'volume'],
+    monthly: ['consistency']
+}
+
 const QUEST_CONFIG = {
     daily: { count: 3, expiryDays: 1, reward: 100},
     weekly: { count: 2, expiryDays: 7, reward: 500},
     monthly: { count: 1, expiryDays: 30, reward: 1000}
+}
+
+const QUEST_TYPE_PROMPTS = {
+    strength: {
+        description: `A single-session strength goal. The user must hit a specific weight x reps in one workout.`,
+        completionSchema: `{
+            "exercise": "string (exact name from workout history)",
+            "weight": number,
+            "reps": number (1-12)
+        }`,
+        extraRules: `Follow the progressive overload rules strictly. Pick an exercise from their history.`
+    },
+    consistency: {
+        description: `A consistency goal. The user must complete a certain number of workouts within the quest window, optionally filtered to a muscle group or exercise.`,
+        completionSchema: `{
+            "targetCount": number (how many workouts, e.g. 3),
+            "currentCount": 0,
+            "filterTag": "string or null (must exactly match one exercise name OR one muscleGroup from workout history, or null)"
+        }`,
+        extraRules: `
+            targetCount should be realistic for the duration: daily=1, weekly=2-4, monthly=8-12. 
+            If you use a filterTag, it must match an exercise name or muscle group from their history.
+            Use only exact tags already present in workout history.
+            Allowed filterTag values are:
+            - exact exercise names from workout history
+            - exact muscleGroup values from workout history
+
+            Never invent broader categories like:
+            "upper body", "lower body", "push", "pull", "arms", "full body"
+
+            If unsure, use null.`
+    },
+    volume: {
+        description: `A total volume goal. The user must lift a cumulative amount of weight (kg or lbs) across one or more sessions, optionally for a specific muscle group.`,
+        completionSchema: `{
+            "targetVolume": number (total kg/lbs to lift),
+            "currentVolume": 0,
+            "filterTag": "string or null (must exactly match one exercise name OR one muscleGroup from workout history, e.g. 'Bench Press', 'Chest', 'Back', 'Legs', or null)"
+        }`,
+        extraRules: `
+        Calculate a realistic targetVolume by looking at their recent session volumes for that muscle group. 
+        Weekly targets should be achievable across 2-3 sessions.
+        Use only exact tags already present in workout history.
+        Allowed filterTag values are:
+        - exact exercise names from workout history
+        - exact muscleGroup values from workout history
+
+        Never invent broader categories like:
+        "upper body", "lower body", "push", "pull", "arms", "full body"
+
+        If unsure, use null.`
+    },
+    progressive: {
+        description: `A personal best goal. The user must beat their current best for a specific metric on a chosen exercise.`,
+        completionSchema: `{
+            "exercise": "string (exact name from workout history)",
+            "metric": "max_weight" | "max_reps" | "session_volume",
+            "baseline": number (their current best value for this metric)
+        }`,
+        extraRules: `Analyse their history to determine the actual current baseline. Choose metric based on what makes sense for the exercise and their recent pattern.`
+    }
 }
 
 const getExpiryDate = (expiryDays) => {
@@ -26,168 +93,101 @@ const getExpiryDate = (expiryDays) => {
 }
 
 const genQuests = async (user, duration) => {
-    if (!QUEST_CONFIG[duration]) {
-        throw new Error(`Invalid quest duration: ${duration}`)
-    }
+    if (!QUEST_CONFIG[duration]) throw new Error(`Invalid quest duration: ${duration}`)
+    
     const { count, expiryDays } = QUEST_CONFIG[duration]
+    const assignedTypes = QUEST_TYPE_DISTRIBUTION[duration]  // e.g. ['strength', 'consistency', 'strength']
 
     const recentWorkouts = await Workout.find({ user: user._id })
         .sort({ date: -1 })
         .limit(10)
 
-    if (recentWorkouts.length === 0) {
-        throw new Error('No workouts found for this user')
-    }
+    if (recentWorkouts.length === 0) throw new Error('No workouts found for this user')
 
     const summary = recentWorkouts.map(w => ({
         date: w.date,
-        exercises: w.exercises.map(e => ({
-            name: e.name,
-            sets: e.sets
-        }))
+        exercises: w.exercises.map(e => ({ name: e.name, sets: e.sets }))
     }))
 
-    const existingQuests = await Quest.find({ 
-        user: user._id, 
-        status: 'active', 
-        expiry: { $gt: new Date() } 
-    })
-    const existingExercises = existingQuests.map(q => q.completion.exercise)
+    const existingQuests = await Quest.find({ user: user._id, status: 'active', expiry: { $gt: new Date() } })
+    const existingExercises = existingQuests.map(q => q.completion.exercise).filter(Boolean)
+    const unitSystem = user.useImperial ? 'imperial (lbs)' : 'metric (kg)'
 
-    const unitSystem = user.useImperial ? "imperial (lbs)" : "metric (kg)"
+    // Build a per-quest instruction block for Claude, one per assigned type
+    const questInstructions = assignedTypes.map((type, i) => {
+        const typeConfig = QUEST_TYPE_PROMPTS[type]
+        return `
+QUEST ${i + 1} — Type: "${type}"
+Goal: ${typeConfig.description}
+Completion schema for this quest:
+${typeConfig.completionSchema}
+Rules: ${typeConfig.extraRules}
+        `.trim()
+    }).join('\n\n')
 
-    const difficultyGuidelines = {
-        daily: "These are short-term goals achievable in one workout session. Set moderate targets - slightly above their recent average.",
-        weekly: "These should be more challenging than daily quests. Set targets that require consistent effort over multiple sessions - above their recent average.",
-        monthly: "These should be their most ambitious goals. Set targets that push their limits and require progressive training throughout the month - well above their current max."
-    }
+    const prompt = `You are an AI fitness coach.
+The user tracks workouts using the ${unitSystem} system.
+Generate EXACTLY ${count} fitness quest(s) for the "${duration}" duration.
+Each quest has a PRE-ASSIGNED type — you must follow each type's schema exactly.
 
-    const prompt = `You are an AI fitness coach. 
-        The user tracks their workouts using the ${unitSystem} system, so anything you generate should reflect that.
-        Based on the user's recent workouts, generate EXACTLY ${count} unique, creative ${duration} fitness quest(s).
-        The quests should be CHALLENGING but POSSIBLE to complete within the duration of the quest. 
-        Do NOT generate multi-day or progressive goals.
-        Quest should take into consideration PROGRESSIVE OVERLOAD.
+USER WORKOUT HISTORY:
+${JSON.stringify(summary)}
 
-        DIFFICULTY LEVEL FOR ${duration.toUpperCase()} QUESTS:
-        ${difficultyGuidelines[duration]}
+ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
 
-        EXERCISE SELECTION RULES:
-        - Do NOT prioritise most frequent or most recent exercises
-        - Prefer exercises that have NOT been used already
-        - If the user has 8+ exercises available to choose from:
-            - At least 50% of quests must use non-primary compound lifts
-            - Intentionally vary selection and avoid predictable patterns.
+QUEST ASSIGNMENTS:
+${questInstructions}
 
-        CRITICAL UNIQUENESS RULES:
-        - Each quest MUST target a DIFFERENT exercise
-        - Do NOT use any of these exercises that already have active quests: ${existingExercises.join(', ')}
-        - All ${count} quests you generate must have different exercises from each other
-        - Choose exercises from different muscle groups when possible
-        
-        CHALLENGE SCALING:
-        - Daily: +2-3 reps OR small weight jump
-        - Weekly: If currently at 1-6 reps, increase to 10-12; If currently at 7-12 reps, increase weight
-        - Monthly: Significant weight increase
-        
-        PROGRESSIVE OVERLOAD RULES (MANDATORY):
-        - When generating a quest, you MUST analyse the user’s most recent workouts for the selected exercise and determine their current working performance.
-        - Follow this strict overload hierarchy:
+GENERAL RULES:
+- Quests must be CHALLENGING but achievable within the ${duration} window
+- Exercise names must match the workout history exactly (capitalisation included)
+- Each strength/progressive quest must target a DIFFERENT exercise
+- Do not reuse exercises already in active quests
 
-        PRIORITY 1 — Increase Reps First
-        - If the user is lifting the same weight consistently and has not reached 12 reps, increase reps at the SAME weight.
-        - Do NOT increase weight if reps can still increase (until 12 reps is reached).
-        - Stay within 1–12 rep range.
-
-        PRIORITY 2 — Increase Weight Only After Rep Ceiling
-        - If the user has reached 10–12 reps at a given weight consistently, then increase weight.
-        - When increasing weight, reduce reps to 3–6 depending on difficulty duration.
-        - Weight increases should be realistic (e.g. +2.5kg to +5kg for barbell/dumbbell lifts).
-
-        If Recent Workouts Show Mixed Weights:
-        - Identify the highest successfully completed weight.
-        - If reps at that weight are below 6 → increase reps at that same weight.
-        - If reps are already 6–12 → increase weight and lower reps appropriately.
-
-        NEVER:
-        - Increase weight and keep reps identical if reps are below 8.
-        - Suggest unrealistic jumps (no +10kg jumps unless clearly appropriate).
-        - Reduce reps unless increasing weight.
-        - The quest must represent the NEXT logical progression step from the user's current performance.
-
-        The quests should be in valid JSON format with these fields:
+Return ONLY a valid JSON object in this exact shape, no extra text:
+{
+    "quests": [
         {
-            "quests": [
-                {
-                    "title": "string",
-                    "duration": "${duration}",
-                    "description": "string",
-                    "completion": {
-                        "exercise": "String",
-                        "weight": "Number",
-                        "reps": "Number"
-                    }
-                }
-            ]
+            "title": "string (1-6 words, creative)",
+            "questType": "string (the assigned type)",
+            "duration": "${duration}",
+            "description": "string (1-2 sentences, clear objective, encouraging)",
+            "completion": { ...fields matching the type's schema above... }
         }
-        
-        The "title" should be short (1 - 6 words), creative and inspiring.
-        The "description" should be 1 - 2 sentences with a clear objective, follow the same theme to the title and encourage the user to complete the quest. 
-        The "description" should outline what the user needs to complete in order to complete the quest.
-        The "completion" object must include the exact exercise name.
-        The "reps" field within the "completion" object should be between 1 and 12 reps.
-        The first letter of each word in the exercise name must be capitalised (e.g. "Bicep Curls", "Leg Press").
-        If an exercise contains a hyphen, treat the entire hyphenated term as one word — only the first letter before the hyphen should be capitalised, and the rest remain lowercase (e.g. "T-bar Row", not "T-Bar Row" or "T-Bar row").
-        Do not alter or invent exercise names — always use the same capitalization and spelling as shown in the user's workout history.
-        Respond ONLY with a valid JSON object (not an array), no extra text. Do NOT include anything other than the outlined fields above. Do NOT include explanations, quotes or notes.
-
-        User workouts: ${JSON.stringify(summary)}
-
-        Remember: 
-        1. Each quest must use a DIFFERENT exercise
-        2. Exercise names in quests must match exactly with those in the user's workouts
-        3. Scale difficulty appropriately for ${duration} duration
-        4. Avoid exercises already in active quests: ${existingExercises.join(', ')}    `
+    ]
+}`
 
     const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         temperature: 1.0,
-        messages: [
-            {
-                role: 'user',
-                content: prompt
-            }
-        ]
+        messages: [{ role: 'user', content: prompt }]
     })
 
     let text = response.content[0].text
         .replace(/```json\s*/gi, '')
         .replace(/```\s*/gi, '')
-        .replace(/^\s*Here are.*?:/i, '')
         .trim()
 
     const parsed = JSON.parse(text)
 
-    if (parsed.quests.length !== count  || !Array.isArray(parsed.quests)) {
-        throw new Error('AI response missing quests array')
+    if (!Array.isArray(parsed.quests) || parsed.quests.length !== count) {
+        throw new Error('AI response has wrong quest count')
     }
 
     const questData = parsed.quests.map(q => ({
         user: user._id,
         title: q.title,
+        questType: q.questType,
         duration: q.duration,
         description: q.description,
         expiry: getExpiryDate(expiryDays),
-        completion: {
-            exercise: q.completion.exercise,
-            weight: q.completion.weight,
-            reps: q.completion.reps
-        }
+        reward: QUEST_CONFIG[duration].reward,
+        completion: q.completion,      // Store the whole completion object as-is
+        progressLog: []
     }))
 
     const savedQuests = await Quest.insertMany(questData)
-
     return savedQuests
 }
 

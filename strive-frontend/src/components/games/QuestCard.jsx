@@ -4,9 +4,13 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
+// Function Imports
+import { formatWeight } from '../../utils/formatValues'
+
 const QuestCard = ({ quest }) => {
     const { user } = useSelector((state) => state.auth)
 
+    const type = quest.questType
 
     const [isOpen, setIsOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
@@ -31,10 +35,33 @@ const QuestCard = ({ quest }) => {
                 </div>
 
                 {/* Completion */}
-                <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                    <p className='font-semibold'>{quest.completion.exercise}</p>
-                    <p>{quest.completion.weight}{user.useImperial ? ' lbs' : ' kg'} x {quest.completion.reps} reps</p>
-                </div>
+                {type === 'strength' && (
+                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
+                        <p className='font-semibold'>{quest.completion.exercise}</p>
+                        <p className='text-sm text-[#EDF2F4]/20'>{formatWeight(quest.completion.weight, user.useImperial)} x {quest.completion.reps} reps</p>
+                    </div>
+                )}
+
+                {type === 'consistency' && (
+                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
+                        <p className='font-semibold'>Target: {quest.completion.targetCount} workout{quest.completion.targetCount !== 1 ? 's' : ''   }</p>
+                        <p className='text-sm text-[#EDF2F4]/20'>Completed: {quest.completion.currentCount}</p>
+                    </div>
+                )}
+
+                {type === 'volume' && (
+                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
+                        <p className='font-semibold'>Target: {quest.completion.targetVolume}</p>
+                        <p className='text-sm text-[#EDF2F4]/20'>Completed: {formatWeight(quest.completion.currentVolume, user.useImperial)}</p>
+                    </div>
+                )}
+
+                {type === 'progressive' && (
+                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
+                        <p className='font-semibold'>{quest.completion.exercise}</p>
+                        <p className='text-sm text-[#EDF2F4]/20'>Current Progress: {formatWeight(quest.completion.baseline, user.useImperial)}</p>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
