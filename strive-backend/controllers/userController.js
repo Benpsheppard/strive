@@ -474,20 +474,20 @@ const updateStreak = asyncHandler(async (req, res) => {
         user.streak.lastEvaluatedWeek = currentWeek
     }
 
-    await user.save()
+    const updatedUser = await user.save()
     res.json({
-        _id: user.id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-        useImperial: user.useImperial,
-        level: user.level,
-        strivepoints: user.strivepoints,
-        streak: user.streak,
-        target: user.target,
-        height: user.height,
-        weight: user.weight,
-        token: genToken(user._id)
+        _id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        createdAt: updatedUser.createdAt,
+        useImperial: updatedUser.useImperial,
+        level: updatedUser.level,
+        strivepoints: updatedUser.strivepoints,
+        streak: updatedUser.streak,
+        target: updatedUser.target,
+        height: updatedUser.height,
+        weight: updatedUser.weight,
+        token: genToken(updatedUser._id)
     })
 })
 
