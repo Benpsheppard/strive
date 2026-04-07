@@ -437,6 +437,10 @@ const updateStreak = asyncHandler(async (req, res) => {
             if (missedTarget) {
                 if (user.streak.shield) {
                     user.streak.shield = false
+
+                    if (weeksMissed > 1) {
+                        user.streak.current = 0
+                    }
                 } else {
                     user.streak.current = 0
                 }
@@ -460,6 +464,9 @@ const updateStreak = asyncHandler(async (req, res) => {
 
     if (hitTarget && !alreadyIncrementedThisWeek) {
         user.streak.current += 1
+
+        user.strivepoints += 1000
+        user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1
 
         if (user.streak.current > user.streak.best) {
             user.streak.best = user.streak.current
