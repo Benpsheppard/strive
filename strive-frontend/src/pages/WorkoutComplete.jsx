@@ -3,9 +3,12 @@
 // Imports
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire } from 'react-icons/fa'
 import { formatDuration, formatWeight } from '../utils/formatValues'
+
+// Function Imports
+import { getWorkouts, reset } from '../features/workouts/workoutsSlice'
 
 // Component Imports
 import Header from '../components/headers/Header'
@@ -16,9 +19,10 @@ import GuestCard from '../components/guest/GuestCard'
 const WorkoutComplete = () => {
     const { state } = useLocation()
     const { user } = useSelector((state) => state.auth)
-    const { workouts, isLoading } = useSelector((state) => state.workout)
+    const { workouts, isLoading, message, isError } = useSelector((state) => state.workout)
 
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const workout = state?.workout
     const levelUp = state?.levelUp
@@ -32,6 +36,24 @@ const WorkoutComplete = () => {
             navigate('/')
         }
     }, [isLoading, workout, navigate])
+
+    useEffect(() => {
+		if (isError) {
+			console.log(message)
+			return
+		}
+
+		if (!user) {
+			navigate('/login')
+			return
+		}
+
+		dispatch(getWorkouts())
+
+		return () => {
+			dispatch(reset())
+		}
+	}, [user, message, isError, navigate, dispatch])
 
     if (isLoading) {
         return (
