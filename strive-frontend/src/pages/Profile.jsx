@@ -16,6 +16,8 @@ import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import WeightToggle from '../components/profile/WeightToggle.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
+import StreakCard from '../components/games/StreakCard.jsx'
+import ProfileStats from '../components/profile/ProfileStats.jsx'
 
 const Profile = () => {
     const { user, isLoading, isError, message } = useSelector((state) => state.auth)
@@ -155,26 +157,8 @@ const Profile = () => {
                     <WeightToggle useImperial={user.useImperial} />
                 </div>
 
-                <div className='bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
-                    <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Level: <span className='text-[#EF233C]'>{user?.level}</span>
-                    </p>
-                    <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
-                    </p>
-                </div>
-
-                <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl">
-                    <p className="text-[#EDF2F4] text-xl font-semibold">
-                        Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
-                    </p>
-                    <p className="text-[#EDF2F4] text-xl font-semibold">
-                        Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
-                    </p>
-                    <p className="text-[#EDF2F4] text-xl font-semibold">
-                        Weight: <span className="text-[#EF233C]"> {formatWeight(user.weight, user.useImperial)}</span>
-                    </p>
-                </div>
+                <StreakCard />
+                <ProfileStats user={user} />
 
                 {/* Account Control buttons */}
                 <div className="bg-[#8D99AE] w-full md:max-w-2xl p-6 text-[#2B2D42] text-center shadow-md rounded-xl flex flex-col w-full items-center">
