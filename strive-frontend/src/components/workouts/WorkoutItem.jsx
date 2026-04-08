@@ -11,7 +11,7 @@ import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import SetList from './SetList.jsx'
-import { formatDuration, formatNumber, formatWeight } from '../../utils/formatValues.js'
+import { formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
     const { user } = useSelector((state) => state.auth)
@@ -20,10 +20,6 @@ const WorkoutItem = ({ workout }) => {
 
     const [workoutExpanded, setWorkoutExpanded] = useState(false)
     const [exerciseExpanded, setExerciseExpanded] = useState(false)
-
-    const startTime = new Date(
-        new Date(workout.createdAt).getTime() - workout.duration * 60000   
-    )
 
     const onDelete = (e) => {
         e.stopPropagation()
@@ -68,14 +64,7 @@ const WorkoutItem = ({ workout }) => {
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-[#EDF2F4]">{workout.title}</h2>
                 <span className="text-sm text-[#2B2D42]">
-                    {startTime.toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false
-                    })}
+                    {formatWorkoutStartTime(workout.createdAt, workout.duration)}
                 </span>
             </div>
 
