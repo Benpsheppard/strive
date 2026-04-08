@@ -61,3 +61,43 @@ export const formatElapsed = (seconds) => {
     if (mins > 0) return `${mins}m ${secs}s`
     return `${secs}s`
 }
+
+export const formatWorkoutStartTime = (createdAt, duration) => {
+    const startTime = new Date(new Date(createdAt).getTime() - duration * 60000);
+
+    const now = new Date();
+
+    const isToday =
+        startTime.toDateString() === now.toDateString();
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+
+    const isYesterday =
+        startTime.toDateString() === yesterday.toDateString();
+
+    if (isToday) {
+        return `Today, ${startTime.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        })}`;
+    }
+
+    if (isYesterday) {
+        return `Yesterday, ${startTime.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        })}`;
+    }
+
+    return startTime.toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+}
