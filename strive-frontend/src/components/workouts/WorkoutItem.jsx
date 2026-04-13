@@ -78,7 +78,7 @@ const WorkoutItem = ({ workout }) => {
             {/* Workout Expanded content */}
             {workoutExpanded && (
                 <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
                             <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
@@ -95,10 +95,22 @@ const WorkoutItem = ({ workout }) => {
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Distance</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDistance)}km</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                            <p className="text-xs text-[#EDF2F4]">Duration</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDuration)}m</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">SP</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints)}</p>
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-2 gap-2 mb-4">
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
