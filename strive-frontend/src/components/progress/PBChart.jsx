@@ -12,19 +12,17 @@ import { Bar } from 'react-chartjs-2'
 import { calculatePersonalBests } from '../../utils/pbDetection.js'
 import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
-// Register Chart
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const MUSCLE_GROUPS = [
-    'All', 
-    'Chest', 
-    'Back', 
-    'Biceps',
-    'Triceps', 
-    'Legs', 
-    'Shoulders', 
-    'Core', 
-    'Full body', 
+    'All',
+    'Chest',
+    'Back',
+    'Shoulders',
+    'Arms',
+    'Legs',
+    'Core',
+    'Full body',
     'Other'
 ]
 
@@ -33,32 +31,35 @@ const PBChart = ({ workouts, useImperial }) => {
     const [expanded, setExpanded] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-    const exercisePBs = calculatePersonalBests(workouts)
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
+    const exercisePBs = calculatePersonalBests(workouts)
     const weightUnit = getWeightUnit(useImperial)
 
-    // Filter by selected muscle group
-    const filteredExercises = Object.entries(exercisePBs).filter(([name, data]) => {
+    const filteredExercises = Object.entries(exercisePBs).filter(([, data]) => {
         if (selectedMuscleGroup === 'All') return true
         return data.muscleGroup === selectedMuscleGroup
     })
 
-    // Prepare data for chart
     const labels = filteredExercises.map(([name]) => name)
-    const weights = filteredExercises.map(([, data]) => 
+    const weights = filteredExercises.map(([, data]) =>
         useImperial ? kgToLbs(data.weight) : data.weight
     )
     const dates = filteredExercises.map(([, data]) => data.date)
 
-    const data = {
+    const chartData = {
         labels,
         datasets: [
-        {
-            label: `Personal Best (${weightUnit})`,
-            data: weights,
-            backgroundColor: '#EF233C'
-        },
-        ],
+            {
+                label: `Personal Best (${weightUnit})`,
+                data: weights,
+                backgroundColor: '#EF233C'
+            }
+        ]
     }
 
     const options = {
@@ -73,14 +74,14 @@ const PBChart = ({ workouts, useImperial }) => {
                         const weight = context.parsed.y.toFixed(1)
                         const date = dates[index]
                         return ` ${weight} ${weightUnit} (on ${new Date(date).toLocaleDateString()})`
-                    },
-                },
-            },
+                    }
+                }
+            }
         },
         scales: {
             x: {
-                ticks: { 
-                    color: '#EDF2F4', 
+                ticks: {
+                    color: '#EDF2F4',
                     maxRotation: labels.length > 10 ? 90 : 45,
                     minRotation: labels.length > 10 ? 90 : 45,
                     display: labels.length <= 12
@@ -88,9 +89,9 @@ const PBChart = ({ workouts, useImperial }) => {
                 grid: { color: 'rgba(237, 242, 244, 0.3)' },
                 title: {
                     display: labels.length > 12,
-                    text: `Exercise`,
-                    color: '#EDF2F4',
-                },
+                    text: 'Exercise',
+                    color: '#EDF2F4'
+                }
             },
             y: {
                 beginAtZero: true,
@@ -99,61 +100,53 @@ const PBChart = ({ workouts, useImperial }) => {
                 title: {
                     display: true,
                     text: `Weight (${weightUnit})`,
-                    color: '#EDF2F4',
-                },
-            },
-        },
+                    color: '#EDF2F4'
+                }
+            }
+        }
     }
 
-    // Handle case with no exercises
     if (Object.keys(exercisePBs).length === 0) {
         return (
-        <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
-            <p>No exercises found</p>
-        </div>
+            <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
+                <p>No personal bests recorded yet</p>
+            </div>
         )
     }
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768)
-        }
-
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
     return (
-        <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+        <div
+            onClick={() => { if (isMobile) setExpanded(!expanded) }}
+            className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}
+        >
             <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
-                Personal <span className="text-[#EF233C]"> Bests</span>
+                Personal <span className="text-[#EF233C]">Bests</span>
             </h2>
 
-            {/* Dropdown Menu */}
-            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={selectedMuscleGroup} onChange={(e) => setSelectedMuscleGroup(e.target.value)}>
-                <option value="">Select a Muscle Group</option>
+            {/* Muscle Group Filter */}
+            <select
+                onClick={(e) => e.stopPropagation()}
+                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none"
+                value={selectedMuscleGroup}
+                onChange={(e) => setSelectedMuscleGroup(e.target.value)}
+            >
                 {MUSCLE_GROUPS.map((group) => (
-                    <option key={group} value={group}>
-                        {group}
-                    </option>
+                    <option key={group} value={group}>{group}</option>
                 ))}
             </select>
 
-            {/* Chart Area */}
+            {/* Chart */}
             <div className="relative h-[300px] md:h-[400px]">
                 {labels.length === 0 ? (
-                <div className="text-center text-[#EDF2F4] py-8">
-                    <p>No exercises found for {selectedMuscleGroup}</p>
-                </div>
-            ) : (
-                <div className="h-[300px] md:h-[400px] relative">
-                    <Bar onClick={(e) => e.stopPropagation()} data={data} options={options} />
-                </div>
-            )}
+                    <div className="text-center text-[#EDF2F4] py-8">
+                        <p>No weight exercises found for {selectedMuscleGroup}</p>
+                    </div>
+                ) : (
+                    <Bar onClick={(e) => e.stopPropagation()} data={chartData} options={options} />
+                )}
             </div>
         </div>
     )
 }
 
-// Export
 export default PBChart

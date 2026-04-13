@@ -1,53 +1,66 @@
 // pbDetection.js
 
 export const calculatePersonalBests = (workouts) => {
-	const exercisePBs = {}
+    const exercisePBs = {}
 
-	workouts.forEach((workout) => {
-		const workoutDate = workout.date || workout.createdAt || 'Unknown date'
+    workouts.forEach((workout) => {
+        const workoutDate = workout.date || workout.createdAt || 'Unknown date'
 
-		workout.exercises.forEach((exercise) => {
-			const name = exercise.name
-			const muscleGroup = exercise.musclegroup || 'Other'
-			
-			exercise.sets.forEach((set) => {
-				const weight = Number(set.weight) || 0
-				if (!exercisePBs[name] || weight > exercisePBs[name].weight) {
-					exercisePBs[name] = { weight, date: workoutDate, muscleGroup }
-				}
-			})
-		})
-	})
+        workout.exercises.forEach((ex) => {
+            const exerciseData = ex.exercise
+            if (!exerciseData || typeof exerciseData !== 'object') {
+				return
+			}
 
-	return exercisePBs
+            const name = exerciseData.name
+            const muscleGroup = exerciseData.muscleGroup || 'Other'
+            const trackingMode = exerciseData.trackingMode
+
+            if (trackingMode !== 'weight_reps') {
+				return
+			}
+
+            ex.sets.forEach((set) => {
+                const weight = Number(set.weight) || 0
+                if (!exercisePBs[name] || weight > exercisePBs[name].weight) {
+                    exercisePBs[name] = { weight, date: workoutDate, muscleGroup }
+                }
+            })
+        })
+    })
+
+    return exercisePBs
 }
 
 export const detectNewPBs = (newWorkout, existingWorkouts) => {
-	// Calculate existing PBs (before this workout)
-	const existingPBs = calculatePersonalBests(existingWorkouts)
-  
-  	const newPBs = []
+    const existingPBs = calculatePersonalBests(existingWorkouts)
+    const newPBs = []
 
-	newWorkout.exercises.forEach((exercise) => {
-		const exerciseName = exercise.name
-		const maxWeightInWorkout = Math.max(
-			...exercise.sets.map(set => Number(set.weight) || 0)
-		)
-
-		// Check if this is a new PB
-		if (maxWeightInWorkout > 0) {
-			const existingPB = existingPBs[exerciseName]
-			
-			if (!existingPB || maxWeightInWorkout > existingPB.weight) {
-				newPBs.push({
-					exerciseName,
-					newWeight: maxWeightInWorkout,
-					oldWeight: existingPB ? existingPB.weight : 0,
-					isFirstTime: !existingPB
-				})
-			}
+    newWorkout.exercises.forEach((ex) => {
+        const exerciseData = ex.exercise
+        if (!exerciseData || typeof exerciseData !== 'object') {
+			return
 		}
-	})
+        if (exerciseData.trackingMode !== 'weight_reps') {
+			return
+		}
 
-  return newPBs
+        const name = exerciseData.name
+        const maxWeight = Math.max(0, ...ex.sets.map(s => Number(s.weight) || 0))
+        if (maxWeight === 0) {
+			return
+		}
+
+        const existingPB = existingPBs[name]
+        if (!existingPB || maxWeight > existingPB.weight) {
+            newPBs.push({
+                exerciseName: name,
+                newWeight: maxWeight,
+                oldWeight: existingPB ? existingPB.weight : 0,
+                isFirstTime: !existingPB
+            })
+        }
+    })
+
+    return newPBs
 }
