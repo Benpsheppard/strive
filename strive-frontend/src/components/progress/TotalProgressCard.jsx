@@ -17,19 +17,22 @@ const TotalProgressCard = ({ workouts }) => {
     let totalReps = 0
     let totalSets = 0
     let totalExercises = 0
+    let totalDistance = 0
     let heaviestLift = 0
 
     workouts.forEach((w) => {
         w.exercises.forEach((ex) => {
-            totalExercises++ // count exercises
+            totalExercises++
 
             ex.sets.forEach((set) => {
                 const weight = Number(set.weight) || 0
                 const reps = Number(set.reps) || 0
+                const distance = Number(set.distance) || 0
 
                 totalWeight += weight * reps
                 totalReps += reps
                 totalSets++
+                totalDistance += distance
 
                 if (weight > heaviestLift) {
                     heaviestLift = weight
@@ -44,12 +47,14 @@ const TotalProgressCard = ({ workouts }) => {
                 <span className="text-[#EF233C] font-bold">All Time</span> Summary
 			</h2>
 			<div className="text-[#EDF2F4] space-y-2">
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Workouts <span className="text-[#EF233C] font-bold">{formatNumber(totalWorkouts)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Exercises <span className="text-[#EF233C] font-bold">{formatNumber(totalExercises)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Duration <span className="text-[#EF233C] font-bold">{formatDuration(totalDuration)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Sets <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Weight <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Reps <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
+                <p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Distance Covered <span className="text-[#EF233C] font-bold">{formatNumber(totalDistance)}km</span></p>
 			</div>
 		</div>
 	)

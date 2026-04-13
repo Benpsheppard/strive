@@ -9,16 +9,13 @@ import { formatWeight, formatDuration, formatNumber } from '../../utils/formatVa
 const MonthlyProgressCard = ({ workouts }) => {
 	const { user } = useSelector((state) => state.auth)
 
-	// Current date
+	// Current date and month
 	const now = new Date()
-
-	// Current month name
 	const monthName = now.toLocaleString('default', { month: 'long' })
 
 	// Filter workouts for current month
 	const currentMonthWorkouts = workouts.filter((workout) => {
 		const workoutDate = new Date(workout.date)
-
 		return (
 			workoutDate.getMonth() === now.getMonth() &&
 			workoutDate.getFullYear() === now.getFullYear()
@@ -27,57 +24,35 @@ const MonthlyProgressCard = ({ workouts }) => {
 
 	// Calculate totals
 	const totalWorkouts = currentMonthWorkouts.length
+	const totalDuration = currentMonthWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0)
 
-	const totalExercises = currentMonthWorkouts.reduce(
-		(total, workout) => total + workout.exercises.length,
-		0
-	)
+	let totalWeight = 0
+	let totalReps = 0
+	let totalSets = 0
+	let totalExercises = 0
+	let totalDistance = 0
+	let heaviestLift = 0
 
-	const totalDuration = currentMonthWorkouts.reduce(
-		(total, workout) => total + (workout.duration || 0),
-		0
-	)
+	currentMonthWorkouts.forEach((w) => {
+		w.exercises.forEach((ex) => {
+			totalExercises++
 
-	const totalSets = currentMonthWorkouts.reduce(
-		(total, workout) =>
-			total +
-			workout.exercises.reduce(
-				(exTotal, exercise) => exTotal + exercise.sets.length,
-				0
-			),
-		0
-	)
+			ex.sets.forEach((set) => {
+				const weight = Number(set.weight) || 0
+				const reps = Number(set.reps) || 0
+				const distance = Number(set.distance) || 0
 
-	const totalWeight = currentMonthWorkouts.reduce(
-		(total, workout) =>
-			total +
-			workout.exercises.reduce(
-				(exTotal, exercise) =>
-					exTotal +
-					exercise.sets.reduce(
-						(setTotal, set) =>
-							setTotal + (set.weight || 0) * (set.reps || 0),
-						0
-					),
-				0
-			),
-		0
-	)
+				totalWeight += weight * reps
+				totalReps += reps
+				totalSets++
+				totalDistance += distance
 
-	const totalReps = currentMonthWorkouts.reduce(
-		(total, workout) =>
-			total +
-			workout.exercises.reduce(
-				(exTotal, exercise) =>
-					exTotal +
-					exercise.sets.reduce(
-						(setTotal, set) => setTotal + (set.reps || 0),
-						0
-					),
-				0
-			),
-		0
-	)
+				if (weight > heaviestLift) {
+					heaviestLift = weight
+				}
+			})
+		})
+	})
 
 	return (
 		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center text-xl w-full">
@@ -86,12 +61,14 @@ const MonthlyProgressCard = ({ workouts }) => {
 			</h2>
 
 			<div className="text-[#EDF2F4] space-y-2">
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Workouts <span className="text-[#EF233C] font-bold"> {formatNumber(totalWorkouts)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Exercises <span className="text-[#EF233C] font-bold"> {formatNumber(totalExercises)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Duration <span className="text-[#EF233C] font-bold"> {formatDuration(totalDuration)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Sets <span className="text-[#EF233C] font-bold"> {formatNumber(totalSets)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Weight <span className="text-[#EF233C] font-bold"> {formatWeight(totalWeight, user.useImperial)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Reps <span className="text-[#EF233C] font-bold"> {formatNumber(totalReps)} </span> </p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Distance Covered <span className="text-[#EF233C] font-bold">{formatNumber(totalDistance)}km</span></p>
 			</div>
 		</div>
 	)
