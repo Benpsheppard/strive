@@ -24,10 +24,6 @@ const getTotalDistance = (sets) =>
 const getTotalDuration = (sets) =>
     sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
 
-// Get total reps from a set of sets
-const getTotalReps = (sets) =>
-    sets.reduce((sum, s) => sum + (Number(s.reps) || 0), 0)
-
 // ─── Quest Checkers ──────────────────────────────────────────────────────────
 
 const questCheckers = {
@@ -37,7 +33,10 @@ const questCheckers = {
         const match = exercises.find(e =>
             e.name.toLowerCase().trim() === exercise.toLowerCase().trim()
         )
-        if (!match) return false
+
+        if (!match) {
+            return false
+        }
 
         return match.sets.some(s =>
             (Number(s.weight) || 0) >= weight &&
@@ -54,13 +53,18 @@ const questCheckers = {
                 e.muscleGroup?.toLowerCase() === tag ||
                 e.name.toLowerCase().trim() === tag
             )
-            if (!matches) return false
+            if (!matches) {
+                return false
+            }
         }
 
         const alreadyCounted = quest.progressLog.some(p =>
             p.workoutId.toString() === workout._id.toString()
         )
-        if (alreadyCounted) return false
+        
+        if (alreadyCounted) {
+            return false
+        }
 
         quest.progressLog.push({ workoutId: workout._id, loggedAt: new Date() })
         quest.set('completion.currentCount', quest.progressLog.length)
@@ -83,12 +87,17 @@ const questCheckers = {
             }
         }
 
-        if (sessionVolume === 0) return false
+        if (sessionVolume === 0) {
+            return false
+        }
 
         const alreadyCounted = quest.progressLog.some(p =>
             p.workoutId.toString() === workout._id.toString()
         )
-        if (alreadyCounted) return false
+
+        if (alreadyCounted) {
+            return false
+        }
 
         quest.progressLog.push({ workoutId: workout._id, loggedAt: new Date(), value: sessionVolume })
         const newVolume = quest.progressLog.reduce((sum, p) => sum + (p.value || 0), 0)
@@ -145,6 +154,7 @@ const getPBMetric = (trackingMode, sets) => {
 
 const detectPersonalBests = async (userId, exercises) => {
     const existingWorkouts = await Workout.find({ user: userId }).populate('exercises.exercise')
+    console.log('EXISTING WORKOUTS: ', existingWorkouts)
 
     // Build existing PBs from previous workouts per exercise name + metric
     const existingPBs = {}
@@ -152,10 +162,16 @@ const detectPersonalBests = async (userId, exercises) => {
         workout.exercises.forEach(ex => {
             const name = ex.exercise?.name?.trim().toLowerCase()
             const trackingMode = ex.exercise?.trackingMode
-            if (!name || !trackingMode) return
+            console.log('TrackingMode: ', trackingMode)
+
+            if (!name || !trackingMode) {
+                return
+            }
 
             const pb = getPBMetric(trackingMode, ex.sets)
-            if (!pb || pb.value === 0) return
+            if (!pb || pb.value === 0) {
+                return
+            }
 
             if (!existingPBs[name] || pb.value > existingPBs[name].value) {
                 existingPBs[name] = { metric: pb.metric, value: pb.value }
@@ -185,7 +201,6 @@ const detectPersonalBests = async (userId, exercises) => {
 }
 
 // ─── Quest Completion ────────────────────────────────────────────────────────
-
 const detectQuestCompletion = async (userId, exercises, workout) => {
     const activeQuests = await Quest.find({ user: userId, status: 'active' })
     const questsCompleted = []
@@ -232,8 +247,10 @@ const calculateWorkoutSummary = async (userId, exercises, workout) => {
     })
 
     const totalExercises = exercises.length
+
     const personalBests = await detectPersonalBests(userId, exercises)
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(userId, exercises, workout)
+    
     const totalStrivePoints = 200 + totalQuestSP + personalBests.length * 500
 
     return {
