@@ -43,8 +43,8 @@ const MUSCLE_GROUPS = [
 
 // New Workout
 const NewWorkout = () => {
-	const { user } = useSelector((state) => state.auth)
-	const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
+	const { user, isLoading } = useSelector((state) => state.auth)
+	const { workouts, isError, message } = useSelector((state) => state.workout)
 
 	// Redux & Routing
 	const dispatch = useDispatch()
