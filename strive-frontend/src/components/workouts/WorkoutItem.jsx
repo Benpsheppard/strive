@@ -117,13 +117,19 @@ const WorkoutItem = ({ workout }) => {
                                 {workout.exercises.map((ex, index) => (
                                     <li key={index} className="bg-[#2B2D42] bg-opacity-20 rounded-lg">
                                         {/* Exercise Header */}
-                                        <div className="flex justify-between items-center p-3 cursor-pointer hover:bg-[#2B2D42] hover:bg-opacity-30 rounded-lg transition-colors" onClick={(e) => toggleExercise(e, index)} >
+                                        <div className="flex justify-between items-center p-3 cursor-pointer hover:bg-[#2B2D42] hover:bg-opacity-30 rounded-lg transition-colors" onClick={(e) => toggleExercise(e, index)}>
                                             <div className="flex items-center gap-2">
-                                                {ex.sets?.length > 0 && ( 
-                                                    exerciseExpanded[index] ? <FaChevronDown className="text-[#EDF2F4] text-xs" /> : <FaChevronRight className="text-[#EDF2F4] text-xs" />
+                                                {ex.sets?.length > 0 && (
+                                                    exerciseExpanded[index]
+                                                        ? <FaChevronDown className="text-[#EDF2F4] text-xs" />
+                                                        : <FaChevronRight className="text-[#EDF2F4] text-xs" />
                                                 )}
                                                 <span className="text-sm font-medium text-[#EDF2F4]">
-                                                    {ex.name} | <span className="text-[#EF233C]">{ex.musclegroup}</span> | <span className="text-[#D90429]">{ex.description}</span>
+                                                    {ex.exercise?.name}
+                                                    {" | "}
+                                                    <span className="text-[#EF233C]">{ex.exercise?.muscleGroup}</span>
+                                                    {" | "}
+                                                    <span className="text-[#D90429]">{ex.selectedEquipment}</span>
                                                 </span>
                                             </div>
                                             <span className="text-xs text-[#2B2D42]">
@@ -134,7 +140,7 @@ const WorkoutItem = ({ workout }) => {
                                         {/* Exercise Sets */}
                                         {exerciseExpanded[index] && (
                                             <div className="px-3 pb-3 pt-1">
-                                                <SetList sets={ex.sets} useImperial={user.useImperial}/>
+                                                <SetList sets={ex.sets} trackingMode={ex.exercise?.trackingMode} useImperial={user.useImperial} />
                                             </div>
                                         )}
                                     </li>

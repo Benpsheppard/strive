@@ -13,7 +13,8 @@ const connectDB = require('./config/db.js')
 const { errorHandler } = require('./middleware/errorMiddleware.js')   
 
 // Router Imports
-const { workoutRouter } = require('./routes/workoutRoutes.js')        
+const { workoutRouter } = require('./routes/workoutRoutes.js') 
+const { exerciseRouter } = require('./routes/exerciseRoutes.js')       
 const { userRouter } = require('./routes/userRoutes.js')              
 const { questRouter } = require('./routes/questRoutes.js')
 const { devRouter } = require('./routes/devRoutes.js')
@@ -95,6 +96,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Routes
 app.use('/api/workouts', workoutRouter)
+app.use('/api/exercises', exerciseRouter)
 app.use('/api/users', userRouter)
 app.use('/api/quests', questRouter)
 app.use('/api/dev', devRouter)

@@ -2,10 +2,13 @@
 // File to handle workout functionality
 
 // Imports
-const asyncHandler = require('express-async-handler')  
-const Workout = require('../models/workoutModel.js')    
-const User = require('../models/userModel.js') 
+const asyncHandler = require('express-async-handler') 
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
+
+// Model Imports
+const Workout = require('../models/workoutModel.js')    
+const User = require('../models/userModel.js')
+const Exercise = require('../models/exerciseModel.js')
 
 /**
  *  @desc   Get workouts for the authenticated user
@@ -14,7 +17,7 @@ const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
  */
 const getWorkouts = asyncHandler(async (req, res) => {
     // Find workouts for specific user
-    const workouts = await Workout.find({ user: req.user.id })
+    const workouts = await Workout.find({ user: req.user.id }).populate('exercises.exercise')
 
     // Output list of workouts
     res.status(200).json(workouts) 
@@ -50,7 +53,15 @@ const setWorkout = asyncHandler(async (req, res) => {
         exercises
     })
 
-    const summary = await calculateWorkoutSummary(req.user.id, exercises, workout)
+    const populatedWorkout = await workout.populate('exercises.exercise')
+    console.log('Populated exercises:', JSON.stringify(populatedWorkout.exercises, null, 2))
+    const populatedExercises = populatedWorkout.exercises.map(ex => ({
+        name: ex.exercise.name,
+        muscleGroup: ex.exercise.muscleGroup,
+        sets: ex.sets
+    }))
+
+    const summary = await calculateWorkoutSummary(req.user.id, populatedExercises, workout)
     workout.summary = summary
     await workout.save()
 
@@ -187,53 +198,69 @@ const deleteAllWorkouts = asyncHandler(async (req, res) => {
  *  @access  Private
  */
 const addExercise = asyncHandler(async (req, res) => {
+    // Validate Workout
     const workout = await Workout.findById(req.params.id)
-
-    // Check workout exists
     if (!workout) {
         res.status(404)
         throw new Error('Workout not found')
     }
 
-    // Check user exists and is allowed to add to workout
+    // Validate Exercise
+    const exercise = await Exercise.findById(req.body.exercise)
+    if (!exercise) {
+        res.status(404)
+        throw new Error('Exercise not found')
+    }
+
+    // Validate User
     if (!req.user || workout.user.toString() !== req.user.id) {
         res.status(401)
         throw new Error('User not authorised')
     }
 
-    // Validate exercise name
-    if (!req.body.name || req.body.name.trim() === '') {
-        res.status(400)
-        throw new Error('Exercise name is required')
-    }
-
-    // Validate exercise muscle group
-    if (!req.body.musclegroup || req.body.musclegroup.trim() === '') {
-        res.status(400)
-        throw new Error('Muscle group is required')
-    }
-
-    // Validate set structure
     if (req.body.sets && !Array.isArray(req.body.sets)) {
         res.status(400)
         throw new Error('Sets must be an array')
     }
 
-    if (Array.isArray(req.body.sets)) {
-        for (const set of req.body.sets) {
+    // Validate Sets array
+    for (const set of req.body.sets || []) {
+        if (exercise.trackingMode === 'weight_reps') {
             if (typeof set.weight !== 'number' || typeof set.reps !== 'number') {
                 res.status(400)
                 throw new Error('Each set must include numeric weight and reps')
             }
         }
+
+        if (exercise.trackingMode === 'duration') {
+            if (typeof set.duration !== 'number') {
+                res.status(400)
+                throw new Error('Each set must include duration')
+            }
+        }
+
+        if (exercise.trackingMode === 'distance_duration') {
+            if (typeof set.distance !== 'number' || typeof set.duration !== 'number') {
+                res.status(400)
+                throw new Error('Each set must include distance and duration')
+            }
+        }
     }
 
+    // Validate Equipment
+    if (req.body.selectedEquipment && typeof req.body.selectedEquipment !== 'string') {
+        res.status(400)
+        throw new Error('Equipment must be a string')
+    }
+    if (req.body.selectedEquipment && !exercise.equipment.includes(req.body.selectedEquipment)) {
+        res.status(400)
+        throw new Error('Invalid equipment for this exercise')
+    }
 
     // Build new exercise
     const newExercise = {
-        name: req.body.name,
-        musclegroup: req.body.musclegroup || 'Other',
-        description: req.body.description || '',
+        exercise: exercise._id,
+        selectedEquipment: req.body.selectedEquipment,
         sets: req.body.sets || []
     }
 

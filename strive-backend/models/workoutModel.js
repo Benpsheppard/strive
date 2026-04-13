@@ -3,59 +3,31 @@
 // Imports
 const mongoose = require('mongoose')
 
-// Exercise Schema
-const exerciseSchema = mongoose.Schema({
-    // Name
-    name: {
-        type: String,
-        required: [true, 'Please add an exercise name']
-    },
-    // Muscle Group
-    musclegroup: {
-        type: String,
-        enum: [
-            'Chest', 'Back', 'Shoulders',
-            'Biceps', 'Triceps', 'Legs', 'Core', 
-            'Full body', 'Other'
-        ],
-        default: 'Other',
-        required: [true, 'Please add a muscle group e.g. Chest']
-    },
-    // Description
-    description: {
-        type: String
-    },
-    sets: [
-        {
-            weight: { type: Number, required: [true, 'Please add a weight value'] },
-            reps: { type: Number, required: [true, 'Please add a reps value'] }
-        }
-    ] 
-}, {
-    timestamps: true
-})
-
 // Summary Schema
 const summarySchema = mongoose.Schema({
     // Total weight
     totalWeight: {
         type: Number,
-        required: [true, 'Please add a total weight value']
     },
     // Total reps    
     totalReps: {
         type: Number,
-        required: [true, 'Please add a total reps value']
     },
     // Total sets
     totalSets: {
         type: Number,
-        required: [true, 'Please add a total sets value']
+    },
+    // Total duration
+    totalDuration: {
+        type: Number,
+    },
+    // Total distance
+    totalDistance: {
+        type: Number
     },
     // Total exercises
     totalExercises: {
         type: Number,
-        required: [true, 'Please add a total exercises value']
     },
     // Total SP earned 
     totalStrivePoints: {
@@ -122,7 +94,29 @@ const workoutSchema = mongoose.Schema({
         required: [true, 'Timer error']
     },
     // Exercises
-    exercises: [exerciseSchema],
+    exercises: [
+        {
+            exercise: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Exercise',
+                required: [true, 'Please add at least one exercise']
+            },
+            selectedEquipment: {
+                type: String,
+                required: [true, 'Missing selected equipment']
+            },
+            sets: [
+                {
+                    weight: { type: Number },
+                    reps: { type: Number },
+                    duration: { type: Number },
+                    distance: { type: Number },
+                    addedWeight: { type: Number },
+                    assistance: { type: Number }
+                }
+            ]
+        }
+    ],
     // Summary
     summary: summarySchema
 }, {
