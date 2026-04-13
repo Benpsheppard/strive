@@ -8,18 +8,10 @@ import { Pie } from 'react-chartjs-2'
 // Function Imports
 import { kgToLbs, getWeightUnit, formatNumber } from '../../utils/formatValues.js'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+// Variables Imports
+import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
 
-const COLOURS = [
-    '#EF233C',
-    '#D90429',
-    '#8D99AE',
-    '#2B2D42',
-    '#EDF2F4',
-    '#4ECDC4',
-    '#F4A261',
-    '#6A4C93'
-]
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const EXCLUDED_MUSCLE_GROUPS = ['Cardio']
 
@@ -69,7 +61,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 
     const labels = muscleGroupData.map((item) => item.group)
     const dataValues = muscleGroupData.map((item) => item.count)
-    const backgroundColours = muscleGroupData.map((_, index) => COLOURS[index % COLOURS.length])
+    const backgroundColours = muscleGroupData.map((item) => MUSCLE_GROUP_COLOURS[item.group] || '#EDF2F4')
 
     const data = {
         labels,

@@ -12,19 +12,10 @@ import { Bar } from 'react-chartjs-2'
 import { calculatePersonalBests } from '../../utils/pbDetection.js'
 import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+// Variable Imports
+import { MUSCLE_GROUPS, MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
 
-const MUSCLE_GROUPS = [
-    'All',
-    'Chest',
-    'Back',
-    'Shoulders',
-    'Arms',
-    'Legs',
-    'Core',
-    'Full body',
-    'Other'
-]
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const PBChart = ({ workouts, useImperial }) => {
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
@@ -50,6 +41,9 @@ const PBChart = ({ workouts, useImperial }) => {
         useImperial ? kgToLbs(data.weight) : data.weight
     )
     const dates = filteredExercises.map(([, data]) => data.date)
+    const colours = filteredExercises.map(([, data]) =>
+        MUSCLE_GROUP_COLOURS[data.muscleGroup] || '#EDF2F4'
+    )
 
     const chartData = {
         labels,
@@ -57,7 +51,7 @@ const PBChart = ({ workouts, useImperial }) => {
             {
                 label: `Personal Best (${weightUnit})`,
                 data: weights,
-                backgroundColor: '#EF233C'
+                backgroundColor: colours
             }
         ]
     }

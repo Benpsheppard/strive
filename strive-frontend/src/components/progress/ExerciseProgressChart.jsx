@@ -11,6 +11,9 @@ import { Line } from 'react-chartjs-2'
 // Function Imports
 import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
 
+// Variables Imports
+import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils'
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
@@ -30,7 +33,10 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 if (!exerciseData || typeof exerciseData !== 'object') return
                 if (exerciseData.trackingMode !== 'weight_reps') return
                 if (!seen.has(exerciseData.name)) {
-                    seen.set(exerciseData.name, exerciseData.name)
+                    seen.set(exerciseData.name, {
+                        name: exerciseData.name,
+                        muscleGroup: exerciseData.muscleGroup
+                    })
                 }
             })
         })
@@ -40,7 +46,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     // Auto-select first exercise
     useEffect(() => {
         if (allExercises.length > 0 && !selectedExercise) {
-            setSelectedExercise(allExercises[0])
+            setSelectedExercise(allExercises[0].name)
         }
     }, [allExercises, selectedExercise])
 
@@ -79,14 +85,16 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
+    const selectedColour = MUSCLE_GROUP_COLOURS[allExercises.find(e => e.name === selectedExercise)?.muscleGroup] || '#EF233C'
+
     const data = {
         labels: exerciseData.map((d) => d.date),
         datasets: [
             {
                 label: `Max Weight (${weightUnit})`,
                 data: exerciseData.map((d) => d.maxWeight),
-                backgroundColor: '#EF233C',
-                borderColor: '#EF233C',
+                backgroundColor: selectedColour,
+                borderColor: selectedColour,
                 tension: 0.3,
                 pointRadius: 5,
                 pointHoverRadius: 7,
@@ -165,8 +173,8 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 value={selectedExercise}
                 onChange={(e) => setSelectedExercise(e.target.value)}
             >
-                {allExercises.map((name) => (
-                    <option key={name} value={name}>{name}</option>
+                {allExercises.map((ex) => (
+                    <option key={ex.name} value={ex.name}>{ex.name}</option>
                 ))}
             </select>
 
