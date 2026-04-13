@@ -47,6 +47,9 @@ export const formatDuration = (duration) => {
 }
 
 export const formatNumber = (value, decimals = 0) => {
+    if (value == undefined) {
+        return 0
+    }
 	return value.toLocaleString(undefined, {
 		minimumFractionDigits: decimals,
 		maximumFractionDigits: decimals,
