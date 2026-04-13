@@ -11,7 +11,6 @@ import { Line } from 'react-chartjs-2'
 // Function Imports
 import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
 
-// Register Chart
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
@@ -20,53 +19,71 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     const [expanded, setExpanded] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-    // Extract all unique exercises
-    const allExercises = useMemo(() => {
-        const names = new Set()
-        workouts.forEach((w) => w.exercises.forEach((ex) => names.add(ex.name)))
-        return Array.from(names)
-    }, [workouts])
-
-    // Get the weight unit for labels
     const weightUnit = getWeightUnit(useImperial)
 
-    // Filter data for the selected exercise
-    const exerciseData = useMemo(() => {
-        if (!selectedExercise) return []
-        const dataPoints = []
-
+    // Extract unique weight_reps exercises only
+    const allExercises = useMemo(() => {
+        const seen = new Map()
         workouts.forEach((w) => {
-            const found = w.exercises.find((ex) => ex.name === selectedExercise)
-            if (found) {
-                const weights = found.sets.map((s) => Number(s.weight) || 0)
-                const maxWeight = Math.max(...weights)
-                const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length
-                
-                dataPoints.push({
-                    date: new Date(w.createdAt).toLocaleDateString(),
-                    maxWeight: useImperial ? kgToLbs(maxWeight) : maxWeight,
-                    avgWeight: useImperial ? kgToLbs(avgWeight) : avgWeight,
-                })
-            }
+            w.exercises.forEach((ex) => {
+                const exerciseData = ex.exercise
+                if (!exerciseData || typeof exerciseData !== 'object') return
+                if (exerciseData.trackingMode !== 'weight_reps') return
+                if (!seen.has(exerciseData.name)) {
+                    seen.set(exerciseData.name, exerciseData.name)
+                }
+            })
         })
+        return Array.from(seen.values())
+    }, [workouts])
 
-        return dataPoints
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(-workoutLimit) // Keep only the last workoutLimit workouts
-    }, [selectedExercise, workouts, useImperial, workoutLimit])
-
+    // Auto-select first exercise
     useEffect(() => {
         if (allExercises.length > 0 && !selectedExercise) {
             setSelectedExercise(allExercises[0])
         }
     }, [allExercises, selectedExercise])
 
-    // Chart data
+    // Build chart data points for selected exercise
+    const exerciseData = useMemo(() => {
+        if (!selectedExercise) return []
+        const dataPoints = []
+
+        workouts.forEach((w) => {
+            const found = w.exercises.find((ex) =>
+                ex.exercise?.name === selectedExercise
+            )
+            if (!found) return
+
+            const weights = found.sets.map((s) => Number(s.weight) || 0).filter(w => w > 0)
+            if (weights.length === 0) return
+
+            const maxWeight = Math.max(...weights)
+            const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length
+
+            dataPoints.push({
+                date: new Date(w.createdAt).toLocaleDateString(),
+                maxWeight: useImperial ? kgToLbs(maxWeight) : maxWeight,
+                avgWeight: useImperial ? kgToLbs(avgWeight) : avgWeight,
+            })
+        })
+
+        return dataPoints
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(-workoutLimit)
+    }, [selectedExercise, workouts, useImperial, workoutLimit])
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     const data = {
         labels: exerciseData.map((d) => d.date),
         datasets: [
             {
-                label: `Personal Best (${weightUnit})`,
+                label: `Max Weight (${weightUnit})`,
                 data: exerciseData.map((d) => d.maxWeight),
                 backgroundColor: '#EF233C',
                 borderColor: '#EF233C',
@@ -75,7 +92,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 pointHoverRadius: 7,
             },
             {
-                label: `Average Weight (${weightUnit})`,
+                label: `Avg Weight (${weightUnit})`,
                 data: exerciseData.map((d) => d.avgWeight),
                 backgroundColor: '#EDF2F4',
                 borderColor: '#EDF2F4',
@@ -91,14 +108,14 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         maintainAspectRatio: false,
         scales: {
             x: {
-                ticks: { 
+                ticks: {
                     color: '#EDF2F4',
                     display: workoutLimit < 15
                 },
                 grid: { color: 'rgba(255,255,255,0.1)' },
                 title: {
                     display: workoutLimit >= 15,
-                    text: `Workout Date`,
+                    text: 'Workout Date',
                     color: '#EDF2F4'
                 }
             },
@@ -124,50 +141,61 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         },
     }
 
-    useEffect(() => {
-		const handleResize = () => {
-			setIsMobile(window.innerWidth < 768)
-		}
-
-		window.addEventListener('resize', handleResize)
-		return () => window.removeEventListener('resize', handleResize)
-	}, [])
+    if (allExercises.length === 0) {
+        return (
+            <div className="bg-[#8D99AE] p-6 rounded-2xl text-center text-[#EDF2F4]">
+                <p>No weight exercises recorded yet</p>
+            </div>
+        )
+    }
 
     return (
-        <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}>
+        <div
+            onClick={() => { if (isMobile) setExpanded(!expanded) }}
+            className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}
+        >
             <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
-                Exercise<span className="text-[#EF233C]"> Progress</span>
+                Exercise <span className="text-[#EF233C]">Progress</span>
             </h2>
 
-            {/* Dropdown Menu */}
-            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-2 outline-none" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
+            {/* Exercise Dropdown */}
+            <select
+                onClick={(e) => e.stopPropagation()}
+                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-2 outline-none"
+                value={selectedExercise}
+                onChange={(e) => setSelectedExercise(e.target.value)}
+            >
                 {allExercises.map((name) => (
-                    <option key={name} value={name}>
-                        {name}
-                    </option>
+                    <option key={name} value={name}>{name}</option>
                 ))}
             </select>
 
-            <select onClick={(e) => e.stopPropagation()} className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none" value={workoutLimit} onChange={(e) => setWorkoutLimit(Number(e.target.value))}>
+            {/* Workout Limit Dropdown */}
+            <select
+                onClick={(e) => e.stopPropagation()}
+                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none"
+                value={workoutLimit}
+                onChange={(e) => setWorkoutLimit(Number(e.target.value))}
+            >
                 <option value={5}>Last 5 Workouts</option>
                 <option value={10}>Last 10 Workouts</option>
                 <option value={15}>Last 15 Workouts</option>
                 <option value={20}>Last 20 Workouts</option>
                 {!isMobile && (
-                    <> 
+                    <>
                         <option value={50}>Last 50 Workouts</option>
                         <option value={100}>Last 100 Workouts</option>
                     </>
                 )}
             </select>
 
-            {/* Chart Area */}
+            {/* Chart */}
             <div className="relative h-[300px] md:h-[400px]">
                 {selectedExercise && exerciseData.length > 0 ? (
                     <Line onClick={(e) => e.stopPropagation()} data={data} options={options} />
                 ) : (
                     <p className="text-center text-[#EDF2F4] opacity-70">
-                        Select an exercise to view your progress
+                        No data found for {selectedExercise}
                     </p>
                 )}
             </div>
@@ -175,5 +203,4 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     )
 }
 
-// Export
 export default ExerciseProgressChart
