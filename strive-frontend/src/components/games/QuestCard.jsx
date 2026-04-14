@@ -7,6 +7,9 @@ import { useSelector } from 'react-redux'
 // Function Imports
 import { formatWeight } from '../../utils/formatValues'
 
+// Component Imports
+import ProgressBar from '../../components/games/ProgressBar'
+
 const QuestCard = ({ quest }) => {
     const { user } = useSelector((state) => state.auth)
 
@@ -44,15 +47,13 @@ const QuestCard = ({ quest }) => {
 
                 {type === 'consistency' && (
                     <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>Target: {quest.completion.targetCount} workout{quest.completion.targetCount !== 1 ? 's' : ''   }</p>
-                        <p className='text-sm text-[#EDF2F4]/20'>Completed: {quest.completion.currentCount}</p>
+                        <ProgressBar numerator={quest.completion.currentCount} denominator={quest.completion.targetCount} />
                     </div>
                 )}
 
                 {type === 'volume' && (
                     <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>Target: {quest.completion.targetVolume}</p>
-                        <p className='text-sm text-[#EDF2F4]/20'>Completed: {formatWeight(quest.completion.currentVolume, user.useImperial)}</p>
+                        <ProgressBar numerator={quest.completion.currentVolume} denominator={quest.completion.targetVolume} />
                     </div>
                 )}
 
