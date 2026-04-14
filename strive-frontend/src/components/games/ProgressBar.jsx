@@ -1,6 +1,9 @@
 // ProgressBar.jsx
 
-const ProgressBar = ({ progressPercentage, numerator, denominator }) => {
+const ProgressBar = ({ numerator, denominator }) => {
+
+    const progressPercentage = (numerator / denominator) * 100
+
     return (
         <div className='relative w-full bg-[#2B2D42] rounded-xl h-8 overflow-hidden border-2 border-[#EDF2F4]'>
 
