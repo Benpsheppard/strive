@@ -92,6 +92,38 @@ const getExpiryDate = (expiryDays) => {
     return expiry
 }
 
+/**
+ * Validate a quest completion object against actual workout history
+ * Returns true if valid, false otherwise
+ */
+const validateQuestCompletion = (quest, validExerciseNames, validMuscleGroups) => {
+    const { questType, completion } = quest
+
+    // Strength & Progressive quests must have a valid exercise
+    if (questType === 'strength' || questType === 'progressive') {
+        if (!completion.exercise || typeof completion.exercise !== 'string') {
+            return false
+        }
+        if (!validExerciseNames.has(completion.exercise)) {
+            return false
+        }
+    }
+
+    // Consistency & Volume quests may have a filterTag that must be valid
+    if (questType === 'consistency' || questType === 'volume') {
+        if (completion.filterTag) {
+            const tag = completion.filterTag
+            const isValidExercise = validExerciseNames.has(tag)
+            const isValidMuscleGroup = validMuscleGroups.has(tag)
+            if (!isValidExercise && !isValidMuscleGroup) {
+                return false
+            }
+        }
+    }
+
+    return true
+}
+
 const genQuests = async (user, duration) => {
     if (!QUEST_CONFIG[duration]) throw new Error(`Invalid quest duration: ${duration}`)
     
@@ -101,12 +133,40 @@ const genQuests = async (user, duration) => {
     const recentWorkouts = await Workout.find({ user: user._id })
         .sort({ date: -1 })
         .limit(10)
+        .populate('exercises.exercise')
 
-    if (recentWorkouts.length === 0) throw new Error('No workouts found for this user')
+    if (recentWorkouts.length === 0) {
+        throw new Error('No workouts found for this user')
+    }
+
+    // Build a set of valid exercise names and muscle groups for validation
+    const validExerciseNames = new Set()
+    const validMuscleGroups = new Set()
+    recentWorkouts.forEach(w => {
+        w.exercises.forEach(ex => {
+            const exerciseData = ex.exercise
+            if (!exerciseData || typeof exerciseData !== 'object') {
+                return
+            }
+
+            validExerciseNames.add(exerciseData.name)
+            if (exerciseData.muscleGroup) {
+                validMuscleGroups.add(exerciseData.muscleGroup)
+            }
+        })
+    })
 
     const summary = recentWorkouts.map(w => ({
         date: w.date,
-        exercises: w.exercises.map(e => ({ name: e.name, sets: e.sets }))
+        exercises: w.exercises
+            .filter(ex => ex.exercise && typeof ex.exercise === 'object')
+            .map(ex => ({ 
+                name: ex.exercise.name,
+                muscleGroup: ex.exercise.muscleGroup,
+                trackingMode: ex.exercise.trackingMode,
+                selectedEquipment: ex.selectedEquipment,
+                sets: ex.sets
+            }))
     }))
 
     const existingQuests = await Quest.find({ user: user._id, status: 'active', expiry: { $gt: new Date() } })
@@ -117,45 +177,54 @@ const genQuests = async (user, duration) => {
     const questInstructions = assignedTypes.map((type, i) => {
         const typeConfig = QUEST_TYPE_PROMPTS[type]
         return `
-QUEST ${i + 1} — Type: "${type}"
-Goal: ${typeConfig.description}
-Completion schema for this quest:
-${typeConfig.completionSchema}
-Rules: ${typeConfig.extraRules}
+            QUEST ${i + 1} — Type: "${type}"
+            Goal: ${typeConfig.description}
+            Completion schema for this quest:
+            ${typeConfig.completionSchema}
+            Rules: ${typeConfig.extraRules}
         `.trim()
     }).join('\n\n')
 
     const prompt = `You are an AI fitness coach.
-The user tracks workouts using the ${unitSystem} system.
-Generate EXACTLY ${count} fitness quest(s) for the "${duration}" duration.
-Each quest has a PRE-ASSIGNED type — you must follow each type's schema exactly.
+        The user tracks workouts using the ${unitSystem} system.
+        Generate EXACTLY ${count} fitness quest(s) for the "${duration}" duration.
+        Each quest has a PRE-ASSIGNED type — you must follow each type's schema exactly.
 
-USER WORKOUT HISTORY:
-${JSON.stringify(summary)}
+        VALID EXERCISE NAMES (use these EXACTLY):
+        ${Array.from(validExerciseNames).map(e => `- ${e}`).join('\n')}
 
-ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
+        VALID MUSCLE GROUPS (use these EXACTLY if needed):
+        ${Array.from(validMuscleGroups).map(m => `- ${m}`).join('\n')}
 
-QUEST ASSIGNMENTS:
-${questInstructions}
+        USER WORKOUT HISTORY:
+        ${JSON.stringify(summary)}
 
-GENERAL RULES:
-- Quests must be CHALLENGING but achievable within the ${duration} window
-- Exercise names must match the workout history exactly (capitalisation included)
-- Each strength/progressive quest must target a DIFFERENT exercise
-- Do not reuse exercises already in active quests
+        ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
 
-Return ONLY a valid JSON object in this exact shape, no extra text:
-{
-    "quests": [
+        QUEST ASSIGNMENTS:
+        ${questInstructions}
+
+        GENERAL RULES:
+        - Quests must be CHALLENGING but achievable within the ${duration} window
+        - Exercise names MUST be chosen from the VALID EXERCISE NAMES list above
+        - Muscle groups MUST be chosen from the VALID MUSCLE GROUPS list above
+        - Each strength/progressive quest must target a DIFFERENT exercise
+        - Do not reuse exercises already in active quests
+        - NEVER use "Unknown Exercise" or invent exercise names
+
+        Return ONLY a valid JSON object in this exact shape, no extra text:
         {
-            "title": "string (1-6 words, creative)",
-            "questType": "string (the assigned type)",
-            "duration": "${duration}",
-            "description": "string (1-2 sentences, clear objective, encouraging)",
-            "completion": { ...fields matching the type's schema above... }
+            "quests": [
+                {
+                    "title": "string (1-6 words, creative)",
+                    "questType": "string (the assigned type)",
+                    "duration": "${duration}",
+                    "description": "string (1-2 sentences, clear objective, encouraging)",
+                    "completion": { ...fields matching the type's schema above... }
+                }
+            ]
         }
-    ]
-}`
+    `
 
     const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
@@ -175,6 +244,16 @@ Return ONLY a valid JSON object in this exact shape, no extra text:
         throw new Error('AI response has wrong quest count')
     }
 
+    // Validate all quests before saving
+    const invalidQuests = parsed.quests.filter(q => !validateQuestCompletion(q, validExerciseNames, validMuscleGroups))
+    if (invalidQuests.length > 0) {
+        throw new Error(
+            `Invalid quest completion data: ${invalidQuests.map(q => 
+                `"${q.title}" (${q.questType} - ${q.duration}): ${JSON.stringify(q.completion)}`
+            ).join('; ')}`
+        )
+    }
+
     const questData = parsed.quests.map(q => ({
         user: user._id,
         title: q.title,
@@ -183,7 +262,7 @@ Return ONLY a valid JSON object in this exact shape, no extra text:
         description: q.description,
         expiry: getExpiryDate(expiryDays),
         reward: QUEST_CONFIG[duration].reward,
-        completion: q.completion,      // Store the whole completion object as-is
+        completion: q.completion,
         progressLog: []
     }))
 
