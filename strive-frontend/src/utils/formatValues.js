@@ -3,11 +3,21 @@
 export const kgToLbs = (kg) => kg * 2.20462
 export const lbsToKg = (lbs) => lbs / 2.20462
 
+export const kmToMiles = (km) => km / 1.609
+export const milesToKm = (miles) => miles * 1.609
+
 export const formatWeight = (kg, useImperial) => {
 	if (useImperial) {
 		return `${formatNumber(kgToLbs(kg), 1)} lbs`
 	}
 	return `${formatNumber(kg, 1)} kg`        
+}
+
+export const formatDistance = (km, useImperial) => {
+    if (useImperial) {
+        return `${formatNumber(kmToMiles(km), 1)} miles`
+    }
+    return `${formatNumber(km, 1)} km`
 }
 
 export const parseWeight = (value, useImperial) => {
