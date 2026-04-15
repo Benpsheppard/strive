@@ -54,19 +54,22 @@ const QUEST_TYPE_PROMPTS = {
             If unsure, use null.`
     },
     volume: {
-        description: `A total volume goal. The user must lift a cumulative amount of weight (kg or lbs) across one or more sessions, optionally for a specific muscle group.`,
+        description: `A total volume goal. The user must lift a cumulative amount of weight (kg or lbs) across one or more sessions, optionally for a specific muscle group OR specific exercise.`,
         completionSchema: `{
             "targetVolume": number (total kg/lbs to lift),
             "currentVolume": 0,
             "filterTag": "string or null (must exactly match one exercise name OR one muscleGroup from workout history, e.g. 'Bench Press', 'Chest', 'Back', 'Legs', or null)"
         }`,
         extraRules: `
-        Calculate a realistic targetVolume by looking at their recent session volumes for that muscle group. 
+        Calculate a realistic targetVolume by looking at their recent session volumes for that muscle group / exercise. 
         Weekly targets should be achievable across 2-3 sessions.
         Use only exact tags already present in workout history.
         Allowed filterTag values are:
         - exact exercise names from workout history
         - exact muscleGroup values from workout history
+        - Reflect the task exactly:
+            - e.g. if volume for Triceps, filterTag should be 'Triceps'; if volume for Bench Press, filterTag should be 'Bench Press'
+            - Do NOT mix muscleGroup filterTag with exercise task and vice-versa
 
         Never invent broader categories like:
         "upper body", "lower body", "push", "pull", "arms", "full body"
