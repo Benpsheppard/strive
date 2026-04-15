@@ -94,7 +94,7 @@ const resetUser = async (userId, token) => {
 }
 
 // Update user weight unit preference
-const updateWeightPreference = async (useImperial, token) => {
+const updateUnitPreference = async (useImperial, token) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -161,7 +161,7 @@ const authService = {
     migrate,
     deleteUser,
     resetUser,
-    updateWeightPreference,
+    updateUnitPreference,
     addPoints,
 	updateProfile,
     updateStreak

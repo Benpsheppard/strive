@@ -5,7 +5,7 @@
 const express = require('express')
 const { 
     registerUser, loginUser, getMe, 
-    deleteUser, updateWeightPreference, 
+    deleteUser, updateUnitPreference, 
     resetUser, addPoints, migrateUser, 
     updateProfile, updateStreak 
 } = require('../controllers/userController.js')
@@ -34,7 +34,7 @@ userRouter.delete('/:id', protect, validateObjectId('id'), deleteUser)
 userRouter.delete('/:id/reset', protect, validateObjectId('id'), resetUser)
 
 // Update weight unit preference
-userRouter.put('/preference', protect, updateWeightPreference)
+userRouter.put('/preference', protect, updateUnitPreference)
 
 // Add SP
 userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)

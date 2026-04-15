@@ -2,14 +2,14 @@
 
 // Imports
 import { useSelector, useDispatch } from 'react-redux'
-import { updateWeightPreference } from '../../features/auth/authSlice.js'
+import { updateUnitPreference } from '../../features/auth/authSlice.js'
 
 const Toggle = ({ useImperial }) => {
     const { user } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
 
     const onToggle = () => {
-        dispatch(updateWeightPreference(!user.useImperial))
+        dispatch(updateUnitPreference(!user.useImperial))
     }
 
     return (

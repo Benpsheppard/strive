@@ -292,7 +292,7 @@ const resetUser = asyncHandler(async (req, res) => {
  *   @route   PUT /api/users/preference
  *   @access  Private
  */
-const updateWeightPreference = asyncHandler(async (req, res) => {
+const updateUnitPreference = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id)
 
     if (!user) {
@@ -513,7 +513,7 @@ module.exports = {
     getMe, 
     deleteUser, 
     resetUser, 
-    updateWeightPreference, 
+    updateUnitPreference, 
     addPoints,
     updateProfile,
     updateStreak

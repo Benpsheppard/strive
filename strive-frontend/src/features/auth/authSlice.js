@@ -81,10 +81,10 @@ export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI)
 })
 
 // Change users weight unit preference
-export const updateWeightPreference = createAsyncThunk('auth/updatePreference', async (useImperial, thunkAPI) => {
+export const updateUnitPreference = createAsyncThunk('auth/updatePreference', async (useImperial, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token
-      return await authService.updateWeightPreference(useImperial, token)
+      return await authService.updateUnitPreference(useImperial, token)
     } catch (error) {
       const message = 
         (error.response && error.response.data && error.response.data.message) 
@@ -232,10 +232,10 @@ export const authSlice = createSlice({
             })
 
         // Update Weight Preference
-            .addCase(updateWeightPreference.pending, (state) => {
+            .addCase(updateUnitPreference.pending, (state) => {
                 state.isLoading = true
             })
-            .addCase(updateWeightPreference.fulfilled, (state, action) => {
+            .addCase(updateUnitPreference.fulfilled, (state, action) => {
                 state.isLoading = false
                 state.isSuccess = true
                 state.user = {
@@ -244,7 +244,7 @@ export const authSlice = createSlice({
                 }
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
-            .addCase(updateWeightPreference.rejected, (state, action) => {
+            .addCase(updateUnitPreference.rejected, (state, action) => {
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload
