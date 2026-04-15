@@ -23,7 +23,7 @@ const StreakCard = ({ user, workouts }) => {
     }).length
 
     return (
-        <div className="flex flex-col items-center p-6 w-full space-y-3 sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
+        <div className="flex flex-col items-center p-6 w-full space-y-3 bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
             <h2 className="font-bold text-2xl">
                 Current Streak
             </h2>
