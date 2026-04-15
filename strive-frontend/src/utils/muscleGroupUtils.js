@@ -12,6 +12,17 @@ export const MUSCLE_GROUPS = [
     'Other'
 ]
 
+export const MUSCLE_GROUPS_HEATMAP = [
+    'Chest',
+    'Back',
+    'Shoulders',
+    'Arms',
+    'Legs',
+    'Core',
+    'Full body',
+    'Other'
+]
+
 export const MUSCLE_GROUP_COLOURS = {
     'Chest': '#EF233C',
     'Back': '#D90429',
