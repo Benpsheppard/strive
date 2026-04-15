@@ -2,10 +2,10 @@
 
 // Imports
 import { motion } from 'framer-motion'
-import { formatWeight } from '../../utils/formatValues.js'
+import { formatWeight, formatDistance } from '../../utils/formatValues.js'
+import { useSelector } from 'react-redux'
 
 const SetItem = ({ set, trackingMode, useImperial = false }) => {
-
     return (
         <>
             {trackingMode === 'weight_reps' && (
@@ -46,14 +46,14 @@ const SetItem = ({ set, trackingMode, useImperial = false }) => {
 
             {trackingMode === 'distance' && (
                 <motion.li initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className='relative bg-[#2B2D42] text-[#EDF2F4] border border-[#EDF2F4]/30 rounded-full px-3 py-1 text-sm shadow-sm' >
-                    {set.distance} km
+                    {formatDistance(set.distance, useImperial)}
                 </motion.li>
             )}
 
             {trackingMode === 'distance_duration' && (
                 <motion.li initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className='relative bg-[#2B2D42] text-[#EDF2F4] border border-[#EDF2F4]/30 rounded-full px-3 py-1 text-sm shadow-sm' >
                     <span className="text-[#EF233C] font-semibold">
-                        {set.distance} km
+                        {formatDistance(set.distance, useImperial)}
                     </span>{' '}
                     in {set.duration} mins
                 </motion.li>
@@ -62,7 +62,7 @@ const SetItem = ({ set, trackingMode, useImperial = false }) => {
             {trackingMode === 'distance_weight' && (
                 <motion.li initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className='relative bg-[#2B2D42] text-[#EDF2F4] border border-[#EDF2F4]/30 rounded-full px-3 py-1 text-sm shadow-sm' >
                     <span className="text-[#EF233C] font-semibold">
-                        {set.distance} km
+                        {formatDistance(set.distance, useImperial)}
                     </span>{' '}
                     with {formatWeight(set.weight, useImperial)}
                 </motion.li>

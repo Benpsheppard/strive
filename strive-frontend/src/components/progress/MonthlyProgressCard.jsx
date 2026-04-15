@@ -4,7 +4,7 @@
 import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight, formatDuration, formatNumber } from '../../utils/formatValues.js'
+import { formatWeight, formatDuration, formatNumber, formatDistance } from '../../utils/formatValues.js'
 
 const MonthlyProgressCard = ({ workouts }) => {
 	const { user } = useSelector((state) => state.auth)
@@ -61,14 +61,14 @@ const MonthlyProgressCard = ({ workouts }) => {
 			</h2>
 
 			<div className="text-[#EDF2F4] space-y-2">
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Workouts <span className="text-[#EF233C] font-bold"> {formatNumber(totalWorkouts)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Exercises <span className="text-[#EF233C] font-bold"> {formatNumber(totalExercises)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Duration <span className="text-[#EF233C] font-bold"> {formatDuration(totalDuration)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Sets <span className="text-[#EF233C] font-bold"> {formatNumber(totalSets)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Weight <span className="text-[#EF233C] font-bold"> {formatWeight(totalWeight, user.useImperial)} </span> </p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Reps <span className="text-[#EF233C] font-bold"> {formatNumber(totalReps)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Distance Covered <span className="text-[#EF233C] font-bold">{formatNumber(totalDistance)}km</span></p>
+				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Distance Covered <span className="text-[#EF233C] font-bold">{formatDistance(totalDistance, user.useImperial)}</span></p>
 			</div>
 		</div>
 	)

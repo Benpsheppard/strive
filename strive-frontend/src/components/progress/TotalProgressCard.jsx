@@ -4,7 +4,7 @@
 import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight, formatDuration, formatNumber } from '../../utils/formatValues.js'
+import { formatWeight, formatDuration, formatNumber, formatDistance } from '../../utils/formatValues.js'
 
 const TotalProgressCard = ({ workouts }) => {
 	const { user } = useSelector((state) => state.auth)
@@ -54,7 +54,7 @@ const TotalProgressCard = ({ workouts }) => {
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Sets <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Weight <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
 				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Reps <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
-                <p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Distance Covered <span className="text-[#EF233C] font-bold">{formatNumber(totalDistance)}km</span></p>
+                <p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Distance Covered <span className="text-[#EF233C] font-bold">{formatDistance(totalDistance, user.useImperial)}</span></p>
 			</div>
 		</div>
 	)

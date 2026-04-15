@@ -11,7 +11,7 @@ import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 
 // Component Imports
 import SetList from './SetList.jsx'
-import { formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
+import { formatDistance, formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
     const { user } = useSelector((state) => state.auth)
@@ -96,7 +96,7 @@ const WorkoutItem = ({ workout }) => {
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">Distance</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDistance)}km</p>
+                            <p className="font-semibold text-[#EF233C]">{formatDistance(workout.summary.totalDistance, user.useImperial)}</p>
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
