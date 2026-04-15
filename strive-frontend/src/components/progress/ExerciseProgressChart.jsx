@@ -68,6 +68,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length
 
             dataPoints.push({
+                rawDate: new Date(w.createdAt),
                 date: new Date(w.createdAt).toLocaleDateString(),
                 maxWeight: useImperial ? kgToLbs(maxWeight) : maxWeight,
                 avgWeight: useImperial ? kgToLbs(avgWeight) : avgWeight,
@@ -75,7 +76,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         })
 
         return dataPoints
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .sort((a, b) => a.rawDate - b.rawDate)
             .slice(-workoutLimit)
     }, [selectedExercise, workouts, useImperial, workoutLimit])
 
