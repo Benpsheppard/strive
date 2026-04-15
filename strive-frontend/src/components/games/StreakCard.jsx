@@ -1,8 +1,5 @@
 // StreakCard.jsx
 
-// Imports
-import { useSelector } from "react-redux"
-
 // Function Imports
 import { getStartOfWeek, getEndOfWeek } from "../../utils/dateFormat"
 
@@ -25,11 +22,12 @@ const StreakCard = ({ user, workouts }) => {
         )
     }).length
 
-    const progressPercentage = (workoutsThisWeek / user.target) * 100
-
     return (
         <div className="flex flex-col items-center p-6 w-full space-y-3 sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
-            <h2 className="font-bold text-2xl">Current Streak</h2>
+            <h2 className="font-bold text-2xl">
+                Current Streak
+            </h2>
+            
             <div className='flex items-center space-x-2 text-4xl'>
                 <h2 className='fomt-bold'>{user.streak.current}</h2>
                 <span className="text-[#EF233C]"><FaFire /></span>
@@ -41,7 +39,7 @@ const StreakCard = ({ user, workouts }) => {
                 <p className="text-sm text-[#EDF2F4]">No Streak Shield Active</p>
             )}
 
-            <ProgressBar progressPercentage={progressPercentage} numerator={workoutsThisWeek} denominator={user.target} />
+            <ProgressBar numerator={workoutsThisWeek} denominator={user.target} />
         </div>
     )
 }
