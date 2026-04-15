@@ -30,11 +30,16 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         workouts.forEach((w) => {
             w.exercises.forEach((ex) => {
                 const exerciseData = ex.exercise
+
                 if (!exerciseData || typeof exerciseData !== 'object') return
                 if (exerciseData.trackingMode !== 'weight_reps') return
-                if (!seen.has(exerciseData.name)) {
-                    seen.set(exerciseData.name, {
+                
+                const key = `${exerciseData.name} (${ex.selectedEquipment})`
+                if (!seen.has(key)) {
+                    seen.set(key, {
+                        key,
                         name: exerciseData.name,
+                        selectedEquipment: ex.selectedEquipment,
                         muscleGroup: exerciseData.muscleGroup
                     })
                 }
@@ -46,18 +51,21 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     // Auto-select first exercise
     useEffect(() => {
         if (allExercises.length > 0 && !selectedExercise) {
-            setSelectedExercise(allExercises[0].name)
+            setSelectedExercise(allExercises[0].key)
         }
     }, [allExercises, selectedExercise])
 
     // Build chart data points for selected exercise
     const exerciseData = useMemo(() => {
         if (!selectedExercise) return []
+        const selected = allExercises.find(e => e.key === selectedExercise)
+        if (!selected) return []
+
         const dataPoints = []
 
         workouts.forEach((w) => {
             const found = w.exercises.find((ex) =>
-                ex.exercise?.name === selectedExercise
+                ex.exercise?.name === selected.name && ex.selectedEquipment === selected.selectedEquipment
             )
             if (!found) return
 
@@ -78,7 +86,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         return dataPoints
             .sort((a, b) => a.rawDate - b.rawDate)
             .slice(-workoutLimit)
-    }, [selectedExercise, workouts, useImperial, workoutLimit])
+    }, [selectedExercise, allExercises, workouts, useImperial, workoutLimit])
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -86,7 +94,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    const selectedColour = MUSCLE_GROUP_COLOURS[allExercises.find(e => e.name === selectedExercise)?.muscleGroup] || '#EF233C'
+    const selectedColour = MUSCLE_GROUP_COLOURS[allExercises.find(e => e.key === selectedExercise)?.muscleGroup] || '#EF233C'
 
     const data = {
         labels: exerciseData.map((d) => d.date),
@@ -175,7 +183,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 onChange={(e) => setSelectedExercise(e.target.value)}
             >
                 {allExercises.map((ex) => (
-                    <option key={ex.name} value={ex.name}>{ex.name}</option>
+                    <option key={ex.key} value={ex.key}>{ex.key}</option>
                 ))}
             </select>
 
