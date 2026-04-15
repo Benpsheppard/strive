@@ -45,7 +45,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
                 }
             })
         })
-        return Array.from(seen.values())
+        return Array.from(seen.values()).sort((a, b) => a.key.localeCompare(b.key))
     }, [workouts])
 
     // Auto-select first exercise
