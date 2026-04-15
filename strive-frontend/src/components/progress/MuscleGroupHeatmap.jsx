@@ -1,7 +1,9 @@
 // MuscleHeatmap.jsx
 
+// Imports
+import { MUSCLE_GROUPS_HEATMAP } from '../../utils/muscleGroupUtils'
+
 const MuscleGroupHeatmap = ({ workouts }) => {
-    const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Legs', 'Core', 'Full Body', 'Other']
 
     // Get colour intensity based on count
     const getColour = (daysSince) => {
@@ -17,7 +19,7 @@ const MuscleGroupHeatmap = ({ workouts }) => {
     // Days since a muscle group was last trained
     const getDaysSince = (muscleGroup) => {
         const sorted = [...workouts]
-            .filter(w => w.exercises.some(e => e.musclegroup === muscleGroup))
+            .filter(w => w.exercises.some(e => e.exercise?.muscleGroup === muscleGroup))
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
         if (sorted.length === 0) return null
@@ -33,8 +35,8 @@ const MuscleGroupHeatmap = ({ workouts }) => {
             <p className="text-[#EDF2F4] font-semibold text-center mb-1">Muscle Groups</p>
             <p className="text-[#EDF2F4] text-xs text-center opacity-60 mb-4">Last Trained</p>
 
-            <div className="grid grid-cols-3 gap-2">
-                {MUSCLE_GROUPS.map((group) => {
+            <div className="grid grid-cols-2 gap-2">
+                {MUSCLE_GROUPS_HEATMAP.map((group) => {
                     const daysSince = getDaysSince(group)
 
                     return (
