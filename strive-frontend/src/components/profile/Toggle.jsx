@@ -1,10 +1,10 @@
-// WeightToggle.jsx
+// Toggle.jsx
 
 // Imports
 import { useSelector, useDispatch } from 'react-redux'
 import { updateWeightPreference } from '../../features/auth/authSlice.js'
 
-const WeightToggle = ({ useImperial }) => {
+const Toggle = ({ useImperial }) => {
     const { user } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
 
@@ -15,10 +15,10 @@ const WeightToggle = ({ useImperial }) => {
     return (
         <div className="bg-[#2B2D42] rounded-lg p-4">
             <div className="flex items-center justify-between">
-                <span className="text-[#EDF2F4] font-semibold">Weight Unit:</span>
+                <span className="text-[#EDF2F4] font-semibold">Units:</span>
                 <div className="flex items-center gap-3">
                     <span className={`text-sm ${!useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                        KG
+                        Metric (kg, km)
                     </span>
                     <button type="button" onClick={onToggle} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#EF233C] focus:ring-offset-2 ${useImperial ? 'bg-[#EF233C]' : 'bg-[#8D99AE]'}`}>
                         <span
@@ -28,7 +28,7 @@ const WeightToggle = ({ useImperial }) => {
                         />
                     </button>
                     <span className={`text-sm ${useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                        LBS
+                        Imperial (lbs, miles)
                     </span>
                 </div>
             </div>
@@ -37,4 +37,4 @@ const WeightToggle = ({ useImperial }) => {
 }
 
 // Export
-export default WeightToggle
+export default Toggle
