@@ -154,7 +154,6 @@ const getPBMetric = (trackingMode, sets) => {
 
 const detectPersonalBests = async (userId, exercises) => {
     const existingWorkouts = await Workout.find({ user: userId }).populate('exercises.exercise')
-    console.log('EXISTING WORKOUTS: ', existingWorkouts)
 
     // Build existing PBs from previous workouts per exercise name + metric
     const existingPBs = {}
@@ -162,7 +161,6 @@ const detectPersonalBests = async (userId, exercises) => {
         workout.exercises.forEach(ex => {
             const name = ex.exercise?.name?.trim().toLowerCase()
             const trackingMode = ex.exercise?.trackingMode
-            console.log('TrackingMode: ', trackingMode)
 
             if (!name || !trackingMode) {
                 return

@@ -374,18 +374,15 @@ const NewWorkout = () => {
             toast.error('Please add at least one exercise.')
             return 
         }
-        console.log('Passed validation')
 
         setIsSubmittingWorkout(true)
         const endTime = Date.now()
         const durationMinutes = Math.round((endTime - startTime) / 60000)
         const workoutData = { title, exercises, duration: durationMinutes }
-        console.log('Passed endTime, durationMins and workoutData')
 
         try {
             const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
             const { summary } = savedWorkout
-            console.log('Workout summary generated: ', summary)
 
             let levelUp = null
             if (summary.totalStrivePoints > 0) {
@@ -394,7 +391,6 @@ const NewWorkout = () => {
                     levelUp = result.level
                 }
             }
-            console.log('User points and level recalculated')
 
             const oldStreak = user.streak.current
             const oldShield = user.streak.shield
@@ -404,7 +400,6 @@ const NewWorkout = () => {
             const shieldEarned = !oldShield && updatedUser.streak.shield
             const shieldUsed = oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak
             const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
-            console.log('Streak info received')
 
             resetWorkoutState()
             navigate('/workout-complete', {
