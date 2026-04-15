@@ -36,8 +36,8 @@ const PrevWorkouts = () => {
                     ?.toLowerCase()
                     .includes(lowerSearch)
                 
-                const exerciseMatch = workout.exercises?.some(exercise =>
-                    exercise.name.toLowerCase().includes(lowerSearch)
+                const exerciseMatch = workout.exercises?.some(ex =>
+                    ex.exercise.name.toLowerCase().includes(lowerSearch)
                 )
 
                 return titleMatch || exerciseMatch
@@ -46,28 +46,40 @@ const PrevWorkouts = () => {
 
         switch (sortOption) {
             case 'newest':
-                return filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+                filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+                break
             case 'oldest':
-                return filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                break
             case 'title-asc':
-                return filtered.sort((a, b) => a.title.localeCompare(b.title))
+                filtered.sort((a, b) => a.title.localeCompare(b.title))
+                break
             case 'title-desc':
-                return filtered.sort((a, b) => b.title.localeCompare(a.title))
+                filtered.sort((a, b) => b.title.localeCompare(a.title))
+                break
             case 'l-duration':
-                return filtered.sort((a, b) => b.duration - a.duration)
+                filtered.sort((a, b) => b.duration - a.duration)
+                break
             case 's-duration':
-                return filtered.sort((a, b) => a.duration - b.duration)  
+                filtered.sort((a, b) => a.duration - b.duration)
+                break
             case 'weight':
-                return filtered.sort( (a, b) => (b.summary?.totalWeight || 0) - (a.summary?.totalWeight || 0) )
+                filtered.sort( (a, b) => (b.summary?.totalWeight || 0) - (a.summary?.totalWeight || 0) )
+                break
             case 'reps':
-                return filtered.sort( (a, b) => (b.summary?.totalReps || 0) - (a.summary?.totalReps || 0) )
+                filtered.sort( (a, b) => (b.summary?.totalReps || 0) - (a.summary?.totalReps || 0) )
+                break
             case 'sets':
-                return filtered.sort( (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) )
+                filtered.sort( (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) )
+                break
             case 'sp':
-                return filtered.sort( (a, b) => (b.summary?.totalStrivePoints || 0) - (a.summary?.totalStrivePoints || 0) )
+                filtered.sort( (a, b) => (b.summary?.totalStrivePoints || 0) - (a.summary?.totalStrivePoints || 0) )
+                break
             default:
-                return filtered
+                break
         }
+
+        return filtered.slice(0, 25)
     }, [workouts, sortOption, searchTerm])
 
     useEffect(() => {
@@ -147,7 +159,7 @@ const PrevWorkouts = () => {
 
             {/* Workout Display */}
             <div className="workout-content w-full space-y-3">
-                {workouts.length > 0 ? 
+                {filteredAndSortedWorkouts.length > 0 ? 
                 (
                     <>
                         {filteredAndSortedWorkouts.map((wo) => (
