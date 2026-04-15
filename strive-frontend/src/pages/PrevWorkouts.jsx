@@ -79,7 +79,7 @@ const PrevWorkouts = () => {
                 break
         }
 
-        return filtered.slice(0, 25)
+        return filtered
     }, [workouts, sortOption, searchTerm])
 
     useEffect(() => {
@@ -159,7 +159,7 @@ const PrevWorkouts = () => {
 
             {/* Workout Display */}
             <div className="workout-content w-full space-y-3">
-                {filteredAndSortedWorkouts.length > 0 ? 
+                {workouts.length > 0 ? 
                 (
                     <>
                         {filteredAndSortedWorkouts.map((wo) => (
