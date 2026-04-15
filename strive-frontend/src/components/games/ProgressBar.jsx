@@ -1,6 +1,6 @@
 // ProgressBar.jsx
 
-const ProgressBar = ({ numerator, denominator }) => {
+const ProgressBar = ({ numerator, denominator, unit }) => {
 
     const progressPercentage = (numerator / denominator) * 100
 
@@ -13,7 +13,7 @@ const ProgressBar = ({ numerator, denominator }) => {
             {/* Text Overlay */}
             <div className='absolute inset-0 flex items-center justify-center'>
                 <span className='text-xs font-bold text-white'>
-                    {numerator} / {denominator}
+                    {numerator} / {denominator} {unit ? unit : ''}
                 </span>
             </div>
         </div>
