@@ -13,6 +13,7 @@ const { getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeek
 const User = require('../models/userModel.js')    
 const Workout = require('../models/workoutModel.js') 
 const Quest = require('../models/questModel.js')
+const { calculateMomentum } = require('../utils/momentum.js')
 
 /**
  *   @desc    Register user
@@ -512,7 +513,7 @@ const updateMomentum = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
-    user.momentum = req.body.momentum
+    user.momentum = calculateMomentum(user, req.body)
     const updatedUser = await user.save()
 
     res.status(200).json({
