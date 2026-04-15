@@ -102,7 +102,7 @@ const Games = () => {
 
                     {/* Progress Bar */}
                     <div className='mt-4'>
-                        <ProgressBar progressPercentage={progressPercentage} numerator={progressWithinLevel} denominator={`${totalSPForLevel} SP`} />
+                        <ProgressBar numerator={progressWithinLevel} denominator={totalSPForLevel} unit={'SP'} />
 
                         {/* SP needed for next level */}
                         <p className='mt-2 text-sm text-[#EDF2F4]/80'>
