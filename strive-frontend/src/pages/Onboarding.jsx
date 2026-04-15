@@ -11,7 +11,7 @@ import { updateProfile } from '../features/auth/authSlice.js'
 // Component Imports
 import Picker from 'react-mobile-picker'
 import AuthHeader from '../components/headers/AuthHeader'
-import WeightToggle from '../components/profile/WeightToggle.jsx'
+import Toggle from '../components/profile/Toggle.jsx'
 import { lbsToKg } from '../utils/formatValues.js'
 
 const Onboarding = () => {
@@ -107,7 +107,7 @@ const Onboarding = () => {
                         What is your <span className="text-[#EF233C]">weight</span>?
                     </h2>
 
-                    <WeightToggle useImperial={user.useImperial} />
+                    <Toggle useImperial={user.useImperial} />
 
                     <input
                         type="number"

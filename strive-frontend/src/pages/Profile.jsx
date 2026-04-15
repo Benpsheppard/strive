@@ -14,7 +14,7 @@ import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
-import WeightToggle from '../components/profile/WeightToggle.jsx'
+import Toggle from '../components/profile/Toggle.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
@@ -156,7 +156,7 @@ const Profile = () => {
                     </p>
 
                     {/* Weight Unit Toggle */}
-                    <WeightToggle useImperial={user.useImperial} />
+                    <Toggle useImperial={user.useImperial} />
                 </div>
 
                 <StreakCard user={user} workouts={workouts} />
