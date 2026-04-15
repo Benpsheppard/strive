@@ -156,8 +156,14 @@ const genQuests = async (user, duration) => {
             if (exerciseData.muscleGroup) {
                 validMuscleGroups.add(exerciseData.muscleGroup)
             }
+            if (exerciseData.subMuscleGroup) {
+                validMuscleGroups.add(exerciseData.subMuscleGroup)
+            }
+            
         })
     })
+
+    console.log('Valid muscle groups: ', validMuscleGroups)
 
     const summary = recentWorkouts.map(w => ({
         date: w.date,
