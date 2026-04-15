@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 const validator = require('validator')    
 
 // Function Imports
-const { getWeekNumber, getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
+const { getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -85,6 +85,7 @@ const registerUser = asyncHandler(async (req, res) => {
             isGuest: user.isGuest,
             level: user.level,
             strivepoints: user.strivepoints,
+            momentum: user.momentum,
             streak: user.streak,
             target: user.target,
             height: user.height,
@@ -129,6 +130,7 @@ const loginUser = asyncHandler(async (req, res) => {
             useImperial: user.useImperial,
             level: user.level,
             strivepoints: user.strivepoints,
+            momentum: user.momentum,
             streak: user.streak,
             target: user.target,
             height: user.height,
@@ -498,6 +500,31 @@ const updateStreak = asyncHandler(async (req, res) => {
     })
 })
 
+/**
+ * @desc    Update user's momentum value
+ * @route   PUT /api/users/momentum
+ * @access  Private
+ */
+const updateMomentum = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    user.momentum = req.body.momentum
+    const updatedUser = await user.save()
+
+    res.status(200).json({
+        _id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        createdAt: updatedUser.createdAt,
+        momentum: updatedUser.momentum,
+        token: genToken(updatedUser._id)
+    })
+})
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -516,5 +543,6 @@ module.exports = {
     updateUnitPreference, 
     addPoints,
     updateProfile,
-    updateStreak
+    updateStreak,
+    updateMomentum
 }

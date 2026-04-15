@@ -7,7 +7,8 @@ const {
     registerUser, loginUser, getMe, 
     deleteUser, updateUnitPreference, 
     resetUser, addPoints, migrateUser, 
-    updateProfile, updateStreak 
+    updateProfile, updateStreak, 
+    updateMomentum
 } = require('../controllers/userController.js')
 const { protect } = require('../middleware/authMiddleware.js')
 const { validateObjectId } = require('../middleware/validateObjectId.js')
@@ -44,6 +45,9 @@ userRouter.put('/profile', protect, updateProfile)
 
 // Update streak
 userRouter.put('/:id/streak', protect, updateStreak)
+
+// Update momentum
+userRouter.put('/momentum', protect, updateMomentum)
 
 // Export router
 module.exports = { userRouter }
