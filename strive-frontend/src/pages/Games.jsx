@@ -14,6 +14,7 @@ import Header from '../components/headers/Header.jsx'
 import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
+import StreakCard from '../components/games/StreakCard.jsx'
 
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
@@ -28,8 +29,6 @@ const Games = () => {
 
     const progressWithinLevel = user.strivepoints - currentLevelMinSP
     const totalSPForLevel = nextLevelMinSP - currentLevelMinSP
-
-    const progressPercentage = (progressWithinLevel / totalSPForLevel) * 100
 
     const spToNextLevel = nextLevelMinSP - user.strivepoints
 
@@ -111,6 +110,8 @@ const Games = () => {
                     </div>
                     
                 </div>
+
+                <StreakCard user={user} workouts={workouts}/>
 
                 {/* Quest lists */}
                 <Quests />
