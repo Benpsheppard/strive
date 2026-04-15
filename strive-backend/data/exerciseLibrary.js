@@ -17,10 +17,10 @@ const exercises = [
         trackingMode: 'weight_reps'
     },
     {
-        name: 'Decline Cable Chest Fly',
+        name: 'Chest Fly',
         muscleGroup: 'Chest',
-        subMuscleGroup: 'Lower chest',
-        equipment: ['Cable'],
+        subMuscleGroup: 'Mid chest',
+        equipment: ['Cable', 'Machine'],
         trackingMode: 'weight_reps'
     },
     {
@@ -42,11 +42,18 @@ const exercises = [
         name: 'T-Bar Row',
         muscleGroup: 'Back',
         subMuscleGroup: 'Mid back',
-        equipment: ['Machine'],
+        equipment: ['Machine', 'Barbell'],
         trackingMode: 'weight_reps'
     },
     {
         name: 'Seated Cable Row',
+        muscleGroup: 'Back',
+        subMuscleGroup: 'Mid back',
+        equipment: ['Cable', 'Machine'],
+        trackingMode: 'weight_reps'
+    },
+    {
+        name: 'Kneeling Cable Row',
         muscleGroup: 'Back',
         subMuscleGroup: 'Mid back',
         equipment: ['Cable'],
@@ -86,7 +93,7 @@ const exercises = [
         name: 'Shoulder Press',
         muscleGroup: 'Shoulders',
         subMuscleGroup: 'Front delts',
-        equipment: ['Dumbbell', 'Barbell', 'Machine'],
+        equipment: ['Dumbbell', 'Barbell', 'Machine', 'Smith Machine'],
         trackingMode: 'weight_reps'
     },
     // Arms - 8
@@ -105,7 +112,7 @@ const exercises = [
         trackingMode: 'weight_reps'
     },
     {
-        name: 'Single Arm Pushdown',
+        name: 'Single-Arm Tricep Pushdown',
         muscleGroup: 'Arms',
         subMuscleGroup: 'Triceps',
         equipment: ['Cable'],
@@ -191,10 +198,10 @@ const exercises = [
     },
     // Core - 2
     {
-        name: 'Crunches',
+        name: 'Crunch',
         muscleGroup: 'Core',
         subMuscleGroup: 'Abs',
-        equipment: ['Cable', 'Machine'],
+        equipment: ['Cable', 'Machine', 'Bodyweight'],
         trackingMode: 'weight_reps'
     },
     {
