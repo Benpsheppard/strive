@@ -133,7 +133,7 @@ const Profile = () => {
                 Profile
             </h1>
 
-            <div className='space-y-3 w-full flex flex-col items-center'>
+            <div className='space-y-3 w-full max-w-2xl flex flex-col items-center'>
                 {/* Guest Card */}
                 {user?.isGuest && (
                     <GuestCard workouts={workouts} isMigrate={true} />
