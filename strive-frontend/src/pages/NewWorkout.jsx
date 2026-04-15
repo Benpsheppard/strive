@@ -524,7 +524,7 @@ const NewWorkout = () => {
                             <div className="relative">
                                 <input
                                     type="text"
-                                    value={searchQuery}
+                                    value={currentExercise?.exerciseName}
                                     onChange={handleSearchChange}
                                     placeholder="Exercise name *"
                                     className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
