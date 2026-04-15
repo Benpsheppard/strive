@@ -28,7 +28,7 @@ const QuestCard = ({ quest }) => {
     }, [])
 
     return (
-        <div onClick={() => {if (isMobile) setIsOpen(!isOpen)}} className={`rounded-2xl shadow-xl bg-[#2B2D42] text-[#EDF2F4] overflow-hidden transition-all duration-300 ${quest.status === 'completed' ? 'opacity-50' : ''} ${isOpen || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
+        <div onClick={() => {if (isMobile) setIsOpen(!isOpen)}} className={`rounded-2xl shadow-xl bg-[#2B2D42] text-[#EDF2F4] overflow-hidden transition-all duration-300 hover:scale-102 ${quest.status === 'completed' ? 'opacity-50' : ''} ${isOpen || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
             {/* Main content */}
             <div className='p-5'>
                 {/* Header */}
