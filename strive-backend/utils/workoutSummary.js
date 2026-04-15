@@ -51,6 +51,7 @@ const questCheckers = {
             const tag = filterTag.toLowerCase().trim()
             const matches = exercises.some(e =>
                 e.muscleGroup?.toLowerCase() === tag ||
+                e.subMuscleGroup?.toLowerCase() === tag ||
                 e.name.toLowerCase().trim() === tag
             )
             if (!matches) {
@@ -80,7 +81,7 @@ const questCheckers = {
         for (const ex of exercises) {
             const tag = filterTag?.toLowerCase().trim()
             const nameMatches = !tag || ex.name.toLowerCase().trim() === tag
-            const groupMatches = !tag || ex.muscleGroup?.toLowerCase() === tag
+            const groupMatches = !tag || ex.muscleGroup?.toLowerCase() === tag || ex.subMuscleGroup?.toLowerCase() === tag
 
             if (!tag || nameMatches || groupMatches) {
                 sessionVolume += getVolume(ex.sets)
