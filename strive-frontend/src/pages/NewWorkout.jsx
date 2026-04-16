@@ -519,14 +519,14 @@ const NewWorkout = () => {
                             <div className="relative">
                                 <input
                                     type="text"
-                                    value={currentExercise?.exerciseName}
+                                    value={currentExercise.exerciseName ? currentExercise.exerciseName : searchQuery}
                                     onChange={handleSearchChange}
                                     placeholder="Exercise name *"
                                     className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
                                 />
 
                                 {/* Suggestions dropdown */}
-                                {showSuggestions && (
+                                {showSuggestions && !currentExercise.exerciseName && (
                                     <ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
                                         {searchResults.map((exercise) => (
                                             <li key={exercise._id} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
