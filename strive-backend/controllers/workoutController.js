@@ -64,9 +64,13 @@ const setWorkout = asyncHandler(async (req, res) => {
     workout.summary = summary
     await workout.save()
 
+    const workoutDate = new Date()
     await User.findByIdAndUpdate(
         req.user.id,
-        { $push: { workouts: workout._id } }
+        { 
+            $push: { workouts: workout._id },
+            $max: { lastWorkout: workoutDate }
+        }
     )
 
     // Output created workout
