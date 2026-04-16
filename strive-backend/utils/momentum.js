@@ -34,12 +34,12 @@ const getDaysSince = (date) => {
 }
 
 export const calculateMomentum = (user, data) => {
-    let momentum = user.momentum
+    let momentum = user.momentum.current
     let earnedMomentum = 0
     console.log(`User current Momentum: ${momentum}`)
 
     // Momentum Lost
-    const daysMissed = getDaysSince(user.lastWorkout)
+    const daysMissed = getDaysSince(user.momentum.lastCalculated)
     console.log(`Days Missed: ${daysMissed}`)
     
     for (let i = 0; i < daysMissed; i++) {
@@ -47,7 +47,8 @@ export const calculateMomentum = (user, data) => {
         momentum -= decay
         
         if (momentum <= 0) {
-            return 0
+            momentum = 0
+            break
         }
     }
 
