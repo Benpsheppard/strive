@@ -515,7 +515,9 @@ const updateMomentum = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
-    user.momentum = calculateMomentum(user, req.body)
+    user.momentum.current = calculateMomentum(user, req.body || {})
+    user.momentum.lastCalculated = new Date()
+    
     const updatedUser = await user.save()
 
     res.status(200).json({

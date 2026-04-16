@@ -46,10 +46,16 @@ const userSchema = mongoose.Schema ({
         default: 0
     },
     momentum: {
-        type: Number,
-        default: 30,
-        min: 0,
-        max: 100
+        current: {
+            type: Number,
+            default: 30,
+            min: 0,
+            max: 100
+        },
+        lastCalculated: {
+            type: Date,
+            default: null
+        }
     },
     // Streak
     streak: {
