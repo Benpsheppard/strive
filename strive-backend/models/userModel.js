@@ -30,6 +30,11 @@ const userSchema = mongoose.Schema ({
             ref: "Workout"
         }
     ],
+    // Most recent workout date
+    lastWorkout: {
+        type: Date,
+        default: null
+    },
     // User level
     level: {
         type: Number,
