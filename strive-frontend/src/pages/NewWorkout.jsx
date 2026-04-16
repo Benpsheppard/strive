@@ -70,7 +70,6 @@ const NewWorkout = () => {
     // Refs
     const restIntervalRef = useRef(null)
     const hasCheckedStreak = useRef(false)
-    const searchDebounceRef = useRef(null)
 
     const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
@@ -173,13 +172,35 @@ const NewWorkout = () => {
 
     // ----- SEARCH -----
     const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value)
+        const newValue = e.target.value
+        setSearchQuery(newValue)
 
-        if (currentExercise.exerciseId) {
+        if (currentExercise.exerciseId && currentExercise.sets?.length > 0) {
+            Swal.fire({
+                title: 'Change Exercise?',
+                text: `You have ${currentExercise.sets.length} set(s) logged. Changing exercise will delete them.`,
+                icon: 'warning',
+                color: '#EDF2F4',
+                background: '#8D99AE',
+                showCancelButton: true,
+                confirmButtonText: 'Change Exercise',
+                cancelButtonText: 'Keep Current',
+                confirmButtonColor: '#EF233C',
+                cancelButtonColor: '#2B2D42',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setCurrentExercise(EMPTY_EXERCISE)
+                    setCurrentSet(EMPTY_SET)
+                    setSetHistory([])
+                } else {
+                    setSearchQuery(currentExercise.exerciseName)
+                }
+            })
+        } else if (currentExercise.exerciseId) {
             setCurrentExercise(EMPTY_EXERCISE)
             setCurrentSet(EMPTY_SET)
         }
-    }    
+    }
 
     // ----- EQUIPMENT -----
     const handleEquipmentChange = (e) => {
