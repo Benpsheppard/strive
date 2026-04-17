@@ -29,7 +29,7 @@ const StreakCard = ({ user, workouts }) => {
             </h2>
             
             <div className='flex items-center space-x-2 text-4xl'>
-                <h2 className='fomt-bold'>{user.streak.current}</h2>
+                <h2 className='font-bold'>{user.streak.current}</h2>
                 <span className="text-[#EF233C]"><FaFire /></span>
             </div>
 
