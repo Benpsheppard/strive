@@ -314,7 +314,6 @@ const updateUnitPreference = asyncHandler(async (req, res) => {
         email: updatedUser.email,
         useImperial: updatedUser.useImperial,
         createdAt: updatedUser.createdAt,
-        token: genToken(updatedUser._id)
     })
 })
 
@@ -402,7 +401,6 @@ const updateProfile = asyncHandler(async (req, res) => {
         height: updatedUser.height,
         weight: updatedUser.weight,
         createdAt: updatedUser.createdAt,
-        token: genToken(updatedUser._id)
     })
 }) 
 
@@ -499,7 +497,6 @@ const updateStreak = asyncHandler(async (req, res) => {
         target: updatedUser.target,
         height: updatedUser.height,
         weight: updatedUser.weight,
-        token: genToken(updatedUser._id)
     })
 })
 
@@ -526,7 +523,6 @@ const updateMomentum = asyncHandler(async (req, res) => {
         email: updatedUser.email,
         createdAt: updatedUser.createdAt,
         momentum: updatedUser.momentum,
-        token: genToken(updatedUser._id)
     })
 })
 
