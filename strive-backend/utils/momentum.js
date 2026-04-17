@@ -36,11 +36,9 @@ const getDaysSince = (date) => {
 export const calculateMomentum = (user, data) => {
     let momentum = user.momentum.current
     let earnedMomentum = 0
-    console.log(`User current Momentum: ${momentum}`)
 
     // Momentum Lost
     const daysMissed = getDaysSince(user.momentum.lastCalculated)
-    console.log(`Days Missed: ${daysMissed}`)
     
     for (let i = 0; i < daysMissed; i++) {
         const decay = Math.ceil(momentum / 20)
@@ -51,8 +49,6 @@ export const calculateMomentum = (user, data) => {
             break
         }
     }
-
-    console.log(`Momentum after decay: ${momentum}`)
 
     // Momentum gained
     if (data.workoutCompleted) {
@@ -69,10 +65,7 @@ export const calculateMomentum = (user, data) => {
         })
     }
     
-    console.log(`Earned Momentum: ${earnedMomentum}`)
-
     momentum += Math.min(MAX_DAILY_GAIN, earnedMomentum)
-    console.log(`Momentum after increase: ${momentum}`)
-
+    
     return Math.max(0, Math.min(100, momentum))
 }
