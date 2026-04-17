@@ -89,7 +89,7 @@ const WorkoutComplete = () => {
                     </div>
                 )}
 
-                {/* Streak Maintained */}
+                {/* Momentum Increased */}
                 {momentumGained && (
                     <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
                         <FaBolt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
