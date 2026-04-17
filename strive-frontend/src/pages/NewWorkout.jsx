@@ -6,13 +6,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
-import axios from 'axios'
 
 // Function Imports
 import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
-import { addPoints, updateStreak } from '../features/auth/authSlice.js'
+import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -27,6 +26,7 @@ import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
 import { FaUndoAlt } from 'react-icons/fa'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
+import MomentumCard from '../components/games/MomentumCard.jsx'
 
 const EMPTY_EXERCISE = {
     exerciseId: null,
@@ -70,6 +70,7 @@ const NewWorkout = () => {
     // Refs
     const restIntervalRef = useRef(null)
     const hasCheckedStreak = useRef(false)
+    const hasCheckedMomentum = useRef(false)
 
     const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
@@ -142,10 +143,13 @@ const NewWorkout = () => {
 
                 if (dropped) {
                     Swal.fire({
-                        title: 'Momentum Dropped',
+                        title: 'Momentum Dropped!',
                         text: `Your momentum has decreased to ${updatedUser.momentum.current}. Time to get back on track.`,
                         icon: 'warning',
                         confirmButtonText: 'Got it',
+                        color: '#EDF2F4',
+                        background: '#8D99AE',
+                        confirmButtonColor: '#EF233C',
                     })
                 }
             })
@@ -405,6 +409,7 @@ const NewWorkout = () => {
             const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
             const { summary } = savedWorkout
 
+            // Add SP and check for level up
             let levelUp = null
             if (summary.totalStrivePoints > 0) {
                 const result = await dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints })).unwrap()
@@ -413,14 +418,26 @@ const NewWorkout = () => {
                 }
             }
 
+            // Streak info
             const oldStreak = user.streak.current
             const oldShield = user.streak.shield
-            const updatedUser = await dispatch(updateStreak(user._id)).unwrap()
+            const updatedUserAfterStreak = await dispatch(updateStreak(user._id)).unwrap()
 
-            const streakIncreased = updatedUser.streak.current > oldStreak
-            const shieldEarned = !oldShield && updatedUser.streak.shield
-            const shieldUsed = oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak
-            const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
+            const streakIncreased = updatedUserAfterStreak.streak.current > oldStreak
+            const shieldEarned = !oldShield && updatedUserAfterStreak.streak.shield
+            const shieldUsed = oldShield && !updatedUserAfterStreak.streak.shield && updatedUserAfterStreak.streak.current === oldStreak
+            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
+            
+            // Momentum info
+            const momentumData = {
+                workoutCompleted: true,
+                personalBests: summary.personalBests.length || 0,
+                quests: summary.questsCompleted
+            }
+            
+            const oldMomentum = user.momentum.current
+            const updatedUserAfterMomentum = await dispatch(updateMomentum(momentumData)).unwrap()
+            const momentumGained = updatedUserAfterMomentum.momentum.current - oldMomentum
 
             resetWorkoutState()
             navigate('/workout-complete', {
@@ -430,7 +447,8 @@ const NewWorkout = () => {
                     streakIncreased, 
                     shieldEarned, 
                     shieldUsed, 
-                    streakBroken 
+                    streakBroken,
+                    momentumGained 
                 }
             })
         } catch (error) {
@@ -482,7 +500,10 @@ const NewWorkout = () => {
                         <h1>Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span></h1>
                     </div>
 
-                    <StreakCard user={user} workouts={workouts} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <StreakCard user={user} workouts={workouts} />
+                        <MomentumCard user={user} />
+                    </div>
 
                     {user?.isGuest && <GuestCard workouts={workouts} isMigrate={false} />}
 

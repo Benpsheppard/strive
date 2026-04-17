@@ -4,7 +4,7 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire } from 'react-icons/fa'
+import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
 import { formatDuration, formatWeight } from '../utils/formatValues'
 
 // Function Imports
@@ -13,8 +13,8 @@ import { getWorkouts, reset } from '../features/workouts/workoutsSlice'
 // Component Imports
 import Header from '../components/headers/Header'
 import Spinner from '../components/spinners/Spinner'
-import StreakCard from '../components/games/StreakCard'
 import GuestCard from '../components/guest/GuestCard'
+import ProgressBar from '../components/games/ProgressBar'
 
 const WorkoutComplete = () => {
     const { state } = useLocation()
@@ -30,6 +30,7 @@ const WorkoutComplete = () => {
     const shieldEarned = state?.shieldEarned
     const shieldUsed = state?.shieldUsed
     const streakBroken = state?.streakBroken
+    const momentumGained = state?.momentumGained
 
     useEffect(() => {
         if (!isLoading && !workout) {
@@ -89,6 +90,18 @@ const WorkoutComplete = () => {
                 )}
 
                 {/* Streak Maintained */}
+                {momentumGained && (
+                    <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
+                        <FaBolt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <p className="text-[#EDF2F4] text-2xl font-bold">Momentum Increased!</p>
+                        <p className="text-[#EDF2F4] opacity-80 text-lg">
+                            +{momentumGained} Momentum! Keep it up!
+                        </p>
+                        <ProgressBar numerator={user.momentum.current} denominator={100} />
+                    </div>
+                )}
+
+                {/* Streak Maintained */}
                 {streakIncreased && (
                     <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
                         <FaFire className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
@@ -131,8 +144,6 @@ const WorkoutComplete = () => {
                         </p>
                     </div>
                 )}
-
-                <StreakCard user={user} workouts={workouts} />
 
                 {/* Workout Stats */}
                 <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
