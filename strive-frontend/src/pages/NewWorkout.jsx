@@ -70,7 +70,6 @@ const NewWorkout = () => {
     // Refs
     const restIntervalRef = useRef(null)
     const hasCheckedStreak = useRef(false)
-    const searchDebounceRef = useRef(null)
 
     const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
@@ -125,6 +124,28 @@ const NewWorkout = () => {
                         color: '#EDF2F4',
                         background: '#8D99AE',
                         confirmButtonColor: '#EF233C',
+                    })
+                }
+            })
+        }
+    }, [user, dispatch])
+
+    // Check momentum on mount
+    useEffect(() => {
+        if (user && !hasCheckedMomentum.current) {
+            hasCheckedMomentum.current = true
+
+            const oldMomentum = user.momentum.current
+
+            dispatch(updateMomentum({})).unwrap().then((updatedUser) => {
+                const dropped = updatedUser.momentum.current < oldMomentum
+
+                if (dropped) {
+                    Swal.fire({
+                        title: 'Momentum Dropped',
+                        text: `Your momentum has decreased to ${updatedUser.momentum.current}. Time to get back on track.`,
+                        icon: 'warning',
+                        confirmButtonText: 'Got it',
                     })
                 }
             })
