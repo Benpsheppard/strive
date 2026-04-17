@@ -161,7 +161,7 @@ const updateMomentum = async (data, token) => {
         }
     }
 
-    const response = await axios.put(API_URL + `/momentum`, data, config)
+    const response = await axios.put(API_URL + `momentum`, data, config)
 
     return response.data
 }
