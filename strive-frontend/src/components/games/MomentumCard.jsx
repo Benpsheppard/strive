@@ -19,10 +19,12 @@ const MomentumCard = ({ user }) => {
             </h2>
             
             <div className='flex items-center space-x-2 text-4xl'>
-                <h2 className='font-bold'>
+                <h2 className='font-bold text-[#EF233C]'>
                     {getMomentumLabel(user.momentum.current)}
                 </h2>
             </div>
+
+            <p className="text-sm text-[#EDF2F4]">Increase your momentum by completing a workout!</p>
 
             <ProgressBar numerator={user.momentum.current} denominator={100} />
         </div>
