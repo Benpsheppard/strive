@@ -132,6 +132,19 @@ export const updateStreak = createAsyncThunk('auth/updateStreak', async (id, thu
     }
 })
 
+// Update momentum
+export const updateMomentum = createAsyncThunk('auth/updateMomentum', async (data, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.updateMomentum(data, token)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -310,6 +323,25 @@ export const authSlice = createSlice({
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateStreak.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+
+        // Update Momentum
+            .addCase(updateMomentum.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(updateMomentum.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.user = {
+                    ...state.user,
+                    ...action.payload
+                }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(updateMomentum.rejected, (state, action) => {
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload

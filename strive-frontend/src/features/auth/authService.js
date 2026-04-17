@@ -108,7 +108,7 @@ const updateUnitPreference = async (useImperial, token) => {
     }
 
     return response.data
-    }
+}
 
 // Add Strive Points (SP)
 const addPoints = async (userId, amount, token) => {
@@ -153,6 +153,19 @@ const updateStreak = async (userId, token) => {
     return response.data
 }
 
+// Update momentum
+const updateMomentum = async (data, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.put(API_URL + `/momentum`, data, config)
+
+    return response.data
+}
+
 // Export functions
 const authService = {
     register,
@@ -164,7 +177,8 @@ const authService = {
     updateUnitPreference,
     addPoints,
 	updateProfile,
-    updateStreak
+    updateStreak,
+    updateMomentum
 }
 
 export default authService
