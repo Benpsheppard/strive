@@ -180,6 +180,15 @@ const genQuests = async (user, duration) => {
 
     const existingQuests = await Quest.find({ user: user._id, status: 'active', expiry: { $gt: new Date() } })
     const existingExercises = existingQuests.map(q => q.completion.exercise).filter(Boolean)
+
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    const recentQuests = await Quest.find({
+        user: user._id,
+        expiry: { $gte: twoDaysAgo, $lte: new Date() }
+    })
+    const recentExercises = recentQuests.map(q => q.completion.exercise).filter(Boolean)
+    const recentMuscleGroups = recentQuests.map(q => q.completion.muscleGroup).filter(Boolean)
+
     const unitSystem = user.useImperial ? 'imperial (lbs)' : 'metric (kg)'
 
     // Build a per-quest instruction block for Claude, one per assigned type
@@ -209,6 +218,8 @@ const genQuests = async (user, duration) => {
         ${JSON.stringify(summary)}
 
         ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
+        RECENTLY USED EXERCISES - avoid if possible for variety: ${recentExercises.join(', ') || 'none'}
+        RECENTLY TRAINED MUSCLE GROUPS — deprioritise if possible for variety: ${recentMuscleGroups.join(', ') || 'none'}
 
         QUEST ASSIGNMENTS:
         ${questInstructions}
