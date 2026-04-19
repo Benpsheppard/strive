@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 
 // Function Imports
-import { createWorkout, getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+import { createWorkout, getWorkouts, reset, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
@@ -156,7 +156,7 @@ const NewWorkout = () => {
         }
     }, [user, dispatch])
 
-    // Search exercises with debounce
+    // Search exercises
     useEffect(() => {
 		if (!searchQuery.trim()) {
 			setSearchResults([])
@@ -177,7 +177,6 @@ const NewWorkout = () => {
         if (!user) { navigate('/login'); return }
         dispatch(getWorkouts())
 		dispatch(getExercises())
-        return () => dispatch(reset())
     }, [user, message, isError, navigate, dispatch])
 
     // Cleanup rest timer
@@ -461,18 +460,18 @@ const NewWorkout = () => {
             const updatedUserAfterMomentum = await dispatch(updateMomentum(momentumData)).unwrap()
             const momentumGained = updatedUserAfterMomentum.momentum.current - oldMomentum
 
+            dispatch(setLastWorkoutStats({
+                workout: savedWorkout,
+                levelUp,
+                streakIncreased,
+                momentumGained,
+                shieldEarned,
+                shieldUsed,
+                streakBroken
+            }))
+
+            navigate('/workout-complete')
             resetWorkoutState()
-            navigate('/workout-complete', {
-                state: { 
-                    workout: savedWorkout, 
-                    levelUp, 
-                    streakIncreased, 
-                    shieldEarned, 
-                    shieldUsed, 
-                    streakBroken,
-                    momentumGained 
-                }
-            })
         } catch (error) {
             console.error('Submit workout error: ', error)
             toast.error(error.message || 'Failed to save workout')

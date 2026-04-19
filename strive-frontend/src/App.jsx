@@ -10,19 +10,21 @@ import Spinner from './components/spinners/Spinner.jsx'
 
 // Lazy load pages for performance optimization
 // const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+// const Contact = lazy(() => import('./pages/Contact.jsx'))
+// const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'))
+// const Help = lazy(() => import('./pages/Help.jsx'))
+
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
 const Onboarding = lazy(() => import('./pages/Onboarding.jsx'))
 const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'))
 const WorkoutComplete = lazy(() => import('./pages/WorkoutComplete.jsx'))
+const ProgressUpdate = lazy(() => import('./pages/ProgressUpdate.jsx'))
 const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'))
 const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
-const Contact = lazy(() => import('./pages/Contact.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'))
-const Help = lazy(() => import('./pages/Help.jsx'))
 
 // App
 const App = () => {
@@ -34,20 +36,22 @@ const App = () => {
 			<div className="w-full min-h-screen">
 				<Suspense fallback={<Spinner />}>
 					<Routes>
-					{/* <Route path='/' element={<Dashboard />} /> */}
-					<Route path='/' element={<NewWorkout />} />
-					<Route path='/login' element={<Login />} />
-					<Route path='/register' element={<Register />} />
-					<Route path='/onboarding' element={<Onboarding />} />
-					<Route path='/workout-complete' element={<WorkoutComplete />} />
-					<Route path='/prev-workouts' element={<PrevWorkouts />} />
-					<Route path='/progress' element={<Progress />} />
-					<Route path='/games' element={<Games />} />
-					<Route path='/contact' element={<Contact />} />
-					<Route path='/profile' element={<Profile />} />
-					<Route path='/migrate' element={<GuestMigration />} />
-					<Route path='/privacy-policy' element={<PrivacyPolicy />} />
-					<Route path='/help' element={<Help />} />
+						<Route path='/' element={<NewWorkout />} />
+						<Route path='/login' element={<Login />} />
+						<Route path='/register' element={<Register />} />
+						<Route path='/onboarding' element={<Onboarding />} />
+						<Route path='/workout-complete' element={<WorkoutComplete />} />
+						<Route path='/progress-update' element={<ProgressUpdate />} />
+						<Route path='/prev-workouts' element={<PrevWorkouts />} />
+						<Route path='/progress' element={<Progress />} />
+						<Route path='/games' element={<Games />} />
+						<Route path='/profile' element={<Profile />} />
+						<Route path='/migrate' element={<GuestMigration />} />
+
+						{/* <Route path='/' element={<Dashboard />} /> */}
+						{/* <Route path='/contact' element={<Contact />} /> */}
+						{/* <Route path='/privacy-policy' element={<PrivacyPolicy />} /> */}
+						{/* <Route path='/help' element={<Help />} /> */}
 					</Routes>
 				</Suspense>
 			</div>

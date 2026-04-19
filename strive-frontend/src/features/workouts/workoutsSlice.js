@@ -7,6 +7,7 @@ import workoutsService from './workoutsService'
 // Initial state
 const initialState = {
 	workouts: [],
+	lastWorkoutStats: [],
 	isError: false,
 	isSuccess: false,
 	isLoading: false,
@@ -73,7 +74,13 @@ export const workoutsSlice = createSlice({
             state.isSuccess = false
             state.isLoading = false
             state.message = ''
-        }
+        },
+		setLastWorkoutStats: (state, action) => {
+			state.lastWorkoutStats = action.payload
+		},
+		clearLastWorkoutStats: (state) => {
+			state.lastWorkoutStats = null
+		}
 	},
 	extraReducers: (builder) => {
 		builder
@@ -145,5 +152,5 @@ export const workoutsSlice = createSlice({
 	}
 })
 
-export const { reset, resetFlags } = workoutsSlice.actions
+export const { reset, resetFlags, setLastWorkoutStats, clearLastWorkoutStats } = workoutsSlice.actions
 export default workoutsSlice.reducer
