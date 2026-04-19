@@ -57,6 +57,8 @@ const setWorkout = asyncHandler(async (req, res) => {
     const populatedExercises = populatedWorkout.exercises.map(ex => ({
         name: ex.exercise.name,
         muscleGroup: ex.exercise.muscleGroup,
+        subMuscleGroup: ex.exercise.subMuscleGroup,
+        trackingMode: ex.exercise.trackingMode,
         sets: ex.sets
     }))
 
