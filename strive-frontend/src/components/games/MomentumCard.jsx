@@ -33,7 +33,7 @@ const MomentumCard = ({ user }) => {
             </div>
 
             <p className="text-sm text-[#EDF2F4]">
-                Current multiplier: {multiplier}x
+                Current SP multiplier: {multiplier}x
             </p>
 
             <ProgressBar numerator={user.momentum.current} denominator={100} />
