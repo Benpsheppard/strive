@@ -29,6 +29,7 @@ const getWorkouts = asyncHandler(async (req, res) => {
  *  @access Private
  */
 const setWorkout = asyncHandler(async (req, res) => {
+
     // Check if workout includes a title
     if(!req.body.title){
         res.status(400)
@@ -62,7 +63,7 @@ const setWorkout = asyncHandler(async (req, res) => {
         sets: ex.sets
     }))
 
-    const summary = await calculateWorkoutSummary(req.user.id, populatedExercises, workout)
+    const summary = await calculateWorkoutSummary(req.user, populatedExercises, workout)
     workout.summary = summary
     await workout.save()
 
