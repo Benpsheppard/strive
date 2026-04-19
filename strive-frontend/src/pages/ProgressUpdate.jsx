@@ -5,8 +5,6 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
-import { motion } from 'framer-motion'
-import { pageVariants, pageTransition } from '../utils/pageVariants'
 
 // Component Imports
 import Header from '../components/headers/Header'

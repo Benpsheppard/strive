@@ -6,8 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
 import { formatDuration, formatWeight } from '../utils/formatValues'
-import { motion } from 'framer-motion'
-import { pageVariants, pageTransition } from '../utils/pageVariants'
 
 // Function Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice'

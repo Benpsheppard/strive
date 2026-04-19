@@ -6,8 +6,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
-import { motion } from 'framer-motion'
-import { pageVariants, pageTransition } from '../utils/pageVariants'
 
 // Function Imports
 import { createWorkout, getWorkouts, reset, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
