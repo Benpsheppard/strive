@@ -5,6 +5,7 @@ const Workout = require('../models/workoutModel')
 const Quest = require('../models/questModel')
 
 const REP_BUFFER = 2
+const WORKOUT_COMPLETE_REWARD = 200
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,15 @@ const getTotalDistance = (sets) =>
 // Get total duration from a set of sets
 const getTotalDuration = (sets) =>
     sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
+
+const getMultiplier = (momentum) => {
+    if (momentum === 100) return 2
+    if (momentum > 80)    return 1.8
+    if (momentum > 60)    return 1.6
+    if (momentum > 40)    return 1.4
+    if (momentum > 20)    return 1.2
+    return 1
+}
 
 // ─── Quest Checkers ──────────────────────────────────────────────────────────
 
@@ -228,7 +238,7 @@ const detectQuestCompletion = async (userId, exercises, workout) => {
 
 // ─── Main Summary ────────────────────────────────────────────────────────────
 
-const calculateWorkoutSummary = async (userId, exercises, workout) => {
+const calculateWorkoutSummary = async (user, exercises, workout) => {
     let totalWeight = 0
     let totalReps = 0
     let totalSets = 0
@@ -247,10 +257,13 @@ const calculateWorkoutSummary = async (userId, exercises, workout) => {
 
     const totalExercises = exercises.length
 
-    const personalBests = await detectPersonalBests(userId, exercises)
-    const { questsCompleted, totalQuestSP } = await detectQuestCompletion(userId, exercises, workout)
+    const multiplier = getMultiplier(user.momentum.current)
+    console.log(`MULTIPLIER: ${multiplier}`)
     
-    const totalStrivePoints = 200 + totalQuestSP + personalBests.length * 500
+    const personalBests = await detectPersonalBests(user._id, exercises)
+    const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
+    
+    const totalStrivePoints = (WORKOUT_COMPLETE_REWARD + totalQuestSP + (personalBests.length * 500)) * multiplier
 
     return {
         totalWeight,
