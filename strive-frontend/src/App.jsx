@@ -1,11 +1,10 @@
 // App.jsx
-// File to hold main app structure and functionality
 
 // Imports
 import { Suspense, lazy } from 'react'
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'   // Import router functions
-import { ToastContainer } from 'react-toastify'  // Import toast container
-import 'react-toastify/dist/ReactToastify.css'   // Import toast css
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import Spinner from './components/spinners/Spinner.jsx'
 
 // Lazy load pages for performance optimization
