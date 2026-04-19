@@ -46,12 +46,7 @@ const WorkoutComplete = () => {
 	}, [user, message, isError, navigate, dispatch])
 
     const onContinue = () => {
-        if (lastWorkoutStats.levelUp || 
-            lastWorkoutStats.streakIncreased ||
-            lastWorkoutStats.momentumGained ||
-            lastWorkoutStats.shieldEarned ||
-            lastWorkoutStats.shieldUsed ||
-            lastWorkoutStats.streakBroken) {
+        if (hasStats) {
                 navigate('/progress-update')
             } else {
                 navigate('/')
@@ -61,6 +56,10 @@ const WorkoutComplete = () => {
     if (isLoading || !lastWorkoutStats?.workout) {
         return <Spinner />
     }
+
+    const hasStats = lastWorkoutStats.levelUp || lastWorkoutStats.streakIncreased || 
+    lastWorkoutStats.momentumGained || lastWorkoutStats.shieldEarned || 
+    lastWorkoutStats.shieldUsed || lastWorkoutStats.streakBroken
 
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
@@ -162,9 +161,12 @@ const WorkoutComplete = () => {
                     <button onClick={onContinue} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
                         Continue
                     </button>
-                    <button onClick={() => navigate('/progress')} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
-                        View Progress
-                    </button>
+
+                    {!hasStats && (
+                        <button onClick={() => navigate('/progress')} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
+                            View Progress
+                        </button>
+                    )}
                 </div>
             </div>
         </section>

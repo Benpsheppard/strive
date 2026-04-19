@@ -412,6 +412,8 @@ const NewWorkout = () => {
 
     // ----- WORKOUTS -----
     const onSubmit = async () => {
+        console.log(JSON.stringify(user))
+
         if (!title.trim()) { 
             toast.error('Please enter a workout title.')
             return 
@@ -438,8 +440,6 @@ const NewWorkout = () => {
                     levelUp = result.level
                 }
             }
-
-            console.log(`USER.STREAK: ${JSON.stringify(user.streak)}`)
 
             // Streak info
             const oldStreak = user.streak.current
