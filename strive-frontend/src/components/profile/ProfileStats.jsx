@@ -12,6 +12,15 @@ const ProfileStats = ({ user }) => {
             <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
                 Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
             </p>
+            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
+                Streak: <span className='text-[#EF233C]'>{user.streak.current}</span>
+            </p>
+            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
+                Best Streak: <span className='text-[#EF233C]'>{user.streak.best}</span>
+            </p>
+            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
+                Momentum: <span className='text-[#EF233C]'>{user.momentum.current}</span>
+            </p>
             <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
                 Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
             </p>
