@@ -11,7 +11,7 @@ const ProgressBar = ({ numerator, denominator, unit }) => {
             <div className='bg-[#EF233C] h-8 transition-all duration-500 ease-out' style={{ width: `${progressPercentage}%` }} />
 
             {/* Text Overlay */}
-            <div className='animate-shimmer absolute inset-0 flex items-center justify-center'>
+            <div className='absolute inset-0 flex items-center justify-center'>
                 <span className='text-xs font-bold text-white'>
                     {numerator} / {denominator} {unit ? unit : ''}
                 </span>
