@@ -47,7 +47,16 @@ const WorkoutComplete = () => {
 	}, [user, message, isError, navigate, dispatch])
 
     const onContinue = () => {
-        navigate('/progress-update')
+        if (lastWorkoutStats.levelUp || 
+            lastWorkoutStats.streakIncreased ||
+            lastWorkoutStats.momentumGained ||
+            lastWorkoutStats.shieldEarned ||
+            lastWorkoutStats.shieldUsed ||
+            lastWorkoutStats.streakBroken) {
+                navigate('/progress-update')
+            } else {
+                navigate('/')
+            }
     }
 
     if (isLoading || !lastWorkoutStats?.workout) {
