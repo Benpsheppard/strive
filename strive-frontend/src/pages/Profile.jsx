@@ -159,7 +159,6 @@ const Profile = () => {
                     <Toggle useImperial={user.useImperial} />
                 </div>
 
-                <StreakCard user={user} workouts={workouts} />
                 <ProfileStats user={user} />
 
                 {/* Account Control buttons */}
