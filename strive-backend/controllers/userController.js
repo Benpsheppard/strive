@@ -8,6 +8,7 @@ const validator = require('validator')
 
 // Function Imports
 const { getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
+const formatUser = require('../utils/formatUser.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -76,23 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
     
     // Verify user creation
     if (user) {
-        res.status(201).json({
-            _id: user.id,
-            username: user.username,
-            email: user.email,
-            useImperial: user.useImperial,
-            createdAt: user.createdAt,
-            token: genToken(user._id),
-            isGuest: user.isGuest,
-            lastWorkout: user.lastWorkout,
-            level: user.level,
-            strivepoints: user.strivepoints,
-            momentum: user.momentum,
-            streak: user.streak,
-            target: user.target,
-            height: user.height,
-            weight: user.weight
-        })
+        res.status(201).json(formatUser(user, genToken(user._id)))
     } else {
         res.status(400)
         throw new Error('Invalid user data')
@@ -107,7 +92,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     // Get user details
     const { username, email, password } = req.body
-    identifier = username || email
+    const identifier = username || email
 
     if (!identifier || !password) {
         res.status(400)
@@ -124,22 +109,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Check username and password match
     if (user && (await bcrypt.compare(password, user.password))){
-        res.json({
-            _id: user.id,
-            username: user.username,
-            email: user.email,
-            createdAt: user.createdAt,
-            useImperial: user.useImperial,
-            lastWorkout: user.lastWorkout,
-            level: user.level,
-            strivepoints: user.strivepoints,
-            momentum: user.momentum,
-            streak: user.streak,
-            target: user.target,
-            height: user.height,
-            weight: user.weight,
-            token: genToken(user._id)
-        })
+        res.status(200).json(formatUser(user, genToken(user._id)))
     } else {
         res.status(400)
         throw new Error('Invalid user credentials')
@@ -217,13 +187,7 @@ const migrateUser = asyncHandler(async (req, res) => {
 
     await user.save()
 
-    res.status(200).json({
-        _id: user.id,
-        username: user.username,
-        email: user.email,
-        isGuest: user.isGuest,
-        token: genToken(user._id)
-    })
+    res.status(201).json(formatUser(user, genToken(user._id)))
 })
 
 /**
@@ -233,7 +197,7 @@ const migrateUser = asyncHandler(async (req, res) => {
  */
 const getMe = asyncHandler(async (req, res) => {
     // Return user info
-    res.status(200).json(req.user)
+    res.status(200).json(formatUser(req.user))
 })
 
 /**
@@ -308,13 +272,7 @@ const updateUnitPreference = asyncHandler(async (req, res) => {
     user.useImperial = req.body.useImperial
     const updatedUser = await user.save()
 
-    res.status(200).json({
-        _id: updatedUser.id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        useImperial: updatedUser.useImperial,
-        createdAt: updatedUser.createdAt,
-    })
+    res.status(200).json(formatUser(updatedUser))
 })
 
 /**
@@ -393,15 +351,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save()
 
-    res.status(200).json({
-        _id: updatedUser.id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        target: updatedUser.target,
-        height: updatedUser.height,
-        weight: updatedUser.weight,
-        createdAt: updatedUser.createdAt,
-    })
+    res.status(200).json(formatUser(updatedUser))
 }) 
 
 /**
@@ -485,19 +435,7 @@ const updateStreak = asyncHandler(async (req, res) => {
     }
 
     const updatedUser = await user.save()
-    res.json({
-        _id: updatedUser.id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        createdAt: updatedUser.createdAt,
-        useImperial: updatedUser.useImperial,
-        level: updatedUser.level,
-        strivepoints: updatedUser.strivepoints,
-        streak: updatedUser.streak,
-        target: updatedUser.target,
-        height: updatedUser.height,
-        weight: updatedUser.weight,
-    })
+    res.status(200).json(formatUser(updatedUser))
 })
 
 /**
@@ -517,13 +455,7 @@ const updateMomentum = asyncHandler(async (req, res) => {
     
     const updatedUser = await user.save()
 
-    res.status(200).json({
-        _id: updatedUser.id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        createdAt: updatedUser.createdAt,
-        momentum: updatedUser.momentum,
-    })
+    res.status(200).json(formatUser(updatedUser))
 })
 
 // Generate JWT token
