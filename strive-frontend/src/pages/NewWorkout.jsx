@@ -95,66 +95,67 @@ const NewWorkout = () => {
         localStorage.removeItem('newWorkout_setHistory')
     }
 
-    // Check streak on mount
+    // Check streak & momentum on mount
     useEffect(() => {
-        if (user && !hasCheckedStreak.current) {
+        if (!user) return
+        
+        // Capture values before any dispatches
+        const oldStreak = user.streak?.current ?? 0
+        const hadShield = user.streak?.shield ?? false
+        const oldMomentum = user.momentum?.current ?? 0
+
+        const checkStreak = async () => {
+            if (hasCheckedStreak.current) return
             hasCheckedStreak.current = true
-            const oldStreak = user.streak.current
-            const hadShield = user.streak.shield
 
-            dispatch(updateStreak(user._id)).unwrap().then((updatedUser) => {
-                const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
-                const shieldUsed = hadShield && !updatedUser.streak.shield
+            const updatedUser = await dispatch(updateStreak(user._id)).unwrap()
+            const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
+            const shieldUsed = hadShield && !updatedUser.streak.shield
 
-                if (shieldUsed) {
-                    Swal.fire({
-                        title: 'Shield Used!',
-                        text: 'You missed your target last week, but your shield protected your streak!',
-                        icon: 'warning',
-                        confirmButtonText: 'Phew!',
-                        color: '#EDF2F4',
-                        background: '#8D99AE',
-                        confirmButtonColor: '#EF233C',
-                    })
-                } else if (streakBroken) {
-                    Swal.fire({
-                        title: 'Streak Lost!',
-                        text: `Your ${oldStreak} week streak has been reset. Time to start again!`,
-                        icon: 'error',
-                        confirmButtonText: "Let's go again",
-                        color: '#EDF2F4',
-                        background: '#8D99AE',
-                        confirmButtonColor: '#EF233C',
-                    })
-                }
-            })
+            if (shieldUsed) {
+                Swal.fire({ 
+                    title: 'Shield Used!', 
+                    text: 'You missed your target last week, but your shield protected your streak!', 
+                    icon: 'warning', 
+                    confirmButtonText: 'Phew!', 
+                    color: '#EDF2F4', 
+                    background: '#8D99AE', 
+                    confirmButtonColor: '#EF233C' 
+                })
+            } else if (streakBroken) {
+                Swal.fire({ 
+                    title: 'Streak Lost!', 
+                    text: `Your ${oldStreak} week streak has been reset. Time to start again!`, 
+                    icon: 'error', 
+                    confirmButtonText: "Let's go again", 
+                    color: '#EDF2F4', 
+                    background: '#8D99AE', 
+                    confirmButtonColor: '#EF233C' 
+                })
+            }
         }
-    }, [user, dispatch])
 
-    // Check momentum on mount
-    useEffect(() => {
-        if (user && !hasCheckedMomentum.current) {
+        const checkMomentum = async () => {
+            if (hasCheckedMomentum.current) return
             hasCheckedMomentum.current = true
 
-            const oldMomentum = user.momentum.current
-
-            dispatch(updateMomentum({})).unwrap().then((updatedUser) => {
-                const dropped = updatedUser.momentum.current < oldMomentum
-
-                if (dropped) {
-                    Swal.fire({
-                        title: 'Momentum Dropped!',
-                        text: `Your momentum has decreased to ${updatedUser.momentum.current}. Time to get back on track.`,
-                        icon: 'warning',
-                        confirmButtonText: 'Got it',
-                        color: '#EDF2F4',
-                        background: '#8D99AE',
-                        confirmButtonColor: '#EF233C',
-                    })
-                }
-            })
+            const updatedUser = await dispatch(updateMomentum({})).unwrap()
+            if (updatedUser.momentum.current < oldMomentum) {
+                Swal.fire({ 
+                    title: 'Momentum Dropped!', 
+                    text: `Your momentum has decreased to ${updatedUser.momentum.current}. Time to get back on track.`, 
+                    icon: 'warning', 
+                    confirmButtonText: 'Got it', 
+                    color: '#EDF2F4', 
+                    background: '#8D99AE', 
+                    confirmButtonColor: '#EF233C' 
+                })
+            }
         }
-    }, [user, dispatch])
+
+        checkStreak()
+        checkMomentum()
+    }, [])
 
     // Search exercises
     useEffect(() => {
