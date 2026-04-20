@@ -100,7 +100,7 @@ const WorkoutItem = ({ workout }) => {
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
-                            <p className="text-xs text-[#EDF2F4]">Duration</p>
+                            <p className="text-xs text-[#EDF2F4]">Cardio</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDuration)}m</p>
                         </div>
 
