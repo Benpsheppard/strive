@@ -88,7 +88,7 @@ const Games = () => {
             ) : (
             <div className='space-y-6 w-full'>
                 {/* User Games' Summary */}
-                <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
+                <div className='fade-in-card bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center' style={{ animationDelay: '0.2s' }}>
                     <h2 className='text-[#EDF2F4] text-3xl font-bold'>
                         {user.username}
                     </h2>
@@ -108,13 +108,16 @@ const Games = () => {
                             {spToNextLevel} SP until Level {currentLevel + 1}
                         </p>
                     </div>
-                    
+                </div>
+                
+                <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
+                    <StreakCard user={user} workouts={workouts}/>
                 </div>
 
-                <StreakCard user={user} workouts={workouts}/>
-
                 {/* Quest lists */}
-                <Quests />
+                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.6s' }}>
+                    <Quests />
+                </div>
             </div>
             )}
         </section>

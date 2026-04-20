@@ -65,31 +65,28 @@ const Progress = () => {
                 <div className='w-full space-y-6'> 
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr] lg:grid-rows-2">
-                        {/* DIV 1 */}
-                        <div className="lg:row-start-1 lg:col-start-1">
+                        <div className="fade-in-card lg:row-start-1 lg:col-start-1" style={{ animationDelay: '0.2s'}}>
                             <MonthlyProgressCard workouts={workouts} />
                         </div>
 
-                        {/* DIV 2 spans right side */}
-                        <div className="lg:row-span-2 lg:col-start-2 lg:row-start-1">
+                        <div className="fade-in-card lg:row-span-2 lg:col-start-2 lg:row-start-1" style={{ animationDelay: '0.4s'}}>
                             <MonthCalendar workouts={workouts} />
                         </div>
 
-                        {/* DIV 3 */}
-                        <div className="lg:row-start-2 lg:col-start-1">
+                        <div className="fade-in-card lg:row-start-2 lg:col-start-1" style={{ animationDelay: '0.6s'}}>
                             <TotalProgressCard workouts={workouts} />
                         </div>
                     </div>
 
                     {/* Charts Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.8s'}}>
                         <PBChart workouts={workouts} useImperial={user.useImperial}/>
                         <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial}/>
                     </div>
 
-                    <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial}/>
-
-
+                    <div className='fade-in-card' style={{ animationDelay: '1.0s'}}>
+                        <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial}/>
+                    </div>
                 </div>
             ) : (
                 <div className="text-[#EDF2F4] text-xl text-center mt-10">

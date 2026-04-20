@@ -80,7 +80,7 @@ const WorkoutComplete = () => {
                 }
 
                 {/* Workout Stats */}
-                <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
+                <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.2s' }}>
                     <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
                         <FaDumbbell className="text-[#EF233C]" /> Workout Stats
                     </h2>
@@ -107,7 +107,7 @@ const WorkoutComplete = () => {
                 </div>
 
                 {/* Strive Points Earned */}
-                <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
+                <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.4s' }}>
                     <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
                         <FaStar className="text-[#EF233C]" /> Strive Points Earned
                     </h2>
@@ -118,11 +118,11 @@ const WorkoutComplete = () => {
                 </div>
 
                 {/* PBs */}
-                {workout.summary.personalBests.length > 0 && (
-                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
-                        <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
-                            <FaTrophy className="text-[#EF233C]" /> Personal Bests
-                        </h2>
+                <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.6s' }}>
+                    <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
+                        <FaTrophy className="text-[#EF233C]" /> Personal Bests
+                    </h2>
+                    {workout.summary.personalBests.length > 0 ? (
                         <div className="space-y-3">
                             {workout.summary.personalBests.map((pb, index) => (
                                 <div key={index} className="bg-[#2B2D42] rounded-xl px-4 py-3 flex justify-between items-center">
@@ -136,15 +136,20 @@ const WorkoutComplete = () => {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <p className="text-[#EDF2F4]/40 text-center">
+                            No Personal Bests hit this session
+                        </p>
+                    )}
+                    
+                </div>
 
                 {/* Quests Completed */}
-                {workout.summary.questsCompleted.length > 0 && (
-                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5">
-                        <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
-                            <FaMedal className="text-[#EF233C]" /> Quests Completed
-                        </h2>
+                <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.8s' }}>
+                    <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
+                        <FaMedal className="text-[#EF233C]" /> Quests Completed
+                    </h2>
+                    {workout.summary.questsCompleted.length > 0 ? (
                         <div className="space-y-3">
                             {workout.summary.questsCompleted.map((quest, index) => (
                                 <div key={index} className="bg-[#2B2D42] rounded-xl px-4 py-3 flex justify-between items-center">
@@ -153,11 +158,16 @@ const WorkoutComplete = () => {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <p className="text-[#EDF2F4]/40 text-center">
+                            No Quests completed this session
+                        </p>
+                    )}
+                    
+                </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-3 pt-2">
+                <div className="fade-in-card flex flex-col gap-3 pt-2" style={{ animationDelay: '1.0s' }}>
                     <button onClick={onContinue} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
                         Continue
                     </button>

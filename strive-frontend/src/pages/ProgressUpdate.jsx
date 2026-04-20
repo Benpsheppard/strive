@@ -55,7 +55,7 @@ const ProgressUpdate = () => {
             <div className="w-full max-w-2xl space-y-4">
                 {/* Level Up */}
                 {levelUp && (
-                    <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg animate-pulse">
+                    <div className="fade-in-card bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '0.2s' }}>
                         <FaArrowUp className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Level Up!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">You are now Level {levelUp}!</p>
@@ -64,7 +64,7 @@ const ProgressUpdate = () => {
 
                 {/* Momentum Increased */}
                 {momentumGained > 0 && (
-                    <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
+                    <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '0.4s' }}>
                         <FaBolt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Momentum Increased!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">
@@ -76,7 +76,7 @@ const ProgressUpdate = () => {
 
                 {/* Streak Maintained */}
                 {streakIncreased && (
-                    <div className="bg-[#EF233C] rounded-2xl px-6 py-5 text-center shadow-lg">
+                    <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '0.6s' }}>
                         <FaFire className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Streak Maintained!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">
@@ -87,7 +87,7 @@ const ProgressUpdate = () => {
 
                 {/* Shield Earned */}
                 {shieldEarned && (
-                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg">
+                    <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '0.8s' }}>
                         <FaShieldAlt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-xl font-bold">Streak Shield Earned!</p>
                         <p className="text-[#EDF2F4]/70">
@@ -98,7 +98,7 @@ const ProgressUpdate = () => {
 
                 {/* Shield Used */}
                 {shieldUsed && (
-                    <div className="bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg">
+                    <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '1.0s' }}>
                         <FaShieldAlt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-xl font-bold">Shield Activated</p>
                         <p className="text-[#EDF2F4]/70">
@@ -109,7 +109,7 @@ const ProgressUpdate = () => {
 
                 {/* Streak Broken */}
                 {streakBroken && (
-                    <div className="bg-[#2B2D42] rounded-2xl px-6 py-5 text-center shadow-lg">
+                    <div className="fade-in-card bg-[#2B2D42] rounded-2xl px-6 py-5 text-center shadow-lg" style={{ animationDelay: '1.2s' }}>
                         <FaExclamationTriangle className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
                         <p className="text-[#EDF2F4] text-xl font-bold">Streak Reset</p>
                         <p className="text-[#EDF2F4]/70">
@@ -119,7 +119,7 @@ const ProgressUpdate = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex flex-col gap-3 pt-2">
+                <div className="fade-in-card flex flex-col gap-3 pt-2" style={{ animationDelay: '1.4s' }}>
                     <button onClick={onHome} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
                         Back to Home
                     </button>
