@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 
 // Function Imports
-import { createWorkout, getWorkouts, reset, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
+import { createWorkout, getWorkouts, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
@@ -413,8 +413,6 @@ const NewWorkout = () => {
 
     // ----- WORKOUTS -----
     const onSubmit = async () => {
-        console.log(JSON.stringify(user))
-
         if (!title.trim()) { 
             toast.error('Please enter a workout title.')
             return 
@@ -425,6 +423,7 @@ const NewWorkout = () => {
         }
 
         setIsSubmittingWorkout(true)
+
         const endTime = Date.now()
         const durationMinutes = Math.round((endTime - startTime) / 60000)
         const workoutData = { title, exercises, duration: durationMinutes }
