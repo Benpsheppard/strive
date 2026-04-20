@@ -616,7 +616,7 @@ const NewWorkout = () => {
                                     <div className="space-y-2">
                                         <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} />
                                         <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                            Add Set
+                                            Add Set to Exercise
                                         </button>
                                     </div>
 
@@ -637,13 +637,13 @@ const NewWorkout = () => {
                                             }}
                                         />
                                     </div>
+
+                                    {/* Add Exercise Button */}
+                                    <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+                                        Finish Exercise
+                                    </button>
                                 </>
                             )}
-
-                            {/* Add Exercise Button */}
-                            <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                Add Exercise
-                            </button>
                         </div>
 
                         {/* Exercises List */}
