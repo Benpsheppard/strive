@@ -556,6 +556,15 @@ const NewWorkout = () => {
                     <Timer started={started} startTime={startTime} restTimerDuration={restTimerDuration} setRestTimerDuration={setRestTimerDuration} />
 
                     <div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
+                        {/* Workout Title */}
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Workout Title *"
+                            className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+                        />
+
                         {/* Rest Timer */}
                         {restTimeRemaining > 0 && (
                             <div className="text-center mb-4 bg-[#2B2D42] rounded-xl p-3">
@@ -568,15 +577,6 @@ const NewWorkout = () => {
                                 </button>
                             </div>
                         )}
-
-                        {/* Workout Title */}
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Workout Title *"
-                            className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                        />
 
                         {/* Exercise Form */}
                         <div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl space-y-3">
