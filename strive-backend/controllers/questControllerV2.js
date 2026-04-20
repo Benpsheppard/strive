@@ -163,8 +163,6 @@ const genQuests = async (user, duration) => {
         })
     })
 
-    console.log('Valid muscle groups: ', validMuscleGroups)
-
     const summary = recentWorkouts.map(w => ({
         date: w.date,
         exercises: w.exercises

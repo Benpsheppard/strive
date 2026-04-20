@@ -258,7 +258,6 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
     const totalExercises = exercises.length
 
     const multiplier = getMultiplier(user.momentum.current)
-    console.log(`MULTIPLIER: ${multiplier}`)
     
     const personalBests = await detectPersonalBests(user._id, exercises)
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
