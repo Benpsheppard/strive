@@ -66,7 +66,7 @@ const calculateVolumePoints = async (user, workout, totalWeight) => {
     // Get recent workouts
     const recentWorkouts = await Workout.find({ user: user._id, _id: { $ne: workout._id } }).sort({ createdAt: -1 }).limit(5)
     if (recentWorkouts.length < 5) {
-        return 40
+        return { volumeReward: 40, volumeScore: 1 }
     }
 
     // Calculate total Volume across those 5 workouts
@@ -81,12 +81,14 @@ const calculateVolumePoints = async (user, workout, totalWeight) => {
 
     // Calculate score
     const score = totalWeight / averageTotalWeight
-    console.log(`VOLUME SCORE: ${score}`)
 
     // Calculate reward
     const reward = getReward(score)
-    console.log(`VOLUME REWARD: ${reward}`)
-    return reward
+
+    return {
+        volumeReward: reward,
+        volumeScore: score
+    }
 }
 
 const calculateStrengthPoints = async (user, workout, exercises) => {
@@ -100,7 +102,7 @@ const calculateStrengthPoints = async (user, workout, exercises) => {
     .limit(15)
 
     if (recentWorkouts.length < 5) {
-        return 40
+        return { strengthReward: 40, strengthScore: 1 }
     }
 
     let runningTotal = 0
@@ -140,22 +142,23 @@ const calculateStrengthPoints = async (user, workout, exercises) => {
     })
 
     if (matchedExerciseCount === 0) {
-        return 25
+        return { strengthReward: 40, strengthScore: 1 }
     }
 
     const score = runningTotal / matchedExerciseCount
-    console.log(`STRENGTH SCORE: ${score}`)
     
     const reward = getReward(score)
-    console.log(`STRENGTH REWARD: ${reward}`)
-    return reward
+    return {
+        strengthReward: reward,
+        strengthScore: score
+    }
 }
 
 const calculateProgressionPoints = async (user, workout, exercises, personalBests) => {
     const existingPBs = await getExistingPBs(user._id)
 
     if (Object.keys(existingPBs).length === 0) {
-        return 40
+        return { progressionReward: 40, progressionScore: 1 }
     }
 
     let runningScore = 0
@@ -174,18 +177,21 @@ const calculateProgressionPoints = async (user, workout, exercises, personalBest
         matchedExerciseCount++
     })
 
-    if (matchedExerciseCount === 0) return 25
+    if (matchedExerciseCount === 0) {
+        return { progressionReward: 40, progressionScore: 1 }
+    }
 
     let score = runningScore / matchedExerciseCount
 
     // Bonus for each PB hit this session
     const pbBonus = personalBests.length * 0.08
     score += pbBonus
-    console.log(`PROGRESSION SCORE: ${score}`)
 
     const reward = getReward(score)
-    console.log(`PROGRESSION Reward: ${reward}`)
-    return reward
+    return {
+        progressionReward: reward,
+        progressionScore: score
+    }
 }
 
 const calculateConsistencyMultiplier = async (user) => {
@@ -223,23 +229,32 @@ const calculateConsistencyMultiplier = async (user) => {
 
     const multiplier = 0.8 + (consistencyScore * 0.7)
 
-    console.log(`CONSISTENCY MULTIPLIER: ${multiplier.toFixed(2)}`)
     return Math.round(multiplier * 100) / 100
 }
 
 const calculateTotalStrivePoints = async (user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
 
-    const volumePoints = await calculateVolumePoints(user, workout, totalWeight)
-    const strengthPoints = await calculateStrengthPoints(user, workout, exercises)
-    const progressionPoints = await calculateProgressionPoints(user, workout, exercises, personalBests)
+    const { volumeReward, volumeScore } = await calculateVolumePoints(user, workout, totalWeight)
+    const { strengthReward, strengthScore } = await calculateStrengthPoints(user, workout, exercises)
+    const { progressionReward, progressionScore } = await calculateProgressionPoints(user, workout, exercises, personalBests)
     const consistencyMultiplier = await calculateConsistencyMultiplier(user)
 
     const personalBestsReward = personalBests.length * 500
-    const completeReward = Math.ceil((volumePoints + strengthPoints + progressionPoints) * consistencyMultiplier)
-    const totalStrivePoints = Math.ceil((completeReward + totalQuestSP + personalBestsReward) * momentumMultiplier)
+
+    const completeReward = Math.ceil((volumeReward + strengthReward + progressionReward) * consistencyMultiplier)
+    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward) * momentumMultiplier)
     
-    return totalStrivePoints
+    return {
+        total,
+        volume: { reward: volumeReward, score: volumeScore },
+        strength: { reward: strengthReward, score: strengthScore },
+        progression: { reward: progressionReward, score: progressionScore },
+        consistencyMultiplier,
+        momentumMultiplier,
+        totalQuestSP,
+        personalBestsReward
+    }
 }
 
 // ─── Quest Checkers ──────────────────────────────────────────────────────────
