@@ -5,7 +5,6 @@ const Workout = require('../models/workoutModel')
 const Quest = require('../models/questModel')
 
 const REP_BUFFER = 2
-const WORKOUT_COMPLETE_REWARD = 200
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -25,7 +24,20 @@ const getTotalDistance = (sets) =>
 const getTotalDuration = (sets) =>
     sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
 
-const getMultiplier = (momentum) => {
+const getReward = (score) => {
+    let reward = 0
+
+    if (score <= 0.9) reward = 25
+    else if (score <= 1.0) reward = 40
+    else if (score <= 1.05) reward = 60
+    else if (score <= 1.1) reward = 80
+    else if (score <= 1.25) reward = 100
+    else reward = 150
+
+    return reward
+}
+
+const getMomentumMultiplier = (momentum) => {
     if (momentum === 100) return 2
     if (momentum > 80)    return 1.8
     if (momentum > 60)    return 1.6
@@ -34,8 +46,203 @@ const getMultiplier = (momentum) => {
     return 1
 }
 
-// ─── Quest Checkers ──────────────────────────────────────────────────────────
+const getWeeklyFrequency = async (userId) => {
+    const allWorkouts = await Workout.find({ user: userId }).sort({ createdAt: 1 })
+    if (allWorkouts.length < 2) return 3
 
+    const first = allWorkouts[0].createdAt
+    const last = allWorkouts[allWorkouts.length - 1].createdAt
+    const totalWeeks = (last - first) / (1000 * 60 * 60 * 24 * 7)
+    if (totalWeeks < 1) return 3
+
+    const calculated = allWorkouts.length / totalWeeks
+
+    const confidence = Math.min(totalWeeks / 8, 1)
+    return (calculated * confidence) + (3 * (1 - confidence))
+}
+
+// ─── Calculate Strive Points ─────────────────────────────────────────────────
+const calculateVolumePoints = async (user, workout, totalWeight) => {
+    // Get recent workouts
+    const recentWorkouts = await Workout.find({ user: user._id, _id: { $ne: workout._id } }).sort({ createdAt: -1 }).limit(5)
+    if (recentWorkouts.length < 5) {
+        return 40
+    }
+
+    // Calculate total Volume across those 5 workouts
+    let runningTotal = 0
+    recentWorkouts.forEach(w => {
+        const volume = w.summary.totalWeight
+        runningTotal += volume
+    })
+
+    // Calculate average
+    const averageTotalWeight = runningTotal / 5
+
+    // Calculate score
+    const score = totalWeight / averageTotalWeight
+    console.log(`VOLUME SCORE: ${score}`)
+
+    // Calculate reward
+    const reward = getReward(score)
+    console.log(`VOLUME REWARD: ${reward}`)
+    return reward
+}
+
+const calculateStrengthPoints = async (user, workout, exercises) => {
+    const exerciseIds = exercises.map(e => e.exerciseId)
+    const recentWorkouts = await Workout.find({
+        user: user._id,
+        _id: { $ne: workout._id },
+        'exercises.exerciseId': { $in: exerciseIds }
+    })
+    .sort({ createdAt: -1 })
+    .limit(15)
+
+    if (recentWorkouts.length < 5) {
+        return 40
+    }
+
+    let runningTotal = 0
+    let matchedExerciseCount = 0
+
+    exercises.forEach(exercise => {
+        const currentMax = Math.max(...exercise.sets.map(s => Number(s.weight) || 0))
+        if (currentMax === 0) {
+            return
+        }
+
+        let exerciseHistoryTotal = 0
+        let exerciseHistoryCount = 0
+
+        recentWorkouts.forEach(recentWorkout => {
+            const match = recentWorkout.exercises.find(e => e.exerciseId === exercise.exerciseId)
+
+            if (match) {
+                const recentMax = Math.max(...match.sets.map(s => Number(s.weight) || 0))
+
+                if (recentMax > 0) {
+                    exerciseHistoryTotal += recentMax
+                    exerciseHistoryCount++
+                }
+            }
+        })
+
+        if (exerciseHistoryCount === 0) {
+            return
+        }
+
+        const averageMax = exerciseHistoryTotal / exerciseHistoryCount
+        const exerciseScore = currentMax / averageMax
+
+        runningTotal += exerciseScore
+        matchedExerciseCount++
+    })
+
+    if (matchedExerciseCount === 0) {
+        return 25
+    }
+
+    const score = runningTotal / matchedExerciseCount
+    console.log(`STRENGTH SCORE: ${score}`)
+    
+    const reward = getReward(score)
+    console.log(`STRENGTH REWARD: ${reward}`)
+    return reward
+}
+
+const calculateProgressionPoints = async (user, workout, exercises, personalBests) => {
+    const existingPBs = await getExistingPBs(user._id)
+
+    if (Object.keys(existingPBs).length === 0) {
+        return 40
+    }
+
+    let runningScore = 0
+    let matchedExerciseCount = 0
+
+    exercises.forEach(exercise => {
+        const name = exercise.name.trim().toLowerCase()
+        const pb = getPBMetric(exercise.trackingMode, exercise.sets)
+        if (!pb || pb.value === 0) return
+
+        const existingPB = existingPBs[name]
+        if (!existingPB) return
+
+        const exerciseScore = pb.value / existingPB.value
+        runningScore += exerciseScore
+        matchedExerciseCount++
+    })
+
+    if (matchedExerciseCount === 0) return 25
+
+    let score = runningScore / matchedExerciseCount
+
+    // Bonus for each PB hit this session
+    const pbBonus = personalBests.length * 0.08
+    score += pbBonus
+    console.log(`PROGRESSION SCORE: ${score}`)
+
+    const reward = getReward(score)
+    console.log(`PROGRESSION Reward: ${reward}`)
+    return reward
+}
+
+const calculateConsistencyMultiplier = async (user) => {
+    const WEEKS_TO_CHECK = 6
+    const now = new Date()
+    const cutoff = new Date(now - WEEKS_TO_CHECK * 7 * 24 * 60 * 60 * 1000)
+
+    const recentWorkouts = await Workout.find({
+        user: user._id,
+        createdAt: { $gte: cutoff }
+    }).sort({ createdAt: -1 })
+
+    if (recentWorkouts.length === 0) {
+        return 1.0
+    }
+
+    const workoutsPerWeek = recentWorkouts.length / WEEKS_TO_CHECK
+
+    const typicalWeeklyFrequency = await getWeeklyFrequency(user._id)
+    const frequencyScore = Math.min(workoutsPerWeek / typicalWeeklyFrequency, 1.0)
+
+    const gaps = []
+    for (let i = 0; i < recentWorkouts.length - 1; i++) {
+        const diff = recentWorkouts[i].createdAt - recentWorkouts[i + 1].createdAt
+        gaps.push(diff / (1000 * 60 * 60 * 24))
+    }
+
+    const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length
+    const variance = gaps.reduce((sum, g) => sum + Math.pow(g - avgGap, 2), 0) / gaps.length
+    const stdDev = Math.sqrt(variance)
+
+    const regularityScore = Math.max(0, 1 - (stdDev / (avgGap + 1)))
+
+    const consistencyScore = (frequencyScore * 0.6) + (regularityScore * 0.4)
+
+    const multiplier = 0.8 + (consistencyScore * 0.7)
+
+    console.log(`CONSISTENCY MULTIPLIER: ${multiplier.toFixed(2)}`)
+    return Math.round(multiplier * 100) / 100
+}
+
+const calculateTotalStrivePoints = async (user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
+    const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
+
+    const volumePoints = await calculateVolumePoints(user, workout, totalWeight)
+    const strengthPoints = await calculateStrengthPoints(user, workout, exercises)
+    const progressionPoints = await calculateProgressionPoints(user, workout, exercises, personalBests)
+    const consistencyMultiplier = await calculateConsistencyMultiplier(user)
+
+    const personalBestsReward = personalBests.length * 500
+    const completeReward = Math.ceil((volumePoints + strengthPoints + progressionPoints) * consistencyMultiplier)
+    const totalStrivePoints = Math.ceil((completeReward + totalQuestSP + personalBestsReward) * momentumMultiplier)
+    
+    return totalStrivePoints
+}
+
+// ─── Quest Checkers ──────────────────────────────────────────────────────────
 const questCheckers = {
     strength: (quest, exercises) => {
         const { exercise, weight, reps } = quest.completion
@@ -144,8 +351,6 @@ const questCheckers = {
 }
 
 // ─── Personal Bests ──────────────────────────────────────────────────────────
-
-// Per tracking mode, define what metric counts as a "personal best"
 const getPBMetric = (trackingMode, sets) => {
     switch (trackingMode) {
         case 'weight_reps':
@@ -163,30 +368,30 @@ const getPBMetric = (trackingMode, sets) => {
     }
 }
 
-const detectPersonalBests = async (userId, exercises) => {
+const getExistingPBs = async (userId) => {
     const existingWorkouts = await Workout.find({ user: userId }).populate('exercises.exercise')
 
-    // Build existing PBs from previous workouts per exercise name + metric
     const existingPBs = {}
     existingWorkouts.forEach(workout => {
         workout.exercises.forEach(ex => {
             const name = ex.exercise?.name?.trim().toLowerCase()
             const trackingMode = ex.exercise?.trackingMode
-
-            if (!name || !trackingMode) {
-                return
-            }
+            if (!name || !trackingMode) return
 
             const pb = getPBMetric(trackingMode, ex.sets)
-            if (!pb || pb.value === 0) {
-                return
-            }
+            if (!pb || pb.value === 0) return
 
             if (!existingPBs[name] || pb.value > existingPBs[name].value) {
                 existingPBs[name] = { metric: pb.metric, value: pb.value }
             }
         })
     })
+
+    return existingPBs
+}
+
+const detectPersonalBests = async (userId, exercises) => {
+    const existingPBs = await getExistingPBs(userId)
 
     // Compare new workout exercises against existing PBs
     const newPBs = []
@@ -237,7 +442,6 @@ const detectQuestCompletion = async (userId, exercises, workout) => {
 }
 
 // ─── Main Summary ────────────────────────────────────────────────────────────
-
 const calculateWorkoutSummary = async (user, exercises, workout) => {
     let totalWeight = 0
     let totalReps = 0
@@ -257,12 +461,9 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const totalExercises = exercises.length
 
-    const multiplier = getMultiplier(user.momentum.current)
-    
     const personalBests = await detectPersonalBests(user._id, exercises)
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
-    
-    const totalStrivePoints = (WORKOUT_COMPLETE_REWARD + totalQuestSP + (personalBests.length * 500)) * multiplier
+    const totalStrivePoints = await calculateTotalStrivePoints(user, workout, exercises, personalBests, totalWeight, totalQuestSP)
 
     return {
         totalWeight,
