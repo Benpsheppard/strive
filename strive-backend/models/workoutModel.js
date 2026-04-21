@@ -37,15 +37,15 @@ const summarySchema = mongoose.Schema({
         },
         volume: {
             reward: { type: Number },
-            ratio: { type: Number },
+            score: { type: Number },
         },
         strength: {
             reward: { type: Number },
-            ratio: { type: Number },
+            score: { type: Number },
         },
         progression: {
             reward: { type: Number },
-            ratio: { type: Number },
+            score: { type: Number },
         },
         consistencyMultiplier: {
             type: Number,
