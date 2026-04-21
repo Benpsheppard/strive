@@ -31,8 +31,38 @@ const summarySchema = mongoose.Schema({
     },
     // Total SP earned 
     totalStrivePoints: {
-        type: Number,
-        required: [true, 'Please add a total SP value']
+        total: {
+            type: Number,
+            default: 0
+        },
+        volume: {
+            reward: { type: Number },
+            ratio: { type: Number },
+        },
+        strength: {
+            reward: { type: Number },
+            ratio: { type: Number },
+        },
+        progression: {
+            reward: { type: Number },
+            ratio: { type: Number },
+        },
+        consistencyMultiplier: {
+            type: Number,
+            default: 1
+        },
+        momentumMultiplier: {
+            type: Number,
+            default: 1
+        },
+        totalQuestSP: {
+            type: Number,
+            default: 0
+        },
+        personalBestsReward: {
+            type: Number,
+            default: 0
+        }
     },
     // Quests Completed
     questsCompleted: [
