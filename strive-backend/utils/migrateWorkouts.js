@@ -1,5 +1,6 @@
 // migrate-exercises.js
 const mongoose = require('mongoose')
+const Workout = require('../models/workoutModel')
 const Exercise = require('../models/exerciseModel')
 require('dotenv').config({ path: '../.env' })
 
@@ -213,7 +214,49 @@ const migrate = async () => {
     await mongoose.disconnect()
 }
 
-migrate().catch(err => {
+const migrateStrivePoints = async () => {
+    await mongoose.connect(process.env.MONGO_URI_TEST)
+    console.log('Connected to DB')
+
+    const db = mongoose.connection.db
+    const workoutsCollection = db.collection('workouts')
+
+    const workouts = await workoutsCollection.find({
+        'summary.totalStrivePoints': { $type: 'number' }
+    }).toArray()
+
+    console.log(`Migrating ${workouts.length} workouts...`)
+
+    const bulkOps = workouts.map(workout => ({
+        updateOne: {
+            filter: { _id: workout._id },
+            update: {
+                $set: {
+                    'summary.totalStrivePoints': {
+                        total: workout.summary.totalStrivePoints ?? 0,
+                        volume:             { reward: 0, ratio: 0 },
+                        strength:           { reward: 0, ratio: 0 },
+                        progression:        { reward: 0, ratio: 0 },
+                        consistencyMultiplier: 1,
+                        momentumMultiplier:    1,
+                        totalQuestSP:          0,
+                        personalBestsReward:   0,
+                    }
+                }
+            }
+        }
+    }))
+
+    if (bulkOps.length > 0) {
+        await workoutsCollection.bulkWrite(bulkOps)
+    }
+
+    console.log(`✅ Done. ${bulkOps.length} workouts migrated.`)
+
+    await mongoose.disconnect()
+}
+
+migrateStrivePoints().catch(err => {
     console.error('Migration failed:', err)
     process.exit(1)
 })
