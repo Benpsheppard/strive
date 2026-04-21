@@ -97,7 +97,9 @@ const NewWorkout = () => {
 
     // Check streak & momentum on mount
     useEffect(() => {
-        if (!user) return
+        if (!user) {
+            return
+        }
         
         // Capture values before any dispatches
         const oldStreak = user.streak?.current ?? 0
@@ -105,7 +107,9 @@ const NewWorkout = () => {
         const oldMomentum = user.momentum?.current ?? 0
 
         const checkStreak = async () => {
-            if (hasCheckedStreak.current) return
+            if (hasCheckedStreak.current) {
+                return
+            }
             hasCheckedStreak.current = true
 
             const updatedUser = await dispatch(updateStreak(user._id)).unwrap()
