@@ -163,8 +163,11 @@ const getPBMetric = (trackingMode, sets) => {
     }
 }
 
-const detectPersonalBests = async (userId, exercises) => {
-    const existingWorkouts = await Workout.find({ user: userId }).populate('exercises.exercise')
+const detectPersonalBests = async (userId, exercises, workout) => {
+    const existingWorkouts = await Workout.find({ 
+        user: userId,
+        _id: { $ne: workout._id } // exclude the current workout
+    }).populate('exercises.exercise')
 
     // Build existing PBs from previous workouts per exercise name + metric
     const existingPBs = {}
@@ -223,12 +226,14 @@ const detectQuestCompletion = async (userId, exercises, workout) => {
         if (completed) {
             quest.status = 'completed'
             await quest.save()
-
+            
             questsCompleted.push({
                 questId: quest._id,
                 title: quest.title,
-                reward: quest.reward
+                reward: quest.reward,
+                duration: quest.duration
             })
+
             totalQuestSP += quest.reward
         }
     }
@@ -237,7 +242,6 @@ const detectQuestCompletion = async (userId, exercises, workout) => {
 }
 
 // ─── Main Summary ────────────────────────────────────────────────────────────
-
 const calculateWorkoutSummary = async (user, exercises, workout) => {
     let totalWeight = 0
     let totalReps = 0
@@ -259,10 +263,10 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const multiplier = getMultiplier(user.momentum.current)
     
-    const personalBests = await detectPersonalBests(user._id, exercises)
+    const personalBests = await detectPersonalBests(user._id, exercises, workout)
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
     
-    const totalStrivePoints = (WORKOUT_COMPLETE_REWARD + totalQuestSP + (personalBests.length * 500)) * multiplier
+    const totalStrivePoints = Math.ceil((WORKOUT_COMPLETE_REWARD + totalQuestSP + (personalBests.length * 500)) * multiplier)
 
     return {
         totalWeight,
