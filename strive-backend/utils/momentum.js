@@ -64,8 +64,7 @@ export const calculateMomentum = (user, data) => {
             earnedMomentum += QUEST_MOMENTUM[q.duration]
         })
     }
-    
+
     momentum += Math.min(MAX_DAILY_GAIN, earnedMomentum)
-    
     return Math.max(0, Math.min(100, momentum))
 }

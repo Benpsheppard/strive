@@ -21,11 +21,11 @@ const { devRouter } = require('./routes/devRoutes.js')
 
 // .env variables validation
 const requiredEnv = [
-  'NODE_ENV',
-  'PORT',
-  'MONGO_URI',
-  'JWT_SECRET',
-  'FRONTEND_URL'
+	'NODE_ENV',
+	'PORT',
+	'MONGO_URI',
+	'JWT_SECRET',
+	'FRONTEND_URL'
 ]
 
 const missing = requiredEnv.filter(key => !process.env[key])
@@ -60,17 +60,24 @@ app.use(express.urlencoded({ extended: false }))
 // Helmet HTTP security
 app.use(helmet())
 
-// Custom Content Security Policy to allow Umami analytics
+// Custom Content Security Policy
 app.use(
 	helmet.contentSecurityPolicy({
 		directives: {
 			defaultSrc: ["'self'"],
-			scriptSrc: ["'self'", "https://cloud.umami.is"],
-			connectSrc: ["'self'", "https://cloud.umami.is", "https://api-gateway.umami.dev"],
+			scriptSrc: ["'self'"],
+			connectSrc: ["'self'"],
 			imgSrc: ["'self'", "data:"],
-			styleSrc: ["'self'", "'unsafe-inline'"],
-			objectSrc: ["'none'"],
-			upgradeInsecureRequests: [],
+			styleSrc: [
+				"'self'",
+				"'unsafe-inline'",
+				"https://fonts.googleapis.com"
+			],
+			fontSrc: [
+				"'self'",
+				"https://fonts.gstatic.com"
+			],
+			objectSrc: ["'none'"]
 		},
 	})
 )
