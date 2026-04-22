@@ -106,7 +106,7 @@ const WorkoutItem = ({ workout }) => {
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
                             <p className="text-xs text-[#EDF2F4]">SP</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints.total)}</p>
                         </div>
                     </div>
 
