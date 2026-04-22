@@ -111,9 +111,15 @@ const WorkoutComplete = () => {
                     <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
                         <FaStar className="text-[#EF233C]" /> Strive Points Earned
                     </h2>
-                    <div className="text-center">
-                        <p className="text-[#EF233C] text-5xl font-bold">+{workout.summary.totalStrivePoints}</p>
-                        <p className="text-[#EDF2F4]/40 text-sm mt-1">Strive Points</p>
+                    <div className="text-center mb-5">
+                        <p className="text-[#EF233C] text-5xl font-bold">+{workout.summary.totalStrivePoints.total}</p>
+                    </div>
+                    <div className="gap-4 text-center">
+                        <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.4s' }}>Volume +{workout.summary.totalStrivePoints.volume.reward}SP</p>
+                        <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.5s' }}>Strength +{workout.summary.totalStrivePoints.strength.reward}SP</p>
+                        <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.6s' }}>Progression +{workout.summary.totalStrivePoints.progression.reward}SP</p>
+                        <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.7s' }}>Consistency x{workout.summary.totalStrivePoints.consistencyMultiplier}</p>
+                        <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.8s' }}>Momentum x{workout.summary.totalStrivePoints.momentumMultiplier}</p>
                     </div>
                 </div>
 

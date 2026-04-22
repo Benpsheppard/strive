@@ -435,11 +435,12 @@ const NewWorkout = () => {
         try {
             const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
             const { summary } = savedWorkout
+            console.log(summary)
 
             // Add SP and check for level up
             let levelUp = null
-            if (summary.totalStrivePoints > 0) {
-                const result = await dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints })).unwrap()
+            if (summary.totalStrivePoints.total > 0) {
+                const result = await dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
                 if (result.level > user.level) {
                     levelUp = result.level
                 }
