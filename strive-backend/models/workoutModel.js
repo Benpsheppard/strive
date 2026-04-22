@@ -48,7 +48,12 @@ const summarySchema = mongoose.Schema({
             reward: {
                 type: Number,
                 required: true
-            }
+            },
+            duration: {
+                type: String,
+                enum: ['daily', 'weekly', 'monthly'],
+                required: true
+            },
         }
     ],
     // Personal Bests
