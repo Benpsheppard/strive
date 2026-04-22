@@ -155,7 +155,7 @@ const calculateStrengthPoints = async (user, workout, exercises) => {
 }
 
 const calculateProgressionPoints = async (user, workout, exercises, personalBests) => {
-    const existingPBs = await getExistingPBs(user._id)
+    const existingPBs = await getExistingPBs(user._id, workout._id)
 
     if (Object.keys(existingPBs).length === 0) {
         return { progressionReward: 40, progressionScore: 1 }
@@ -383,8 +383,13 @@ const getPBMetric = (trackingMode, sets) => {
     }
 }
 
-const getExistingPBs = async (userId) => {
-    const existingWorkouts = await Workout.find({ user: userId }).populate('exercises.exercise')
+const getExistingPBs = async (userId, workoutId = null) => {
+    const query = { user: userId }
+    if (workoutId) {
+        query._id = { $ne: workoutId }
+    }
+
+    const existingWorkouts = await Workout.find(query).populate('exercises.exercise')
 
     const existingPBs = {}
     existingWorkouts.forEach(workout => {
@@ -405,8 +410,8 @@ const getExistingPBs = async (userId) => {
     return existingPBs
 }
 
-const detectPersonalBests = async (userId, exercises) => {
-    const existingPBs = await getExistingPBs(userId)
+const detectPersonalBests = async (userId, exercises, workoutId) => {
+    const existingPBs = await getExistingPBs(userId, workoutId)
 
     // Compare new workout exercises against existing PBs
     const newPBs = []
@@ -476,8 +481,10 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const totalExercises = exercises.length
 
-    const personalBests = await detectPersonalBests(user._id, exercises)
+    const personalBests = await detectPersonalBests(user._id, exercises, workout._id)
+
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
+
     const totalStrivePoints = await calculateTotalStrivePoints(user, workout, exercises, personalBests, totalWeight, totalQuestSP)
 
     return {
