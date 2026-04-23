@@ -4,10 +4,10 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
-import Swal from 'sweetalert2'
 
 // Function Imports
 import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
+import { showConfirmDeleteAlert } from '../../alerts/workoutItem.js'
 
 // Component Imports
 import SetList from './SetList.jsx'
@@ -24,18 +24,8 @@ const WorkoutItem = ({ workout }) => {
     const onDelete = (e) => {
         e.stopPropagation()
 
-        Swal.fire({
-            title: 'Delete Workout?',
-            text: 'Are you sure you want to delete this workout? You will lose all associated data as well as any Strive Points earned from it.',
-            icon: 'warning',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42'
-        }).then((result) => {
+        showConfirmDeleteAlert()
+        .then((result) => {
             if (result.isConfirmed) {
                 dispatch(deleteWorkout(workout._id))
             }

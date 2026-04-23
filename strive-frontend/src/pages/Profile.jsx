@@ -5,7 +5,6 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaUser } from 'react-icons/fa'
-import Swal from 'sweetalert2'
 
 // Function Imports
 import { logout, reset, deleteUser, resetUser } from '../features/auth/authSlice.js'
@@ -18,6 +17,7 @@ import Toggle from '../components/profile/Toggle.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
+import { showDeleteAccountAlert, showLogoutAccountAlert, showResetAccountAlert } from '../alerts/profile.js'
 
 const Profile = () => {
     const { user, isLoading, isError, message } = useSelector((state) => state.auth)
@@ -27,18 +27,8 @@ const Profile = () => {
     const dispatch = useDispatch()
 
     const onLogout = () => {
-        Swal.fire({
-            title: 'Log Out?',
-            text: 'Are you sure you want to log out?',
-            icon: 'warning',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            showCancelButton: true,
-            confirmButtonText: 'Logout',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42'
-        }).then((result) => {
+        showLogoutAccountAlert()
+        .then((result) => {
             if (result.isConfirmed) {
                 dispatch(logout())
             }
@@ -46,26 +36,8 @@ const Profile = () => {
     }
 
     const onDeleteAccount = () => {
-        Swal.fire({
-            title: 'Delete Account?',
-            html: 'This will permanently delete all your workouts and data. This action cannot be undone.<br><br>Type <strong>DELETE</strong> to confirm.',
-            icon: 'warning',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            input: 'text',
-            inputPlaceholder: 'Type DELETE to confirm',
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42',
-            preConfirm: (value) => {
-                if (value !== 'DELETE') {
-                    Swal.showValidationMessage('You must type DELETE exactly to confirm')
-                    return false
-                }
-            }
-        }).then((result) => {
+        showDeleteAccountAlert()
+        .then((result) => {
             if (result.isConfirmed) {
                 dispatch(deleteUser(user._id))
                 dispatch(reset())
@@ -74,26 +46,8 @@ const Profile = () => {
     }
 
     const onResetAccount = () => {
-        Swal.fire({
-            title: 'Reset Account?',
-            html: 'This will permanently delete your workout data but keep your profile intact. This action cannot be undone.<br><br>Type <strong>RESET</strong> to confirm.',
-            icon: 'warning',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            input: 'text',
-            inputPlaceholder: 'Type RESET to confirm',
-            showCancelButton: true,
-            confirmButtonText: 'Reset',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#EF233C',
-            cancelButtonColor: '#2B2D42',
-            preConfirm: (value) => {
-                if (value !== 'RESET') {
-                    Swal.showValidationMessage('You must type RESET exactly to confirm')
-                    return false
-                }
-            }
-        }).then((result) => {
+        showResetAccountAlert()
+        .then((result) => {
             if (result.isConfirmed) {
                 dispatch(resetUser(user._id))
                 dispatch(reset())

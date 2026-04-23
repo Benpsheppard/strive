@@ -5,13 +5,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import Swal from 'sweetalert2'
 
 // Function Imports
 import { createWorkout, getWorkouts, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
+import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showRestCompleteAlert, showShieldBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -117,25 +117,9 @@ const NewWorkout = () => {
             const shieldUsed = hadShield && !updatedUser.streak.shield
 
             if (shieldUsed) {
-                Swal.fire({ 
-                    title: 'Shield Used!', 
-                    text: 'You missed your target last week, but your shield protected your streak!', 
-                    icon: 'warning', 
-                    confirmButtonText: 'Phew!', 
-                    color: '#EDF2F4', 
-                    background: '#8D99AE', 
-                    confirmButtonColor: '#EF233C' 
-                })
+                showShieldUsedAlert()
             } else if (streakBroken) {
-                Swal.fire({ 
-                    title: 'Streak Lost!', 
-                    text: `Your ${oldStreak} week streak has been reset. Time to start again!`, 
-                    icon: 'error', 
-                    confirmButtonText: "Let's go again", 
-                    color: '#EDF2F4', 
-                    background: '#8D99AE', 
-                    confirmButtonColor: '#EF233C' 
-                })
+                showShieldBrokenAlert()
             }
         }
 
@@ -145,15 +129,7 @@ const NewWorkout = () => {
 
             const updatedUser = await dispatch(updateMomentum({})).unwrap()
             if (updatedUser.momentum.current < oldMomentum) {
-                Swal.fire({ 
-                    title: 'Momentum Dropped!', 
-                    text: `Your momentum has decreased to ${updatedUser.momentum.current}. Time to get back on track.`, 
-                    icon: 'warning', 
-                    confirmButtonText: 'Got it', 
-                    color: '#EDF2F4', 
-                    background: '#8D99AE', 
-                    confirmButtonColor: '#EF233C' 
-                })
+                showMomentumDroppedAlert(updatedUser.momentum.current)
             }
         }
 
@@ -206,18 +182,7 @@ const NewWorkout = () => {
         setSearchQuery(newValue)
 
         if (currentExercise.exerciseId && currentExercise.sets?.length > 0) {
-            Swal.fire({
-                title: 'Change Exercise?',
-                text: `You have ${currentExercise.sets.length} set(s) logged. Changing exercise will delete them.`,
-                icon: 'warning',
-                color: '#EDF2F4',
-                background: '#8D99AE',
-                showCancelButton: true,
-                confirmButtonText: 'Change Exercise',
-                cancelButtonText: 'Keep Current',
-                confirmButtonColor: '#EF233C',
-                cancelButtonColor: '#2B2D42',
-            }).then((result) => {
+            showChangeExerciseAlert(currentExercise.sets.length).then((result) => {
                 if (result.isConfirmed) {
                     setCurrentExercise(EMPTY_EXERCISE)
                     setCurrentSet(EMPTY_SET)
@@ -396,17 +361,7 @@ const NewWorkout = () => {
     }
 
     const notifyRestComplete = () => {
-        Swal.fire({
-            title: 'Rest Complete!',
-            text: 'Time for your next set. Get after it!',
-            icon: 'success',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            confirmButtonText: 'Lets Go!',
-            confirmButtonColor: '#EF233C',
-            timer: 10000,
-            timerProgressBar: true,
-        })
+        showRestCompleteAlert()
     }
 
     const skipTimer = () => {
@@ -487,16 +442,8 @@ const NewWorkout = () => {
     }
 
     const onCancel = () => {
-        Swal.fire({
-            title: 'Cancel Workout?',
-            text: 'Are you sure you want to cancel this workout?',
-            icon: 'warning',
-            color: '#EDF2F4',
-            background: '#8D99AE',
-            showCancelButton: false,
-            confirmButtonText: 'Confirm Cancel',
-            confirmButtonColor: '#EF233C',
-        }).then((result) => {
+        showCancelWorkoutAlert()
+        .then((result) => {
             if (result.isConfirmed) {
                 resetWorkoutState()
                 toast.success('Workout cancelled successfully')
