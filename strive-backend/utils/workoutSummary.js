@@ -480,17 +480,11 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const totalExercises = exercises.length
     
-    console.log('Retrieving personalBests')
     const personalBests = await detectPersonalBests(user._id, exercises, workout)
-    console.log(`PersonalBests Retrieved: ${JSON.stringify(personalBests)}`)
 
-    console.log('Retrieving questsCompleted')
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
-    console.log(`QuestsCompleted Retrieved: ${JSON.stringify(questsCompleted)}, +${totalQuestSP}SP`)
 
-    console.log('Calculating total strive points')
     const totalStrivePoints = await calculateTotalStrivePoints(user, workout, exercises, personalBests, totalWeight, totalQuestSP)
-    console.log(`totalStrivePoints calculated: ${JSON.stringify(totalStrivePoints)}`)
 
     return {
         totalWeight,
