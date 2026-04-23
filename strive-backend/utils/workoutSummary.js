@@ -257,6 +257,72 @@ const calculateTotalStrivePoints = async (user, workout, exercises, personalBest
     }
 }
 
+// ─── Personal Bests ──────────────────────────────────────────────────────────
+const getPBMetric = (trackingMode, sets) => {
+    switch (trackingMode) {
+        case 'weight_reps':
+            return { metric: 'max_weight', value: getMaxWeight(sets) }
+        case 'bodyweight_reps':
+        case 'assisted_reps':
+        case 'reps':
+            return { metric: 'max_reps', value: Math.max(0, ...sets.map(s => Number(s.reps) || 0)) }
+        case 'duration':
+            return { metric: 'best_duration', value: Math.max(0, ...sets.map(s => Number(s.duration) || 0)) }
+        case 'distance_duration':
+            return { metric: 'total_distance', value: getTotalDistance(sets) }
+        default:
+            return null
+    }
+}
+
+const getExistingPBs = async (userId, workout) => {
+    const existingWorkouts = await Workout.find({ 
+        user: userId,
+        _id: { $ne: workout._id }
+    }).populate('exercises.exercise')
+
+    const existingPBs = {}
+    existingWorkouts.forEach(workout => {
+        workout.exercises.forEach(ex => {
+            const name = ex.exercise?.name?.trim().toLowerCase()
+            const trackingMode = ex.exercise?.trackingMode
+            if (!name || !trackingMode) return
+
+            const pb = getPBMetric(trackingMode, ex.sets)
+            if (!pb || pb.value === 0) return
+
+            if (!existingPBs[name] || pb.value > existingPBs[name].value) {
+                existingPBs[name] = { metric: pb.metric, value: pb.value }
+            }
+        })
+    })
+
+    return existingPBs
+}
+
+const detectPersonalBests = async (userId, exercises, workout) => {
+    const existingPBs = await getExistingPBs(userId, workout)
+
+    const newPBs = []
+    exercises.forEach(exercise => {
+        const name = exercise.name.trim().toLowerCase()
+        const pb = getPBMetric(exercise.trackingMode, exercise.sets)
+        if (!pb || pb.value === 0) return
+
+        const existingPB = existingPBs[name]
+        if (!existingPB || pb.value > existingPB.value) {
+            newPBs.push({
+                exercise: exercise.name,
+                metric: pb.metric,
+                previousValue: existingPB ? existingPB.value : 0,
+                newValue: pb.value
+            })
+        }
+    })
+
+    return newPBs
+}
+
 // ─── Quest Checkers ──────────────────────────────────────────────────────────
 const questCheckers = {
     strength: (quest, exercises) => {
@@ -365,73 +431,6 @@ const questCheckers = {
     }
 }
 
-// ─── Personal Bests ──────────────────────────────────────────────────────────
-const getPBMetric = (trackingMode, sets) => {
-    switch (trackingMode) {
-        case 'weight_reps':
-            return { metric: 'max_weight', value: getMaxWeight(sets) }
-        case 'bodyweight_reps':
-        case 'assisted_reps':
-        case 'reps':
-            return { metric: 'max_reps', value: Math.max(0, ...sets.map(s => Number(s.reps) || 0)) }
-        case 'duration':
-            return { metric: 'best_duration', value: Math.max(0, ...sets.map(s => Number(s.duration) || 0)) }
-        case 'distance_duration':
-            return { metric: 'total_distance', value: getTotalDistance(sets) }
-        default:
-            return null
-    }
-}
-
-const detectPersonalBests = async (userId, exercises, workout) => {
-    const existingWorkouts = await Workout.find({ 
-        user: userId,
-        _id: { $ne: workout._id }
-    }).populate('exercises.exercise')
-
-    const existingPBs = {}
-    existingWorkouts.forEach(workout => {
-        workout.exercises.forEach(ex => {
-            const name = ex.exercise?.name?.trim().toLowerCase()
-            const trackingMode = ex.exercise?.trackingMode
-            if (!name || !trackingMode) return
-
-            const pb = getPBMetric(trackingMode, ex.sets)
-            if (!pb || pb.value === 0) return
-
-            if (!existingPBs[name] || pb.value > existingPBs[name].value) {
-                existingPBs[name] = { metric: pb.metric, value: pb.value }
-            }
-        })
-    })
-
-    return existingPBs
-}
-
-const detectPersonalBests = async (userId, exercises, workout) => {
-    const existingPBs = await getExistingPBs(userId, workout)
-
-    // Compare new workout exercises against existing PBs
-    const newPBs = []
-    exercises.forEach(exercise => {
-        const name = exercise.name.trim().toLowerCase()
-        const pb = getPBMetric(exercise.trackingMode, exercise.sets)
-        if (!pb || pb.value === 0) return
-
-        const existingPB = existingPBs[name]
-        if (!existingPB || pb.value > existingPB.value) {
-            newPBs.push({
-                exercise: exercise.name,
-                metric: pb.metric,
-                previousValue: existingPB ? existingPB.value : 0,
-                newValue: pb.value
-            })
-        }
-    })
-
-    return newPBs
-}
-
 // ─── Quest Completion ────────────────────────────────────────────────────────
 const detectQuestCompletion = async (userId, exercises, workout) => {
     const activeQuests = await Quest.find({ user: userId, status: 'active' })
@@ -480,12 +479,18 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
     })
 
     const totalExercises = exercises.length
-
+    
+    console.log('Retrieving personalBests')
     const personalBests = await detectPersonalBests(user._id, exercises, workout)
+    console.log(`PersonalBests Retrieved: ${JSON.stringify(personalBests)}`)
 
+    console.log('Retrieving questsCompleted')
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
+    console.log(`QuestsCompleted Retrieved: ${JSON.stringify(questsCompleted)}, +${totalQuestSP}SP`)
 
+    console.log('Calculating total strive points')
     const totalStrivePoints = await calculateTotalStrivePoints(user, workout, exercises, personalBests, totalWeight, totalQuestSP)
+    console.log(`totalStrivePoints calculated: ${JSON.stringify(totalStrivePoints)}`)
 
     return {
         totalWeight,
