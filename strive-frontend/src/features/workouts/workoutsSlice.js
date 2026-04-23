@@ -123,7 +123,7 @@ export const workoutsSlice = createSlice({
 				state.isSuccess = true
 				const id = action.meta.arg
 				state.workouts = state.workouts.filter(
-				(workout) => workout._id !== id
+					(workout) => workout._id !== id
 				)
 			})
 			.addCase(deleteWorkout.rejected, (state, action) => {

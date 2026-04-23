@@ -651,9 +651,11 @@ const NewWorkout = () => {
                                     </div>
 
                                     {/* Add Exercise Button */}
-                                    <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                        Finish Exercise
-                                    </button>
+                                    {currentExercise.sets.length > 0 && (
+                                        <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+                                            Finish Exercise
+                                        </button>
+                                    )}
                                 </>
                             )}
                         </div>
