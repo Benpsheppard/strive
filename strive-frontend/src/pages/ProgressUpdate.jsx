@@ -21,8 +21,8 @@ const ProgressUpdate = () => {
     const workout = lastWorkoutStats?.workout
     const levelUp = lastWorkoutStats?.levelUp
     const momentumGained = lastWorkoutStats?.momentumGained 
-    
-    const hasStreakStats = lastWorkoutStats.streakIncreased || lastWorkoutStats.shieldEarned || lastWorkoutStats.shieldUsed || lastWorkoutStats.streakBroken
+
+    const hasStreakStats = lastWorkoutStats?.streakIncreased || lastWorkoutStats?.shieldEarned || lastWorkoutStats?.shieldUsed || lastWorkoutStats?.streakBroken
 
     useEffect(() => {
         if (!lastWorkoutStats) {
