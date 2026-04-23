@@ -119,7 +119,7 @@ const NewWorkout = () => {
             if (shieldUsed) {
                 showShieldUsedAlert()
             } else if (streakBroken) {
-                showShieldBrokenAlert()
+                showShieldBrokenAlert(oldStreak)
             }
         }
 
