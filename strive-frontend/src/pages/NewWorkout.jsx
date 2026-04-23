@@ -39,7 +39,12 @@ const EMPTY_EXERCISE = {
 }
 
 const EMPTY_SET = {
-    weight: '', reps: '', duration: '', distance: '', addedWeight: '', assistance: ''
+    weight: '', 
+    reps: '', 
+    duration: '', 
+    distance: '', 
+    addedWeight: '', 
+    assistance: ''
 }
 
 const NewWorkout = () => {
