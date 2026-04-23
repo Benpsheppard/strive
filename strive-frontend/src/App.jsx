@@ -19,6 +19,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding.jsx'))
 const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'))
 const WorkoutComplete = lazy(() => import('./pages/WorkoutComplete.jsx'))
 const ProgressUpdate = lazy(() => import('./pages/ProgressUpdate.jsx'))
+const StreakUpdate = lazy(() => import('./pages/StreakUpdate.jsx'))
 const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'))
 const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
@@ -41,6 +42,7 @@ const App = () => {
 						<Route path='/onboarding' element={<Onboarding />} />
 						<Route path='/workout-complete' element={<WorkoutComplete />} />
 						<Route path='/progress-update' element={<ProgressUpdate />} />
+						<Route path='/streaks' element={<StreakUpdate />} />
 						<Route path='/prev-workouts' element={<PrevWorkouts />} />
 						<Route path='/progress' element={<Progress />} />
 						<Route path='/games' element={<Games />} />
