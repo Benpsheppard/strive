@@ -54,7 +54,7 @@ const ProgressUpdate = () => {
                 {/* Level Up */}
                 {levelUp && (
                     <div className="fade-in-card flex-1 flex flex-col bg-[#EF233C] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.2s' }}>
-                        <FaArrowUp className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <FaArrowUp className="jump text-[#EDF2F4] text-9xl mx-auto mb-5" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Level Up!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">You are now Level {levelUp}!</p>
                     </div>
@@ -63,7 +63,7 @@ const ProgressUpdate = () => {
                 {/* Momentum Increased */}
                 {momentumGained > 0 && (
                     <div className="fade-in-card flex-1 flex flex-col bg-[#8D99AE] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.4s' }}>
-                        <FaBolt className="text-[#EDF2F4] text-3xl mx-auto mb-2" />
+                        <FaBolt className="jitter text-[#EDF2F4] text-9xl mx-auto mb-5" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Momentum Increased!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">
                             +{momentumGained} Momentum! Keep it up!
@@ -73,7 +73,7 @@ const ProgressUpdate = () => {
                 )}
 
                 {/* Actions */}
-                <div className="fade-in-card flex-1 flex flex-col gap-3 pt-2" style={{ animationDelay: '0.6s' }}>
+                <div className="fade-in-card space-y-3" style={{ animationDelay: '0.6s' }}>
                     {hasStreakStats ? (
                         <button onClick={() => navigate('/streaks')} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
                             Continue
