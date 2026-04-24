@@ -97,6 +97,7 @@ html, body {
   background: #EDF2F4;
 }
 
+/* Fade in */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -111,4 +112,64 @@ html, body {
 .fade-in-card {
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Pulse */
+@keyframes pulseGlow {
+	0%, 100% {
+		transform: scale(1);
+		filter: drop-shadow(0 0 0px var(--glow-colour));
+	}
+	50% {
+		transform: scale(1.1);
+		filter: drop-shadow(0 0 15px var(--glow-colour)) drop-shadow(0 0 30px var(--glow-colour));
+	}
+}
+
+.pulse {
+	--glow-colour: #EDF2F4;
+  	animation: pulseGlow 1.5s infinite ease-in-out;
+}
+
+/* Jump */
+@keyframes jump {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-20px);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); /* fast up */
+  }
+  100% {
+    transform: translateY(0);
+    animation-timing-function: ease-out; /* slow down */
+  }
+}
+
+.jump {
+	transform-origin: center bottom;
+  	animation: jump 1.2s infinite ease-out;
+}
+
+/* Jitter */
+@keyframes jitter {
+	0%, 100% { 
+		transform: translate(0, 0); 
+	}
+	20% { 
+		transform: translate(-1px, 1px); 
+	}
+	40% { 
+		transform: translate(1px, -1px); 
+	}
+	60% { 
+		transform: translate(-1px, -1px); 
+	}
+	80% { 
+		transform: translate(1px, 1px); 
+	}
+}
+
+.jitter {
+  	animation: jitter 0.8s infinite;
 }
