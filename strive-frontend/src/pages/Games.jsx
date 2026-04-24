@@ -15,22 +15,13 @@ import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
+import GamesSummary from '../components/games/GamesSummary.jsx'
 
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading } = useSelector((state) => state.workout)
 
     const dispatch = useDispatch()
-
-    const currentLevel = user.level
-
-    const currentLevelMinSP = 100 * Math.pow(currentLevel - 1, 2)
-    const nextLevelMinSP = 100 * Math.pow(currentLevel, 2)
-
-    const progressWithinLevel = user.strivepoints - currentLevelMinSP
-    const totalSPForLevel = nextLevelMinSP - currentLevelMinSP
-
-    const spToNextLevel = nextLevelMinSP - user.strivepoints
 
     useEffect(() => {
         dispatch(getWorkouts())
@@ -88,27 +79,7 @@ const Games = () => {
             ) : (
             <div className='space-y-6 w-full'>
                 {/* User Games' Summary */}
-                <div className='fade-in-card bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center' style={{ animationDelay: '0.2s' }}>
-                    <h2 className='text-[#EDF2F4] text-3xl font-bold'>
-                        {user.username}
-                    </h2>
-                    <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Level: <span className='text-[#EF233C]'>{user?.level}</span>
-                    </p>
-                    <p className='text-[#EDF2F4] text-xl font-semibold'>
-                        Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
-                    </p>
-
-                    {/* Progress Bar */}
-                    <div className='mt-4'>
-                        <ProgressBar numerator={progressWithinLevel} denominator={totalSPForLevel} unit={'SP'} />
-
-                        {/* SP needed for next level */}
-                        <p className='mt-2 text-sm text-[#EDF2F4]/80'>
-                            {spToNextLevel} SP until Level {currentLevel + 1}
-                        </p>
-                    </div>
-                </div>
+                <GamesSummary user={user} />
                 
                 <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
                     <StreakCard user={user} workouts={workouts}/>
