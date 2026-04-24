@@ -194,13 +194,14 @@ const calculateProgressionPoints = async (user, workout, exercises, personalBest
     }
 }
 
-const calculateConsistencyMultiplier = async (user) => {
+const calculateConsistencyMultiplier = async (user, workout) => {
     const WEEKS_TO_CHECK = 6
     const now = new Date()
     const cutoff = new Date(now - WEEKS_TO_CHECK * 7 * 24 * 60 * 60 * 1000)
 
     const recentWorkouts = await Workout.find({
         user: user._id,
+        _id: { $ne: workout._id },
         createdAt: { $gte: cutoff }
     }).sort({ createdAt: -1 })
 
@@ -238,7 +239,7 @@ const calculateTotalStrivePoints = async (user, workout, exercises, personalBest
     const { volumeReward, volumeScore } = await calculateVolumePoints(user, workout, totalWeight)
     const { strengthReward, strengthScore } = await calculateStrengthPoints(user, workout, exercises)
     const { progressionReward, progressionScore } = await calculateProgressionPoints(user, workout, exercises, personalBests)
-    const consistencyMultiplier = await calculateConsistencyMultiplier(user)
+    const consistencyMultiplier = await calculateConsistencyMultiplier(user, workout)
 
     const personalBestsReward = personalBests.length * 500
 
