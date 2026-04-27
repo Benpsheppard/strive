@@ -16,8 +16,8 @@ const getLeaderboard = async (req, res) => {
 
     const leaderboard = await LeaderboardEntry.find({ weekStart })
         .sort({ [metric]: -1 })
-        .limit(50)
-        .populate("user.username")
+        .limit(15)
+        .populate("user", "username")
 
     res.json(leaderboard)
 }
