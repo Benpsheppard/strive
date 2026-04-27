@@ -162,6 +162,8 @@ const genQuests = async (user, duration) => {
             
         })
     })
+    console.log(JSON.stringify(validExerciseNames))
+    console.log(JSON.stringify(validMuscleGroups))
 
     const summary = recentWorkouts.map(w => ({
         date: w.date,
@@ -217,7 +219,7 @@ const genQuests = async (user, duration) => {
 
         ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
         RECENTLY USED EXERCISES - avoid if possible for variety: ${recentExercises.join(', ') || 'none'}
-        RECENTLY TRAINED MUSCLE GROUPS — deprioritise if possible for variety: ${recentMuscleGroups.join(', ') || 'none'}
+        RECENTLY TRAINED MUSCLE GROUPS — avoid if possible for variety: ${recentMuscleGroups.join(', ') || 'none'}
 
         QUEST ASSIGNMENTS:
         ${questInstructions}
