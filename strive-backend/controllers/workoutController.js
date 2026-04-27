@@ -4,6 +4,7 @@
 // Imports
 const asyncHandler = require('express-async-handler') 
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
+const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -75,6 +76,8 @@ const setWorkout = asyncHandler(async (req, res) => {
             $max: { lastWorkout: workoutDate }
         }
     )
+
+    await updateLeaderboardEntry(req.user, workout)
 
     // Output created workout
     res.status(201).json(workout)
