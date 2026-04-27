@@ -396,7 +396,6 @@ const NewWorkout = () => {
         try {
             const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
             const { summary } = savedWorkout
-            console.log(summary)
 
             // Add SP and check for level up
             let levelUp = null
