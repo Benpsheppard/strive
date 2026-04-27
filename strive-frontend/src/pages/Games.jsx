@@ -1,7 +1,7 @@
 // Games.jsx
 
 // Imports
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -16,6 +16,7 @@ import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import GamesSummary from '../components/games/GamesSummary.jsx'
+import Leaderboard from '../components/games/Leaderboard.jsx'
 
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
@@ -79,14 +80,20 @@ const Games = () => {
             ) : (
             <div className='space-y-6 w-full'>
                 {/* User Games' Summary */}
-                <GamesSummary user={user} />
-                
+                <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
+                    <GamesSummary user={user} />
+                </div>
+
                 <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
                     <StreakCard user={user} workouts={workouts}/>
                 </div>
 
+                <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
+                    <Leaderboard />
+                </div>
+
                 {/* Quest lists */}
-                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.6s' }}>
+                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.8s' }}>
                     <Quests />
                 </div>
             </div>
