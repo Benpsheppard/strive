@@ -128,7 +128,9 @@ const validateQuestCompletion = (quest, validExerciseNames, validMuscleGroups) =
 }
 
 const genQuests = async (user, duration) => {
-    if (!QUEST_CONFIG[duration]) throw new Error(`Invalid quest duration: ${duration}`)
+    if (!QUEST_CONFIG[duration]) {
+        throw new Error(`Invalid quest duration: ${duration}`)
+    }
     
     const { count, expiryDays } = QUEST_CONFIG[duration]
     const assignedTypes = duration === 'monthly' ? [QUEST_TYPE_DISTRIBUTION.monthly[Math.floor(Math.random() * QUEST_TYPE_DISTRIBUTION.monthly.length)]] : QUEST_TYPE_DISTRIBUTION[duration]
@@ -162,8 +164,6 @@ const genQuests = async (user, duration) => {
             
         })
     })
-    console.log(JSON.stringify(validExerciseNames))
-    console.log(JSON.stringify(validMuscleGroups))
 
     const summary = recentWorkouts.map(w => ({
         date: w.date,
@@ -180,6 +180,7 @@ const genQuests = async (user, duration) => {
 
     const existingQuests = await Quest.find({ user: user._id, status: 'active', expiry: { $gt: new Date() } })
     const existingExercises = existingQuests.map(q => q.completion.exercise).filter(Boolean)
+    const existingMuscleGroups = existingQuests.map(q => q.completion.filterTag || q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
 
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
     const recentQuests = await Quest.find({
@@ -187,7 +188,24 @@ const genQuests = async (user, duration) => {
         expiry: { $gte: twoDaysAgo, $lte: new Date() }
     })
     const recentExercises = recentQuests.map(q => q.completion.exercise).filter(Boolean)
-    const recentMuscleGroups = recentQuests.map(q => q.completion.muscleGroup).filter(Boolean)
+    const recentMuscleGroups = recentQuests.map(q => q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
+
+    const filteredExerciseNames = new Set(
+        [...validExerciseNames].filter(ex =>
+            !recentExercises.includes(ex) &&
+            !existingExercises.includes(ex)
+        )
+    )
+
+    const filteredMuscleGroups = new Set(
+        [...validMuscleGroups].filter(mg =>
+            !recentMuscleGroups.includes(mg) &&
+            !existingMuscleGroups.includes(mg)
+        )
+    )
+
+    const finalExerciseNames = filteredExerciseNames.size > 0 ? filteredExerciseNames : validExerciseNames
+    const finalMuscleGroups = filteredMuscleGroups.size > 0 ? filteredMuscleGroups : validMuscleGroups
 
     const unitSystem = user.useImperial ? 'imperial (lbs)' : 'metric (kg)'
 
@@ -209,17 +227,16 @@ const genQuests = async (user, duration) => {
         Each quest has a PRE-ASSIGNED type — you must follow each type's schema exactly.
 
         VALID EXERCISE NAMES (use these EXACTLY):
-        ${Array.from(validExerciseNames).map(e => `- ${e}`).join('\n')}
+        ${Array.from(finalExerciseNames).map(e => `- ${e}`).join('\n')}
 
         VALID MUSCLE GROUPS (use these EXACTLY if needed):
-        ${Array.from(validMuscleGroups).map(m => `- ${m}`).join('\n')}
+        ${Array.from(finalMuscleGroups).map(m => `- ${m}`).join('\n')}
 
         USER WORKOUT HISTORY:
         ${JSON.stringify(summary)}
 
         ACTIVE QUEST EXERCISES TO AVOID: ${existingExercises.join(', ') || 'none'}
-        RECENTLY USED EXERCISES - avoid if possible for variety: ${recentExercises.join(', ') || 'none'}
-        RECENTLY TRAINED MUSCLE GROUPS — avoid if possible for variety: ${recentMuscleGroups.join(', ') || 'none'}
+        ACTIVE QUEST MUSCLE GROUPS TO AVOID: ${existingMuscleGroups.join(', ') || 'none'}
 
         QUEST ASSIGNMENTS:
         ${questInstructions}
