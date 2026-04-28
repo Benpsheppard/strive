@@ -64,7 +64,14 @@ const getWeeklyFrequency = async (userId) => {
 // ─── Calculate Strive Points ─────────────────────────────────────────────────
 const calculateVolumePoints = async (user, workout, totalWeight) => {
     // Get recent workouts
-    const recentWorkouts = await Workout.find({ user: user._id, _id: { $ne: workout._id } }).sort({ createdAt: -1 }).limit(5)
+    const recentWorkouts = await Workout.find({ 
+        user: user._id,
+        _id: { $ne: workout._id },
+        summary: { $exists: true }
+    })
+    .sort({ createdAt: -1 })
+    .limit(5)
+
     if (recentWorkouts.length < 5) {
         return { volumeReward: 40, volumeScore: 1 }
     }
