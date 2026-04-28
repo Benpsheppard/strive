@@ -481,33 +481,39 @@ const NewWorkout = () => {
                     </div>
 
                     {user?.isGuest && <GuestCard workouts={workouts} isMigrate={false} />}
+                    
+                    <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
+                        <GamesSummary user={user} />
+                    </div>
 
-                    <GamesSummary user={user} />
-
-                    <div className="card-theme fade-in-card p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl" style={{ animationDelay: '0.2s' }}>
+                    <div className="card-theme fade-in-card p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl" style={{ animationDelay: '0.4s' }}>
                         <h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
                         <button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
                             Start Workout
                         </button>
                     </div>
 
-                    <div className="fade-in-card grid grid-cols-1 md:grid-cols-2 gap-3" style={{ animationDelay: '0.4s' }}>
-                        <StreakCard user={user} workouts={workouts} />
-                        <MomentumCard user={user} />
+                    <div className="fade-in-card grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
+                            <MomentumCard user={user} />
+                        </div>
+                        <div className='fade-in-card' style={{ animationDelay: '0.8s' }}>
+                            <StreakCard user={user} workouts={workouts} />
+                        </div>
                     </div>
 
-                    <div className="fade-in-card" style={{ animationDelay: '0.6s' }}>
+                    <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
                         <Calendar workouts={workouts} />
                     </div>
                     
 
                     {lastWorkout && (
-                        <div className="fade-in-card" style={{ animationDelay: '0.8s' }}>
+                        <div className="fade-in-card" style={{ animationDelay: '1.2s' }}>
                             <WorkoutItem workout={lastWorkout} />
                         </div>
                     )}
                     
-                    <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
+                    <div className="fade-in-card" style={{ animationDelay: '1.4s' }}>
                         <MuscleHeatmap workouts={workouts} />
                     </div>
                 </section>
