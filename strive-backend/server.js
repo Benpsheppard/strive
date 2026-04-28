@@ -17,7 +17,6 @@ const { workoutRouter } = require('./routes/workoutRoutes.js')
 const { exerciseRouter } = require('./routes/exerciseRoutes.js')       
 const { userRouter } = require('./routes/userRoutes.js')              
 const { questRouter } = require('./routes/questRoutes.js')
-const { devRouter } = require('./routes/devRoutes.js')
 const { leaderboardRouter } = require('./routes/leaderboardRoutes.js')
 
 // .env variables validation
@@ -108,7 +107,6 @@ app.use('/api/exercises', exerciseRouter)
 app.use('/api/users', userRouter)
 app.use('/api/quests', questRouter)
 app.use('/api/leaderboard', leaderboardRouter)
-app.use('/api/dev', devRouter)
 
 // Production configuration
 if (process.env.NODE_ENV === 'production') {
