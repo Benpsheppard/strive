@@ -5,8 +5,11 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-// Function Imports
+// Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
+import { getLeaderboard } from '../features/leaderboard/leaderboardSlice.js'
+
+// Utils Imports
 import { formatNumber } from '../utils/formatValues.js'
 
 // Component Imports
@@ -21,11 +24,13 @@ import Leaderboard from '../components/games/Leaderboard.jsx'
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading } = useSelector((state) => state.workout)
+    const { leaderboard } = useSelector((state) => state.leaderboard)
 
     const dispatch = useDispatch()
 
     useEffect(() => {
         dispatch(getWorkouts())
+        dispatch(getLeaderboard())
     }, [dispatch])
 
     if (isLoading) {
@@ -66,34 +71,36 @@ const Games = () => {
             </h1>
             
             {workouts.length < 3 ? (
-            <>
-                <p className="text-[#EDF2F4]">
-                    Complete at least 3 workouts to access Strive Games!
-                </p>
+                <>
+                    <p className="text-[#EDF2F4]">
+                        Complete at least 3 workouts to access Strive Games!
+                    </p>
 
-                <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                    <Link to='/'>
-                        New Workout
-                    </Link>
-                </button>
-            </>
+                    <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
+                        <Link to='/'>
+                            New Workout
+                        </Link>
+                    </button>
+                </>
             ) : (
-            <div className='space-y-6 w-full'>
-                {/* User Games' Summary */}
-                <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
-                    <GamesSummary user={user} />
-                </div>
+                <div className='space-y-6 w-full'>
+                    {/* User Games' Summary */}
+                    <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
+                        <GamesSummary user={user} />
+                    </div>
 
-                {/* SP Leaderboard */}
-                <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
-                    <Leaderboard />
-                </div>
+                    {/* SP Leaderboard */}
+                    {leaderboard.length > 0 && (
+                        <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
+                            <Leaderboard />
+                        </div>
+                    )}
 
-                {/* Quest lists */}
-                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.6s' }}>
-                    <Quests />
+                    {/* Quest lists */}
+                    <div className='fade-in-card space-y-6' style={{ animationDelay: '0.6s' }}>
+                        <Quests />
+                    </div>
                 </div>
-            </div>
             )}
         </section>
     )
