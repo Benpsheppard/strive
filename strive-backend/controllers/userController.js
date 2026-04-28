@@ -3,10 +3,11 @@
 // Imports
 const asyncHandler = require('express-async-handler')
 const jwt = require('jsonwebtoken')  
-const bcrypt = require('bcryptjs')    
+const bcrypt = require('bcryptjs') 
+const crypto = require('crypto')
 const validator = require('validator')    
 
-// Function Imports
+// Util Imports
 const { getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
 const formatUser = require('../utils/formatUser.js')
 
@@ -460,11 +461,94 @@ const updateMomentum = asyncHandler(async (req, res) => {
     res.status(200).json(formatUser(updatedUser))
 })
 
+/**
+ * @desc    Request to reset password
+ * @route   POST /api/users/forgot-password
+ * @access  Private
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body
+
+    const user = await User.findOne({ email: validator.normalizeEmail(email) })
+    if (!user) {
+        return res.status(200).json({ message: 'If that email exists, a reset link was sent' })
+    }
+
+    const { resetToken, hashedToken } = genResetToken()
+
+    user.passwordResetToken = hashedToken
+    user.passwordResetExpires = Date.now() + (10 * 60 * 1000) // 10 mins
+
+    await user.save()
+
+    // Send email here
+    console.log(`Reset link: /reset-password/${resetToken}`)
+
+    res.status(200).json({ message: 'Reset link sent' })
+})
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/users/reset-password/:token
+ * @access  Private
+ */
+const resetPassword = asyncHandler(async (req, res) => {
+    const { token } = req.params
+    const { password } = req.body
+
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex')
+
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now()}
+    })
+
+    if (!user) {
+        res.status(400)
+        throw new Error('Invalid or expired token')
+    }
+
+    if (!validator.isStrongPassword(password)) {
+        res.status(400)
+        throw new Error('Password must satisfy all criteria')
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    user.password = await bcrypt.hash(password, salt)
+
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+
+    await user.save()
+
+    res.status(200).json({ message: 'Password reset successful' })
+})
+
 // Generate JWT token
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d'
     })
+}
+
+// Generate Reset token
+const genResetToken = () => {
+    const resetToken = crypto.randomBytes(32).toString('hex')
+
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex')
+
+    return {
+        resetToken,
+        hashedToken
+    }
+        
+    
 }
 
 // Export functions
@@ -479,5 +563,7 @@ module.exports = {
     addPoints,
     updateProfile,
     updateStreak,
-    updateMomentum
+    updateMomentum,
+    forgotPassword,
+    resetPassword
 }

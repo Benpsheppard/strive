@@ -23,6 +23,14 @@ const userSchema = mongoose.Schema ({
         required: [true, 'Please add a password'],
         minlength: 6
     },
+    // Password Reset token
+    passwordResetToken: {
+        type: String
+    },
+    // Password Reset token expiry
+    passwordResetExpires: {
+        type: Date
+    },
     // Workouts
     workouts: [
         {

@@ -8,7 +8,7 @@ const {
     deleteUser, updateUnitPreference, 
     resetUser, addPoints, migrateUser, 
     updateProfile, updateStreak, 
-    updateMomentum
+    updateMomentum, resetPassword, forgotPassword
 } = require('../controllers/userController.js')
 const { protect } = require('../middleware/authMiddleware.js')
 const { validateObjectId } = require('../middleware/validateObjectId.js')
@@ -48,6 +48,12 @@ userRouter.put('/:id/streak', protect, updateStreak)
 
 // Update momentum
 userRouter.put('/momentum', protect, updateMomentum)
+
+// Forgot password
+userRouter.post('/forgot-password', forgotPassword)
+
+// Reset password
+userRouter.put('/reset-password/:token', resetPassword)
 
 // Export router
 module.exports = { userRouter }
