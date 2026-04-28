@@ -145,6 +145,17 @@ export const updateMomentum = createAsyncThunk('auth/updateMomentum', async (dat
     }
 })
 
+export const forgotPassword = createAsyncThunk('auth/forgot-password', async (email, thunkAPI) => {
+    try {
+        return await authService.forgotPassword(email)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // auth slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -345,6 +356,20 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload
+            })
+
+        // Forgot Password
+            .addCase(forgotPassword.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(forgotPassword.fulfilled, (state) => {
+                state.isLoading = false
+                state.isSuccess = true
+            })
+            .addCase(forgotPassword.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.message
             })
     }
 })

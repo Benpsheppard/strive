@@ -14,6 +14,7 @@ import Spinner from './components/spinners/Spinner.jsx'
 // const Help = lazy(() => import('./pages/Help.jsx'))
 
 const Login = lazy(() => import('./pages/Login.jsx'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
 const Onboarding = lazy(() => import('./pages/Onboarding.jsx'))
 const NewWorkout = lazy(() => import('./pages/NewWorkout.jsx'))
@@ -38,6 +39,7 @@ const App = () => {
 					<Routes>
 						<Route path='/' element={<NewWorkout />} />
 						<Route path='/login' element={<Login />} />
+						<Route path='/forgot-password' element={<ForgotPassword />} />
 						<Route path='/register' element={<Register />} />
 						<Route path='/onboarding' element={<Onboarding />} />
 						<Route path='/workout-complete' element={<WorkoutComplete />} />

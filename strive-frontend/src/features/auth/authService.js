@@ -166,6 +166,13 @@ const updateMomentum = async (data, token) => {
     return response.data
 }
 
+// Forgot password
+const forgotPassword = async (email) => {
+    const response = await axios.post(API_URL + 'forgot-password', email)
+
+    return response.data
+}
+
 // Export functions
 const authService = {
     register,
@@ -178,7 +185,8 @@ const authService = {
     addPoints,
 	updateProfile,
     updateStreak,
-    updateMomentum
+    updateMomentum,
+    forgotPassword
 }
 
 export default authService

@@ -147,6 +147,13 @@ const Login = () => {
                         />
 
                         <p className="text-center text-sm text-[#EDF2F4]">
+                            Forgot{' '}
+                            <Link to="/forgot-password" className="text-[#EF233C] hover:text-[#D90429] hover:underline">
+                                Password?
+                            </Link>
+                        </p>
+
+                        <p className="text-center text-sm text-[#EDF2F4]">
                             Don't have an account?
                             <Link to="/register" className="text-[#EF233C] hover:text-[#D90429] hover:underline">
                                 Register Here
