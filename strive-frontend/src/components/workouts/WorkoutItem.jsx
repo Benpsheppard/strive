@@ -46,13 +46,27 @@ const WorkoutItem = ({ workout }) => {
         <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 flex flex-col gap-2 max-w-2xl mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
             onClick={() => setWorkoutExpanded(!workoutExpanded)}>
             {/* X delete button in top right */}
-            <button onClick={onDelete} className="absolute top-2 right-2 text-[#EF233C] hover:text-[#D90429] text-lg font-bold" aria-label="Delete workout">
-                <FaTimes />
-            </button>
+            <div>
+                <button onClick={onDelete} className="absolute top-2 right-2 text-[#EF233C] hover:text-[#D90429] text-lg font-bold">
+                    <FaTimes />
+                </button>
+            </div>
 
             {/* Header: Title + Date */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-[#EDF2F4]">{workout.title}</h2>
+            <div className="flex justify-between items-center text-[#EDF2F4]">
+                <div className='flex flex-row gap-2 justify-center items-center'>
+                    <button>
+                        {workoutExpanded ? (
+                            <FaChevronDown />
+                        ) : (
+                            <FaChevronRight />
+                        )}
+                    </button>
+                    <h2 className="text-xl font-semibold">
+                        {workout.title}
+                    </h2>
+                </div>
+
                 <span className="text-sm text-[#2B2D42]">
                     {formatWorkoutStartTime(workout.createdAt, workout.duration)}
                 </span>
