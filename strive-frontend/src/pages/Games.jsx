@@ -84,16 +84,13 @@ const Games = () => {
                     <GamesSummary user={user} />
                 </div>
 
+                {/* SP Leaderboard */}
                 <div className='fade-in-card' style={{ animationDelay: '0.4s' }}>
-                    <StreakCard user={user} workouts={workouts}/>
-                </div>
-
-                <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
                     <Leaderboard />
                 </div>
 
                 {/* Quest lists */}
-                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.8s' }}>
+                <div className='fade-in-card space-y-6' style={{ animationDelay: '0.6s' }}>
                     <Quests />
                 </div>
             </div>
