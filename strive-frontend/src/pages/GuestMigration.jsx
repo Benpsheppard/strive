@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-// Function Imports
+// Feature Imports
 import { migrate } from '../features/auth/authSlice'
 
 // Component Imports

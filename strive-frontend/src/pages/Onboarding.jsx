@@ -4,14 +4,16 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Picker from 'react-mobile-picker'
 
-// Function Imports
+// Feature Imports
 import { updateProfile } from '../features/auth/authSlice.js'
 
 // Component Imports
-import Picker from 'react-mobile-picker'
 import AuthHeader from '../components/headers/AuthHeader'
 import Toggle from '../components/profile/Toggle.jsx'
+
+// Util Imports
 import { lbsToKg } from '../utils/formatValues.js'
 
 const Onboarding = () => {

@@ -5,8 +5,10 @@ import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 
-// Function Imports
+// Feature Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+
+// Util Imports
 import { formatWeight, formatDuration, formatNumber } from '../utils/formatValues.js'
 
 // Component Imports

@@ -4,12 +4,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
+
+// Feature Imports
 import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
 // Component Imports
 import Header from '../components/headers/Header'
 import ProgressBar from '../components/games/ProgressBar'
-import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
 
 const ProgressUpdate = () => {
     const { user } = useSelector((state) => state.auth)

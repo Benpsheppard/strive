@@ -7,8 +7,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-// Function Imports
+// Feature Imports
 import { login, reset, register } from '../features/auth/authSlice.js'
+
+// Utils Imports
 import { generateRandomPassword } from '../utils/authUtils.js'
 
 // Component Imports

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaUser } from 'react-icons/fa'
 
-// Function Imports
+// Feature Imports
 import { logout, reset, deleteUser, resetUser } from '../features/auth/authSlice.js'
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
@@ -17,6 +17,8 @@ import Toggle from '../components/profile/Toggle.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
+
+// Alert Imports
 import { showDeleteAccountAlert, showLogoutAccountAlert, showResetAccountAlert } from '../alerts/profile.js'
 
 const Profile = () => {

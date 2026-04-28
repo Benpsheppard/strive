@@ -5,13 +5,18 @@ import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { FaUndoAlt } from 'react-icons/fa'
 
-// Function Imports
+// Feature Imports
 import { createWorkout, getWorkouts, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
-import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
+
+// Alert Imports
 import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showRestCompleteAlert, showShieldBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
+
+// Hook Imports
+import { useLocalStorage } from '../hooks/useLocalStorage.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -23,7 +28,6 @@ import SetForm from '../components/workouts/SetForm.jsx'
 import Timer from '../components/workouts/Timer.jsx'
 import Calendar from '../components/progress/Calendar.jsx'
 import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
-import { FaUndoAlt } from 'react-icons/fa'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import MomentumCard from '../components/games/MomentumCard.jsx'

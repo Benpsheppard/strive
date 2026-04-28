@@ -4,8 +4,10 @@
 import { useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
-import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 import { FaFire, FaShieldAlt, FaExclamationTriangle } from 'react-icons/fa'
+
+// Feature Imports
+import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
 // Component Imports
 import Header from '../components/headers/Header'

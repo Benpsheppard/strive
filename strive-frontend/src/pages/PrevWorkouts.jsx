@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState, useMemo } from 'react'
 
-// Function Imports
+// Feature Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports

@@ -5,6 +5,8 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
+
+// Util Imports
 import { formatDuration, formatWeight } from '../utils/formatValues'
 
 // Function Imports
