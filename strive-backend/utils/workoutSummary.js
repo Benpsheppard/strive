@@ -72,7 +72,7 @@ const calculateVolumePoints = async (user, workout, totalWeight) => {
     // Calculate total Volume across those 5 workouts
     let runningTotal = 0
     recentWorkouts.forEach(w => {
-        const volume = w.summary.totalWeight
+        const volume = w.summary.totalWeight || 0
         runningTotal += volume
     })
 
@@ -237,8 +237,11 @@ const calculateTotalStrivePoints = async (user, workout, exercises, personalBest
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
 
     const { volumeReward, volumeScore } = await calculateVolumePoints(user, workout, totalWeight)
+
     const { strengthReward, strengthScore } = await calculateStrengthPoints(user, workout, exercises)
+
     const { progressionReward, progressionScore } = await calculateProgressionPoints(user, workout, exercises, personalBests)
+
     const consistencyMultiplier = await calculateConsistencyMultiplier(user, workout)
 
     const personalBestsReward = personalBests.length * 500
