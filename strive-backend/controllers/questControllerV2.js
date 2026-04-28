@@ -14,7 +14,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const QUEST_TYPE_DISTRIBUTION = {
     daily: ['strength', 'consistency', 'strength'],
     weekly: ['progressive', 'volume'],
-    monthly: ['consistency']
+    monthly: ['consistency', 'strength', 'volume', 'progressive']
 }
 
 const QUEST_CONFIG = {
@@ -131,7 +131,7 @@ const genQuests = async (user, duration) => {
     if (!QUEST_CONFIG[duration]) throw new Error(`Invalid quest duration: ${duration}`)
     
     const { count, expiryDays } = QUEST_CONFIG[duration]
-    const assignedTypes = QUEST_TYPE_DISTRIBUTION[duration]  // e.g. ['strength', 'consistency', 'strength']
+    const assignedTypes = duration === 'monthly' ? [QUEST_TYPE_DISTRIBUTION.monthly[Math.floor(Math.random() * QUEST_TYPE_DISTRIBUTION.monthly.length)]] : QUEST_TYPE_DISTRIBUTION[duration]
 
     const recentWorkouts = await Workout.find({ user: user._id })
         .sort({ date: -1 })
