@@ -96,17 +96,21 @@ const userSchema = mongoose.Schema ({
     height: {
         feet: {
             type: Number,
-            default: 5
+            default: 5,
+            min: 4,
+            max: 7
         },
         inches: {
             type: Number,
-            default: 8
+            default: 8,
+            max: 12
         }
     },
     // Weight
     weight: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0
     }
 }, {
     timestamps: true
