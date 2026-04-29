@@ -9,6 +9,7 @@ const leaderboardRouter = express.Router()
 
 leaderboardRouter.use(protect)
 
+// Leaderboard routes
 leaderboardRouter.route('/').get(getLeaderboard)
 
 module.exports = { leaderboardRouter }

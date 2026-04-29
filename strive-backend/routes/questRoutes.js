@@ -10,10 +10,9 @@ const questRouter = express.Router()
 
 questRouter.use(protect)
 
-// Get quests route
+// Guest routes
 questRouter.get('/', getQuests)
 
-// Generate quest route
 questRouter.post('/generate/:duration', generateQuests)
 
 module.exports = { questRouter }

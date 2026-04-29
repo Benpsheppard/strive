@@ -26,7 +26,7 @@ workoutRouter.route('/:id')
     .put(validateObjectId('id'), updateWorkout)
     .delete(validateObjectId('id'), deleteWorkout)
 
-// Exercise routes
+// Workout-Exercise routes
 workoutRouter.route('/:id/exercises')
     .post(validateObjectId('id'), addExercise)
 workoutRouter.route('/:id/exercises/:exerciseId')
