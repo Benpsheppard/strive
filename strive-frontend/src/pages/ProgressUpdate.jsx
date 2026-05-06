@@ -64,7 +64,7 @@ const ProgressUpdate = () => {
 
                 {/* Momentum Increased */}
                 {momentumGained > 0 && (
-                    <div className="fade-in-card flex-1 flex flex-col bg-[#8D99AE] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.4s' }}>
+                    <div className="fade-in-card flex-1 flex flex-col bg-[#6A4C93] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.4s' }}>
                         <FaBolt className="jitter text-[#EDF2F4] text-9xl mx-auto mb-5" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Momentum Increased!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">
