@@ -1,7 +1,6 @@
 // db.js
 
 // Import
-require('dotenv').config()
 const mongoose = require('mongoose')
 
 // Function to connect to database
