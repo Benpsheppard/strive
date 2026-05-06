@@ -497,15 +497,6 @@ const NewWorkout = () => {
                         </button>
                     </div>
 
-                    <div className="fade-in-card grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
-                            <MomentumCard user={user} />
-                        </div>
-                        <div className='fade-in-card' style={{ animationDelay: '0.8s' }}>
-                            <StreakCard user={user} workouts={workouts} />
-                        </div>
-                    </div>
-
                     <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
                         <Calendar workouts={workouts} />
                     </div>
