@@ -3,7 +3,7 @@
 // Imports
 import { useSelector } from 'react-redux'
 import { Link, useLocation } from 'react-router-dom'
-import { Dumbbell, Clock, BarChart2, Gamepad2, User, LogIn, Flame, Zap } from 'lucide-react'
+import { Dumbbell, Clock, BarChart2, Gamepad2, User, LogIn, Flame, Zap, Star } from 'lucide-react'
 
 const Header = () => {
     const { user } = useSelector((state) => state.auth)
@@ -22,36 +22,40 @@ const Header = () => {
         <>
             {/* Main Header */}
             <header className="fixed top-0 left-0 w-full bg-[#2B2D42] backdrop-blur-md text-[#EDF2F4] shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-100 h-auto">
-                <div className="container mx-auto flex items-center justify-between px-6 py-4">
+                <div className="mx-auto flex items-center justify-between px-6 py-4">
 
-                    {/* Title */}
-                    <div className="text-lg font-bold tracking-wide">
-                        <Link to="/" className={navOps}>STRIVE</Link>
-                    </div>
+                    {/* Header Stats */}
+                    <div className="flex items-center justify-between w-full md:w-auto md:justify-start md:gap-6">
+    
+                        <div className="flex items-center gap-2 text-lg font-semibold">
+                            <Star size={20} className="text-[#F4A261]" />
+                            <span>{user ? user.level : "0"}</span>
+                        </div>
 
-                    <div className="flex items-center gap-2 text-lg font-semibold transition duration-200 ">
-                        <Flame size={20} className="text-[#EF233C]" />
-                        <span>{user ? user.streak.current : "0"}</span>
-                    </div>
+                        <div className="flex items-center gap-2 text-lg font-semibold">
+                            <Flame size={20} className="text-[#EF233C]" />
+                            <span>{user ? user.streak.current : "0"}</span>
+                        </div>
 
-                    <div className="flex items-center gap-2 text-lg font-semibold transition duration-200 ">
-                        <Zap size={20} className="text-[#6A4C93]" />
-                        <span>{user ? user.momentum.current : "0"}</span>
-                    </div>
+                        <div className="flex items-center gap-2 text-lg font-semibold">
+                            <Zap size={20} className="text-[#6A4C93]" />
+                            <span>{user ? user.momentum.current : "0"}</span>
+                        </div>
 
-                    {/* Mobile Profile / Sign in */}
-                    <div className="md:hidden">
-                        {user ? (
-                            <Link to='/profile' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/profile' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
-                                <User size={20} />
-                                <span>{user.isGuest ? "Guest" : user.username}</span>
-                            </Link>
-                        ) : (
-                            <Link to='/login' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/login' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
-                                <LogIn size={20} />
-                                <span>Sign in</span>
-                            </Link>
-                        )}
+                        {/* Mobile Profile / Sign in */}
+                        <div className="md:hidden">
+                            {user ? (
+                                <Link to='/profile' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/profile' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
+                                    <User size={20} />
+                                    <span>{user.isGuest ? "Guest" : user.username}</span>
+                                </Link>
+                            ) : (
+                                <Link to='/login' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/login' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
+                                    <LogIn size={20} />
+                                    <span>Sign in</span>
+                                </Link>
+                            )}
+                        </div>
                     </div>
 
                     {/* Desktop Navbar */}
