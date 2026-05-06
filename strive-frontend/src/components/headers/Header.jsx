@@ -3,7 +3,7 @@
 // Imports
 import { useSelector } from 'react-redux'
 import { Link, useLocation } from 'react-router-dom'
-import { Dumbbell, Clock, BarChart2, Gamepad2, User, LogIn } from 'lucide-react'
+import { Dumbbell, Clock, BarChart2, Gamepad2, User, LogIn, Flame, Zap } from 'lucide-react'
 
 const Header = () => {
     const { user } = useSelector((state) => state.auth)
@@ -21,12 +21,22 @@ const Header = () => {
     return (
         <>
             {/* Main Header */}
-            <header className="fixed top-0 left-0 w-full bg-[#2B2D42] backdrop-blur-md text-[#EDF2F4] shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-100 h-16">
+            <header className="fixed top-0 left-0 w-full bg-[#2B2D42] backdrop-blur-md text-[#EDF2F4] shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-100 h-auto">
                 <div className="container mx-auto flex items-center justify-between px-6 py-4">
 
                     {/* Title */}
-                    <div className="text-2xl font-bold tracking-wide">
+                    <div className="text-lg font-bold tracking-wide">
                         <Link to="/" className={navOps}>STRIVE</Link>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-lg font-semibold transition duration-200 ">
+                        <Flame size={20} className="text-[#EF233C]" />
+                        <span>{user ? user.streak.current : "0"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-lg font-semibold transition duration-200 ">
+                        <Zap size={20} className="text-[#6A4C93]" />
+                        <span>{user ? user.momentum.current : "0"}</span>
                     </div>
 
                     {/* Mobile Profile / Sign in */}
