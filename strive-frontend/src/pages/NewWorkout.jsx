@@ -497,18 +497,18 @@ const NewWorkout = () => {
                         </button>
                     </div>
 
-                    <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
+                    <div className="fade-in-card" style={{ animationDelay: '0.6s' }}>
                         <Calendar workouts={workouts} />
                     </div>
                     
 
                     {lastWorkout && (
-                        <div className="fade-in-card" style={{ animationDelay: '1.2s' }}>
+                        <div className="fade-in-card" style={{ animationDelay: '0.8s' }}>
                             <WorkoutItem workout={lastWorkout} />
                         </div>
                     )}
                     
-                    <div className="fade-in-card" style={{ animationDelay: '1.4s' }}>
+                    <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
                         <MuscleHeatmap workouts={workouts} />
                     </div>
                 </section>
