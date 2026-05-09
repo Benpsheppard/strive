@@ -3,7 +3,7 @@
 // Imports
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
@@ -27,11 +27,18 @@ const Games = () => {
     const { leaderboard } = useSelector((state) => state.leaderboard)
 
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     useEffect(() => {
         dispatch(getWorkouts())
         dispatch(getLeaderboard())
     }, [dispatch])
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/')
+        }
+    }, [user, navigate])
 
     if (isLoading) {
         return <Spinner />
@@ -64,7 +71,6 @@ const Games = () => {
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
             <Header />
 
-            
             {/* Title */}
             <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
                 Strive <span className='text-[#EF233C]'>Games</span>
