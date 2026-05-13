@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
-
+import { Star } from 'lucide-react'
 // Feature Imports
 import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
@@ -55,8 +55,8 @@ const ProgressUpdate = () => {
             <div className="w-full max-w-2xl flex flex-col flex-grow space-y-4">
                 {/* Level Up */}
                 {levelUp && (
-                    <div className="fade-in-card flex-1 flex flex-col bg-[#EF233C] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.2s' }}>
-                        <FaArrowUp className="jump text-[#EDF2F4] text-9xl mx-auto mb-5" />
+                    <div className="fade-in-card flex-1 flex flex-col bg-[#8D99AE] rounded-2xl px-6 py-5 space-y-2 text-center items-center justify-center shadow-lg" style={{ animationDelay: '0.2s' }}>
+                        <Star size={200} className="jump text-[#EDF2F4]" />
                         <p className="text-[#EDF2F4] text-2xl font-bold">Level Up!</p>
                         <p className="text-[#EDF2F4] opacity-80 text-lg">You are now Level {levelUp}!</p>
                     </div>
