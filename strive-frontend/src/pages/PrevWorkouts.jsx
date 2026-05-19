@@ -21,6 +21,7 @@ const PrevWorkouts = () => {
 
     const [sortOption, setSortOption] = useState('newest')
     const [searchTerm, setSearchTerm] = useState('')
+    const [visibleCount, setVisibleCount] = useState(20)
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -81,6 +82,8 @@ const PrevWorkouts = () => {
 
         return filtered
     }, [workouts, sortOption, searchTerm])
+
+    const visibleWorkouts = filteredAndSortedWorkouts.slice(0, visibleCount)
 
     useEffect(() => {
         if (isError) {
@@ -158,13 +161,19 @@ const PrevWorkouts = () => {
             </p>
 
             {/* Workout Display */}
-            <div className="workout-content w-full space-y-3">
+            <div className="max-w-2xl w-full space-y-3">
                 {workouts.length > 0 ? 
                 (
                     <>
-                        {filteredAndSortedWorkouts.map((wo) => (
+                        {visibleWorkouts.map((wo) => (
                             <WorkoutItem key={wo._id} workout={wo} />
                         ))}
+
+                        {visibleCount < filteredAndSortedWorkouts.length && (
+                            <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-2 rounded-lg"> 
+                                Load more
+                            </button>
+                        )}
                     </>
                 ) : (
                     <div className="text-[#EDF2F4] text-xl text-center mt-10">
