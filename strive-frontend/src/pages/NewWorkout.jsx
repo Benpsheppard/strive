@@ -145,7 +145,7 @@ const NewWorkout = () => {
 
         checkStreak()
         checkMomentum()
-    }, [])
+    }, [user])
 
     // Search exercises
     useEffect(() => {
@@ -401,34 +401,30 @@ const NewWorkout = () => {
             const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
             const { summary } = savedWorkout
 
-            // Add SP and check for level up
-            let levelUp = null
-            if (summary.totalStrivePoints.total > 0) {
-                const result = await dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
-                if (result.level > user.level) {
-                    levelUp = result.level
-                }
-            }
-
-            // Streak info
-            const oldStreak = user.streak.current
-            const oldShield = user.streak.shield
-            const updatedUserAfterStreak = await dispatch(updateStreak(user._id)).unwrap()
-
-            const streakIncreased = updatedUserAfterStreak.streak.current > oldStreak
-            const shieldEarned = !oldShield && updatedUserAfterStreak.streak.shield
-            const shieldUsed = oldShield && !updatedUserAfterStreak.streak.shield && updatedUserAfterStreak.streak.current === oldStreak
-            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
-            
-            // Momentum info
             const momentumData = {
                 workoutCompleted: true,
                 personalBests: summary.personalBests.length || 0,
                 quests: summary.questsCompleted
             }
-            
+
+            // Streak info
+            const oldStreak = user.streak.current
+            const oldShield = user.streak.shield
             const oldMomentum = user.momentum.current
-            const updatedUserAfterMomentum = await dispatch(updateMomentum(momentumData)).unwrap()
+
+            const [pointsResult, updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
+                summary.totalStrivePoints.total > 0
+                    ? dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
+                    : Promise.resolve(null),
+                dispatch(updateStreak(user._id)).unwrap(),
+                dispatch(updateMomentum(momentumData)).unwrap()
+            ])
+
+            const levelUp = pointsResult?.level > user.level ? pointsResult.level : null
+            const streakIncreased = updatedUserAfterStreak.streak.current > oldStreak
+            const shieldEarned = !oldShield && updatedUserAfterStreak.streak.shield
+            const shieldUsed = oldShield && !updatedUserAfterStreak.streak.shield && updatedUserAfterStreak.streak.current === oldStreak
+            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
             const momentumGained = updatedUserAfterMomentum.momentum.current - oldMomentum
 
             dispatch(setLastWorkoutStats({
