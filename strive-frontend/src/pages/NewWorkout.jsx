@@ -8,16 +8,17 @@ import { toast } from 'react-toastify'
 import { FaUndoAlt } from 'react-icons/fa'
 
 // Feature Imports
-import { createWorkout, getWorkouts, setLastWorkoutStats } from '../features/workouts/workoutsSlice.js'
+import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
-import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
+import { updateStreak, updateMomentum } from '../features/auth/authSlice.js'
 
 // Alert Imports
-import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showRestCompleteAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
+import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
 
 // Hook Imports
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
 import { useWorkoutSubmit } from '../hooks/useWorkoutSubmit.js'
+import { useRestTimer } from '../hooks/useRestTimer.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -52,7 +53,6 @@ const EMPTY_SET = {
 }
 
 const validateSet = (trackingMode, currentSet) => {
-    const { trackingMode } = currentExercise
     const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
 
     switch (trackingMode) {
@@ -83,7 +83,6 @@ const validateSet = (trackingMode, currentSet) => {
 }
 
 const buildSet = (trackingMode, currentSet) => {
-    const { trackingMode } = currentExercise
     const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
 
     switch (trackingMode) {
@@ -126,11 +125,9 @@ const NewWorkout = () => {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [showSuggestions, setShowSuggestions] = useState(false)
-    const [restTimeRemaining, setRestTimeRemaining] = useState(0)
     const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
 
     // Refs
-    const restIntervalRef = useRef(null)
     const hasCheckedGamification = useRef(false)
 
     const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
@@ -208,22 +205,6 @@ const NewWorkout = () => {
 		dispatch(getExercises())
     }, [user, message, isError, navigate, dispatch])
 
-    // Cleanup rest timer
-    useEffect(() => {
-        return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current) }
-    }, [])
-
-    // Restore rest timer from localStorage
-    useEffect(() => {
-        const savedEnd = localStorage.getItem('restTimerEnd')
-        if (savedEnd) {
-            const endTime = Number(savedEnd)
-            const remaining = Math.floor((endTime - Date.now()) / 1000)
-            if (remaining > 0) updateRestTimer(endTime)
-            else localStorage.removeItem('restTimerEnd')
-        }
-    }, [])
-
     // ----- SEARCH -----
     const handleSearchChange = (e) => {
         const newValue = e.target.value
@@ -260,7 +241,7 @@ const NewWorkout = () => {
             return
         }
 
-        const newSet = buildSet(currentExercise.trackingmode, currentSet)
+        const newSet = buildSet(currentExercise.trackingMode, currentSet)
 
         setSetHistory(prev => [...prev, currentExercise.sets || []])
         setCurrentExercise(prev => ({ ...prev, sets: [...(prev.sets || []), newSet] }))
@@ -334,32 +315,7 @@ const NewWorkout = () => {
     }
 
     // ----- REST TIMER -----
-    const startRestTimer = () => {
-        if (restIntervalRef.current) clearInterval(restIntervalRef.current)
-        const endTime = Date.now() + restTimerDuration * 1000
-        localStorage.setItem('restTimerEnd', endTime)
-        updateRestTimer(endTime)
-    }
-
-    const updateRestTimer = (endTime) => {
-        setRestTimeRemaining(Math.max(0, Math.floor((endTime - Date.now()) / 1000)))
-        restIntervalRef.current = setInterval(() => {
-            const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
-            setRestTimeRemaining(remaining)
-            if (remaining <= 0) {
-                clearInterval(restIntervalRef.current)
-                restIntervalRef.current = null
-                localStorage.removeItem('restTimerEnd')
-                showRestCompleteAlert()
-            }
-        }, 1000)
-    }
-
-    const skipTimer = () => {
-        clearInterval(restIntervalRef.current)
-        localStorage.removeItem('restTimerEnd')
-        setRestTimeRemaining(0)
-    }
+    const { restTimeRemaining, startRestTimer, skipTimer } = useRestTimer(restTimerDuration)
 
     // ----- WORKOUTS -----
     const { submitWorkout } = useWorkoutSubmit({ title, exercises, startTime, resetWorkoutState})
