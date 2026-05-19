@@ -13,7 +13,7 @@ import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { addPoints, updateStreak, updateMomentum } from '../features/auth/authSlice.js'
 
 // Alert Imports
-import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showRestCompleteAlert, showShieldBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
+import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showRestCompleteAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
 
 // Hook Imports
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
@@ -79,8 +79,7 @@ const NewWorkout = () => {
 
     // Refs
     const restIntervalRef = useRef(null)
-    const hasCheckedStreak = useRef(false)
-    const hasCheckedMomentum = useRef(false)
+    const hasCheckedGamification = useRef(false)
 
     const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
@@ -107,44 +106,31 @@ const NewWorkout = () => {
 
     // Check streak & momentum on mount
     useEffect(() => {
-        if (!user) {
-            return
-        }
-        
-        // Capture values before any dispatches
+        if (!user || hasCheckedGamification.current) return
+        hasCheckedGamification.current = true
+
         const oldStreak = user.streak?.current ?? 0
         const hadShield = user.streak?.shield ?? false
         const oldMomentum = user.momentum?.current ?? 0
 
-        const checkStreak = async () => {
-            if (hasCheckedStreak.current) {
-                return
-            }
-            hasCheckedStreak.current = true
+        const checkGamification = async () => {
+            const [updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
+                dispatch(updateStreak(user._id)).unwrap(),
+                dispatch(updateMomentum({})).unwrap()
+            ])
 
-            const updatedUser = await dispatch(updateStreak(user._id)).unwrap()
-            const streakBroken = updatedUser.streak.current === 0 && oldStreak > 0
-            const shieldUsed = hadShield && !updatedUser.streak.shield
+            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
+            const shieldUsed = hadShield && !updatedUserAfterStreak.streak.shield
 
-            if (shieldUsed) {
-                showShieldUsedAlert()
-            } else if (streakBroken) {
-                showShieldBrokenAlert(oldStreak)
-            }
-        }
+            if (shieldUsed) showShieldUsedAlert()
+            else if (streakBroken) showStreakBrokenAlert(oldStreak)
 
-        const checkMomentum = async () => {
-            if (hasCheckedMomentum.current) return
-            hasCheckedMomentum.current = true
-
-            const updatedUser = await dispatch(updateMomentum({})).unwrap()
-            if (updatedUser.momentum.current < oldMomentum) {
-                showMomentumDroppedAlert(updatedUser.momentum.current)
+            if (updatedUserAfterMomentum.momentum.current < oldMomentum) {
+                showMomentumDroppedAlert(updatedUserAfterMomentum.momentum.current)
             }
         }
 
-        checkStreak()
-        checkMomentum()
+        checkGamification()
     }, [user])
 
     // Search exercises
