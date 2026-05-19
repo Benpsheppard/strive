@@ -17,6 +17,7 @@ import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAle
 
 // Hook Imports
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
+import { useWorkoutSubmit } from '../hooks/useWorkoutSubmit.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
@@ -29,8 +30,6 @@ import Timer from '../components/workouts/Timer.jsx'
 import Calendar from '../components/progress/Calendar.jsx'
 import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
-import StreakCard from '../components/games/StreakCard.jsx'
-import MomentumCard from '../components/games/MomentumCard.jsx'
 import GamesSummary from '../components/games/GamesSummary.jsx'
 
 const EMPTY_EXERCISE = {
@@ -50,6 +49,59 @@ const EMPTY_SET = {
     distance: '', 
     addedWeight: '', 
     assistance: ''
+}
+
+const validateSet = (trackingMode, currentSet) => {
+    const { trackingMode } = currentExercise
+    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
+
+    switch (trackingMode) {
+        case 'weight_reps':
+            if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
+            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
+            return true
+        case 'bodyweight_reps':
+            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
+            return true
+        case 'assisted_reps':
+            if (!assistance || assistance <= 0) { toast.error('Please enter assistance weight.'); return false }
+            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
+            return true
+        case 'duration':
+            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
+            return true
+        case 'distance_duration':
+            if (!distance || distance <= 0) { toast.error('Please enter distance.'); return false }
+            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
+            return true
+        case 'reps':
+            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
+            return true
+        default:
+            return true
+    }
+}
+
+const buildSet = (trackingMode, currentSet) => {
+    const { trackingMode } = currentExercise
+    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
+
+    switch (trackingMode) {
+        case 'weight_reps':
+            return { weight: Number(weight), reps: Number(reps) }
+        case 'bodyweight_reps':
+            return { reps: Number(reps), addedWeight: addedWeight ? Number(addedWeight) : undefined }
+        case 'assisted_reps':
+            return { reps: Number(reps), assistance: Number(assistance) }
+        case 'duration':
+            return { duration: Number(duration) }
+        case 'distance_duration':
+            return { distance: Number(distance), duration: Number(duration) }
+        case 'reps':
+            return { reps: Number(reps) }
+        default:
+            return {}
+    }
 }
 
 const NewWorkout = () => {
@@ -199,69 +251,16 @@ const NewWorkout = () => {
     }
 
     // ----- SETS -----
-    const validateSet = () => {
-        const { trackingMode } = currentExercise
-        const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-        switch (trackingMode) {
-            case 'weight_reps':
-                if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
-                if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-                return true
-            case 'bodyweight_reps':
-                if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-                return true
-            case 'assisted_reps':
-                if (!assistance || assistance <= 0) { toast.error('Please enter assistance weight.'); return false }
-                if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-                return true
-            case 'duration':
-                if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-                return true
-            case 'distance_duration':
-                if (!distance || distance <= 0) { toast.error('Please enter distance.'); return false }
-                if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-                return true
-            case 'reps':
-                if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-                return true
-            default:
-                return true
-        }
-    }
-
-    const buildSet = () => {
-        const { trackingMode } = currentExercise
-        const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-        switch (trackingMode) {
-            case 'weight_reps':
-                return { weight: Number(weight), reps: Number(reps) }
-            case 'bodyweight_reps':
-                return { reps: Number(reps), addedWeight: addedWeight ? Number(addedWeight) : undefined }
-            case 'assisted_reps':
-                return { reps: Number(reps), assistance: Number(assistance) }
-            case 'duration':
-                return { duration: Number(duration) }
-            case 'distance_duration':
-                return { distance: Number(distance), duration: Number(duration) }
-            case 'reps':
-                return { reps: Number(reps) }
-            default:
-                return {}
-        }
-    }
-
     const addSet = () => {
         if (!currentExercise.exerciseId) {
             toast.error('Please select an exercise first.')
             return
         }
-        if (!validateSet()) {
+        if (!validateSet(currentExercise.trackingMode, currentSet)) {
             return
         }
 
-        const newSet = buildSet()
+        const newSet = buildSet(currentExercise.trackingmode, currentSet)
 
         setSetHistory(prev => [...prev, currentExercise.sets || []])
         setCurrentExercise(prev => ({ ...prev, sets: [...(prev.sets || []), newSet] }))
@@ -351,13 +350,9 @@ const NewWorkout = () => {
                 clearInterval(restIntervalRef.current)
                 restIntervalRef.current = null
                 localStorage.removeItem('restTimerEnd')
-                notifyRestComplete()
+                showRestCompleteAlert()
             }
         }, 1000)
-    }
-
-    const notifyRestComplete = () => {
-        showRestCompleteAlert()
     }
 
     const skipTimer = () => {
@@ -367,69 +362,12 @@ const NewWorkout = () => {
     }
 
     // ----- WORKOUTS -----
+    const { submitWorkout } = useWorkoutSubmit({ title, exercises, startTime, resetWorkoutState})
+
     const onSubmit = async () => {
-        if (!title.trim()) { 
-            toast.error('Please enter a workout title.')
-            return 
-        }
-        if (exercises.length === 0) {
-            toast.error('Please add at least one exercise.')
-            return 
-        }
-
         setIsSubmittingWorkout(true)
-
-        const endTime = Date.now()
-        const durationMinutes = Math.round((endTime - startTime) / 60000)
-        const workoutData = { title, exercises, duration: durationMinutes }
-
-        try {
-            const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
-            const { summary } = savedWorkout
-
-            const momentumData = {
-                workoutCompleted: true,
-                personalBests: summary.personalBests.length || 0,
-                quests: summary.questsCompleted
-            }
-
-            // Streak info
-            const oldStreak = user.streak.current
-            const oldShield = user.streak.shield
-            const oldMomentum = user.momentum.current
-
-            const [pointsResult, updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
-                summary.totalStrivePoints.total > 0
-                    ? dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
-                    : Promise.resolve(null),
-                dispatch(updateStreak(user._id)).unwrap(),
-                dispatch(updateMomentum(momentumData)).unwrap()
-            ])
-
-            const levelUp = pointsResult?.level > user.level ? pointsResult.level : null
-            const streakIncreased = updatedUserAfterStreak.streak.current > oldStreak
-            const shieldEarned = !oldShield && updatedUserAfterStreak.streak.shield
-            const shieldUsed = oldShield && !updatedUserAfterStreak.streak.shield && updatedUserAfterStreak.streak.current === oldStreak
-            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
-            const momentumGained = updatedUserAfterMomentum.momentum.current - oldMomentum
-
-            dispatch(setLastWorkoutStats({
-                workout: savedWorkout,
-                levelUp,
-                streakIncreased,
-                momentumGained,
-                shieldEarned,
-                shieldUsed,
-                streakBroken
-            }))
-
-            navigate('/workout-complete')
-            resetWorkoutState()
-        } catch (error) {
-            console.error('Submit workout error: ', error)
-            toast.error(error.message || 'Failed to save workout')
-            setIsSubmittingWorkout(false)
-        }
+        await submitWorkout()
+        setIsSubmittingWorkout(false)
     }
 
     const onCancel = () => {
