@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { FaUndoAlt } from 'react-icons/fa'
 
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
@@ -22,86 +21,14 @@ import { useRestTimer } from '../hooks/useRestTimer.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
-import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ExerciseList from '../components/workouts/ExerciseList.jsx'
-import SetList from '../components/workouts/SetList.jsx'
-import SetForm from '../components/workouts/SetForm.jsx'
 import Timer from '../components/workouts/Timer.jsx'
-import Calendar from '../components/progress/Calendar.jsx'
-import MuscleHeatmap from '../components/progress/MuscleGroupHeatmap.jsx'
-import GuestCard from '../components/guest/GuestCard.jsx'
-import GamesSummary from '../components/games/GamesSummary.jsx'
+import WorkoutDashBoard from '../components/workouts/WorkoutDashboard.jsx'
+import ExerciseForm from '../components/workouts/ExerciseForm.jsx'
 
-const EMPTY_EXERCISE = {
-    exerciseId: null,
-    exerciseName: '',
-    muscleGroup: '',
-    trackingMode: '',
-    equipment: [],
-    selectedEquipment: '',
-    sets: []
-}
-
-const EMPTY_SET = {
-    weight: '', 
-    reps: '', 
-    duration: '', 
-    distance: '', 
-    addedWeight: '', 
-    assistance: ''
-}
-
-const validateSet = (trackingMode, currentSet) => {
-    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-    switch (trackingMode) {
-        case 'weight_reps':
-            if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'bodyweight_reps':
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'assisted_reps':
-            if (!assistance || assistance <= 0) { toast.error('Please enter assistance weight.'); return false }
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'duration':
-            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-            return true
-        case 'distance_duration':
-            if (!distance || distance <= 0) { toast.error('Please enter distance.'); return false }
-            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-            return true
-        case 'reps':
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        default:
-            return true
-    }
-}
-
-const buildSet = (trackingMode, currentSet) => {
-    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-    switch (trackingMode) {
-        case 'weight_reps':
-            return { weight: Number(weight), reps: Number(reps) }
-        case 'bodyweight_reps':
-            return { reps: Number(reps), addedWeight: addedWeight ? Number(addedWeight) : undefined }
-        case 'assisted_reps':
-            return { reps: Number(reps), assistance: Number(assistance) }
-        case 'duration':
-            return { duration: Number(duration) }
-        case 'distance_duration':
-            return { distance: Number(distance), duration: Number(duration) }
-        case 'reps':
-            return { reps: Number(reps) }
-        default:
-            return {}
-    }
-}
+// Constants
+import { EMPTY_EXERCISE, EMPTY_SET } from '../utils/constants.js'
 
 const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
@@ -122,15 +49,10 @@ const NewWorkout = () => {
     const [setHistory, setSetHistory] = useLocalStorage('newWorkout_setHistory', [])
 
     // Local state
-    const [searchQuery, setSearchQuery] = useState('')
-    const [searchResults, setSearchResults] = useState([])
-    const [showSuggestions, setShowSuggestions] = useState(false)
     const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
 
     // Refs
     const hasCheckedGamification = useRef(false)
-
-    const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
 
     // Reset workout state
     const resetWorkoutState = () => {
@@ -141,8 +63,6 @@ const NewWorkout = () => {
         setStarted(false)
         setStartTime(null)
         setSetHistory([])
-        setSearchQuery('')
-        setSearchResults([])
 
         localStorage.removeItem('newWorkout_title')
         localStorage.removeItem('newWorkout_exercises')
@@ -180,22 +100,7 @@ const NewWorkout = () => {
         }
 
         checkGamification()
-    }, [user])
-
-    // Search exercises
-    useEffect(() => {
-		if (!searchQuery.trim()) {
-			setSearchResults([])
-			setShowSuggestions(false)
-			return
-		}
-
-		const filtered = allExercises.filter(ex =>
-			ex.name.toLowerCase().includes(searchQuery.toLowerCase())
-		)
-		setSearchResults(filtered)
-		setShowSuggestions(filtered.length > 0)
-	}, [searchQuery, allExercises])
+    }, [user])    
 
     // Initial data fetch
     useEffect(() => {
@@ -204,115 +109,6 @@ const NewWorkout = () => {
         dispatch(getWorkouts())
 		dispatch(getExercises())
     }, [user, message, isError, navigate, dispatch])
-
-    // ----- SEARCH -----
-    const handleSearchChange = (e) => {
-        const newValue = e.target.value
-        setSearchQuery(newValue)
-
-        if (currentExercise.exerciseId && currentExercise.sets?.length > 0) {
-            showChangeExerciseAlert(currentExercise.sets.length).then((result) => {
-                if (result.isConfirmed) {
-                    setCurrentExercise(EMPTY_EXERCISE)
-                    setCurrentSet(EMPTY_SET)
-                    setSetHistory([])
-                } else {
-                    setSearchQuery(currentExercise.exerciseName)
-                }
-            })
-        } else if (currentExercise.exerciseId) {
-            setCurrentExercise(EMPTY_EXERCISE)
-            setCurrentSet(EMPTY_SET)
-        }
-    }
-
-    // ----- EQUIPMENT -----
-    const handleEquipmentChange = (e) => {
-        setCurrentExercise((prev) => ({ ...prev, selectedEquipment: e.target.value }))
-    }
-
-    // ----- SETS -----
-    const addSet = () => {
-        if (!currentExercise.exerciseId) {
-            toast.error('Please select an exercise first.')
-            return
-        }
-        if (!validateSet(currentExercise.trackingMode, currentSet)) {
-            return
-        }
-
-        const newSet = buildSet(currentExercise.trackingMode, currentSet)
-
-        setSetHistory(prev => [...prev, currentExercise.sets || []])
-        setCurrentExercise(prev => ({ ...prev, sets: [...(prev.sets || []), newSet] }))
-        setCurrentSet(EMPTY_SET)
-        toast.success('Set saved!')
-
-        if (restTimerDuration > 0) {
-            startRestTimer()
-        }
-    }
-
-    const undoLastSet = () => {
-        if (setHistory.length === 0) return
-        const previous = setHistory[setHistory.length - 1]
-        setCurrentExercise(prev => ({ ...prev, sets: previous }))
-        setSetHistory(prev => prev.slice(0, -1))
-        toast.info('Last set removed.')
-    }
-
-    const handleSetChange = (e) => {
-        const { name, value } = e.target
-        setCurrentSet((prev) => ({ ...prev, [name]: value }))
-    }
-
-    // ----- EXERCISES -----
-    const addExercise = () => {
-        if (!currentExercise.exerciseId) {
-            toast.error('Please select an exercise from the list.')
-            return
-        }
-        if (!currentExercise.selectedEquipment) {
-            toast.error('Please select equipment.')
-            return
-        }
-        if (!currentExercise.sets || currentExercise.sets.length === 0) {
-            toast.error('Please add at least one set.')
-            return
-        }
-
-        const exerciseToSave = {
-            exercise: currentExercise.exerciseId,
-            selectedEquipment: currentExercise.selectedEquipment,
-            exerciseName: currentExercise.exerciseName,
-            muscleGroup: currentExercise.muscleGroup,
-            trackingMode: currentExercise.trackingMode,
-            sets: currentExercise.sets
-        }
-
-        setExercises(prev => [...prev, exerciseToSave])
-        setCurrentExercise(EMPTY_EXERCISE)
-        setCurrentSet(EMPTY_SET)
-        setSetHistory([])
-        setSearchQuery('')
-        toast.success('Exercise added!')
-    }
-
-    const selectExercise = (exercise) => {
-        setSearchQuery(exercise.name)
-        setShowSuggestions(false)
-        setCurrentExercise({
-            exerciseId: exercise._id,
-            exerciseName: exercise.name,
-            muscleGroup: exercise.muscleGroup,
-            trackingMode: exercise.trackingMode,
-            equipment: exercise.equipment,
-            selectedEquipment: exercise.equipment?.[0] || '',
-            sets: []
-        })
-        setCurrentSet(EMPTY_SET)
-        setSetHistory([])
-    }
 
     // ----- REST TIMER -----
     const { restTimeRemaining, startRestTimer, skipTimer } = useRestTimer(restTimerDuration)
@@ -355,39 +151,11 @@ const NewWorkout = () => {
             <Header />
 
             {!started && (
-                <section className="space-y-3 w-full max-w-2xl">
-                    <div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                        <h1>Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span></h1>
-                    </div>
-
-                    {user?.isGuest && <GuestCard workouts={workouts} isMigrate={false} />}
-                    
-                    <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
-                        <GamesSummary user={user} />
-                    </div>
-
-                    <div className="card-theme fade-in-card p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl" style={{ animationDelay: '0.4s' }}>
-                        <h2 className="text-[#EDF2F4] text-xl text-center mb-3">Ready to train?</h2>
-                        <button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-                            Start Workout
-                        </button>
-                    </div>
-
-                    <div className="fade-in-card" style={{ animationDelay: '0.6s' }}>
-                        <Calendar workouts={workouts} />
-                    </div>
-                    
-
-                    {lastWorkout && (
-                        <div className="fade-in-card" style={{ animationDelay: '0.8s' }}>
-                            <WorkoutItem workout={lastWorkout} />
-                        </div>
-                    )}
-                    
-                    <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
-                        <MuscleHeatmap workouts={workouts} />
-                    </div>
-                </section>
+                <WorkoutDashBoard 
+                    user={user}
+                    workouts={workouts}
+                    startWorkout={startWorkout}
+                />
             )}
 
             {started && (
@@ -396,7 +164,14 @@ const NewWorkout = () => {
                         <h1>New <span className="text-[#EF233C]">Workout</span></h1>
                     </div>
 
-                    <Timer started={started} startTime={startTime} restTimerDuration={restTimerDuration} setRestTimerDuration={setRestTimerDuration} />
+                    <Timer 
+                        started={started} 
+                        startTime={startTime} 
+                        restTimerDuration={restTimerDuration} 
+                        setRestTimerDuration={setRestTimerDuration} 
+                        restTimeRemaining={restTimeRemaining}
+                        skipTimer={skipTimer}
+                    />
 
                     <div className="card-theme p-6 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl">
                         {/* Workout Title */}
@@ -406,90 +181,23 @@ const NewWorkout = () => {
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Workout Title *"
                             className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 mb-3 text-[#EDF2F4] text-center placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                        />
-
-                        {/* Rest Timer */}
-                        {restTimeRemaining > 0 && (
-                            <div className="text-center mb-4 bg-[#2B2D42] rounded-xl p-3">
-                                <p className="text-[#EDF2F4] text-sm mb-1">
-                                    Rest Timer
-                                </p>
-                                <p className="text-[#EF233C] text-3xl font-bold">{restTimeRemaining}s</p>
-                                <button onClick={skipTimer} className="text-[#EDF2F4] text-xs mt-1 opacity-60 hover:opacity-100">
-                                    Skip
-                                </button>
-                            </div>
-                        )}
+                        />                        
 
                         {/* Exercise Form */}
-                        <div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl space-y-3">
-                            {/* Exercise Search */}
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={currentExercise.exerciseName ? currentExercise.exerciseName : searchQuery}
-                                    onChange={handleSearchChange}
-                                    placeholder="Exercise name *"
-                                    className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                                />
-
-                                {/* Suggestions dropdown */}
-                                {showSuggestions && !currentExercise.exerciseName && (
-                                    <ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
-                                        {searchResults.map((exercise) => (
-                                            <li key={exercise._id} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
-                                                <div className="font-semibold">{exercise.name}</div>
-                                                <div className="text-xs text-[#8D99AE]">{exercise.muscleGroup} · {exercise.subMuscleGroup}</div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-
-                            {/* Equipment Dropdown — shown after exercise selected */}
-                            {currentExercise.exerciseId && (
-                                <>
-                                    <select value={currentExercise.selectedEquipment} onChange={handleEquipmentChange} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" >
-                                        {currentExercise.equipment.map((eq) => (
-                                            <option key={eq} value={eq}>{eq}</option>
-                                        ))}
-                                    </select>
-
-                                    {/* Set Input */}
-                                    <div className="space-y-2">
-                                        <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} />
-                                        <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                            Add Set to Exercise
-                                        </button>
-                                    </div>
-
-                                    {/* Undo + Set List */}
-                                    <div className="flex flex-col items-center">
-                                        {setHistory.length > 0 && (
-                                            <button type="button" onClick={undoLastSet} className="flex flex-row items-center gap-2 text-[#EDF2F4]/40 hover:text-[#EF233C] text-sm transition mb-2">
-                                                <FaUndoAlt /> Undo last set
-                                            </button>
-                                        )}
-                                        <SetList
-                                            sets={currentExercise.sets}
-                                            trackingMode={currentExercise.trackingMode}
-                                            useImperial={user.useImperial}
-                                            onSetsUpdate={() => {
-                                                const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-                                                setCurrentExercise(updatedExercise)
-                                            }}
-                                        />
-                                    </div>
-
-                                    {/* Add Exercise Button */}
-                                    {currentExercise.sets.length > 0 && (
-                                        <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                            Finish Exercise
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </div>
+                        <ExerciseForm 
+                            useImperial={user.useImperial}
+                            currentExercise={currentExercise}
+                            setCurrentExercise={setCurrentExercise}
+                            currentSet={currentSet}
+                            setCurrentSet={setCurrentSet}
+                            setHistory={setHistory}
+                            setSetHistory={setSetHistory}
+                            exercises={exercises}
+                            setExercises={setExercises}
+                            allExercises={allExercises}
+                            restTimerDuration={restTimerDuration}
+                            startRestTimer={startRestTimer}
+                        />
 
                         {/* Exercises List */}
                         <ExerciseList exercises={exercises} useImperial={user.useImperial} />
