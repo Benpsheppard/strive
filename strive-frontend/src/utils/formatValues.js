@@ -43,6 +43,15 @@ export const formatTime = (mins) => {
 	return { hours, mins: remainingMins }
 }
 
+export const formatSeconds = (seconds) => {
+    if (seconds < 60) {
+        return `${seconds}s`
+    }
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return secs === 0 ? `${mins}m` : `${mins}m ${secs}s`
+}
+
 export const formatDuration = (duration) => {
 	const { hours, mins } = formatTime(duration || 0)
 
