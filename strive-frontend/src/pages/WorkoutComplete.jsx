@@ -114,7 +114,7 @@ const WorkoutComplete = () => {
                         <FaStar className="text-[#EF233C]" /> Strive Points Earned
                     </h2>
                     <div className="text-center mb-5">
-                        <p className="text-[#EF233C] text-5xl font-bold">+{workout.summary.totalStrivePoints.total}</p>
+                        <p className="text-[#EF233C] text-7xl font-bold">+{workout.summary.totalStrivePoints.total}</p>
                     </div>
                     <div className="gap-4 text-center">
                         <p className="fade-in-card text-[#EDF2F4]/40 hover:scale-105 hover:text-[#EDF2F4] transition" style={{ animationDelay: '0.4s' }}>Volume +{workout.summary.totalStrivePoints.volume.reward}SP</p>
