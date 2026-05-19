@@ -83,44 +83,44 @@ const WorkoutItem = ({ workout }) => {
             {workoutExpanded && (
                 <>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
                             <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Reps</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalReps)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Sets</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalSets)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Distance</p>
                             <p className="font-semibold text-[#EF233C]">{formatDistance(workout.summary.totalDistance, user.useImperial)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Cardio</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDuration)}m</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">SP</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints.total)}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 mb-4">
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center">
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.personalBests.length)}</p>
                         </div>
