@@ -15,7 +15,7 @@ export const showShieldUsedAlert = () =>
     })
 
 
-export const showShieldBrokenAlert = (oldStreak) => 
+export const showStreakBrokenAlert = (oldStreak) => 
     Swal.fire({ 
         title: 'Streak Lost!', 
         text: `Your ${oldStreak} week streak has been reset. Time to start again!`, 
