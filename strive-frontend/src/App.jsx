@@ -25,6 +25,7 @@ const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
+const Trainer = lazy(() => import('./pages/Trainer.jsx'))
 
 // App
 const App = () => {
@@ -48,6 +49,7 @@ const App = () => {
 						<Route path='/games' element={<Games />} />
 						<Route path='/profile' element={<Profile />} />
 						<Route path='/migrate' element={<GuestMigration />} />
+						<Route path='/trainer' element={<Trainer />} />
 
 						{/* <Route path='/' element={<Dashboard />} /> */}
 						{/* <Route path='/contact' element={<Contact />} /> */}

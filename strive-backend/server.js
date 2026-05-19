@@ -18,6 +18,7 @@ const { exerciseRouter } = require('./routes/exerciseRoutes.js')
 const { userRouter } = require('./routes/userRoutes.js')              
 const { questRouter } = require('./routes/questRoutes.js')
 const { leaderboardRouter } = require('./routes/leaderboardRoutes.js')
+const { trainerRouter } = require('./routes/trainerRoutes.js')
 
 // .env variables validation
 const requiredEnv = [
@@ -107,6 +108,7 @@ app.use('/api/exercises', exerciseRouter)
 app.use('/api/users', userRouter)
 app.use('/api/quests', questRouter)
 app.use('/api/leaderboard', leaderboardRouter)
+app.use('/api/trainer', trainerRouter)
 
 // Production configuration
 if (process.env.NODE_ENV === 'production') {
