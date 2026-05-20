@@ -59,34 +59,35 @@ const Leaderboard = () => {
 
     return (
         <div className="bg-[#8D99AE] text-[#EDF2F4] flex flex-col text-center rounded-2xl px-6 py-5">
-            <div className='font-bold text-2xl flex flex-row justify-between mb-5'>
+            <h2 className='font-bold text-3xl mb-5'>
+                Weekly 
+                <span className='text-[#EF233C]'> Leaderboard</span>
+            </h2>
+            <div className='font-bold text-2xl flex flex-row justify-between items-center mb-5 rounded-2xl shadow p-2'>
                 <div onClick={handlePrev} className='text-[#EDF2F4]/40 text-lg hover:text-[#EDF2F4]'>
                     <FaChevronLeft />
                 </div>
                 <h2>
                     {currentMetric.label} SP {' '}
-                    <span className='text-[#EF233C]'>LeaderBoard</span>
                 </h2>
                 <div onClick={handleNext} className='text-[#EDF2F4]/40 text-lg hover:text-[#EDF2F4]'>
                     <FaChevronRight />
                 </div>
             </div>
 
-            <h2 className='font-bold text-xl'>
-                
-            </h2>
-
-            <AnimatePresence mode='wait' custom={direction} >
-                <motion.div key={currentMetric.key} custom={direction} variants={variants} initial='enter' animate='center' exit='exit' transition={{ duration: '0.25' }} >
-                {leaderboard.map((entry, index) => (
-                    <div key={entry._id} className='flex flex-row justify-between items-center border-b border-[#EDF2F4]/40'>
-                        <span>#{index + 1}</span>
-                        <span>{entry.user.username || 'Unknown'}</span>
-                        <span>{entry[currentMetric.key] || 0}SP</span>
-                    </div>
-                ))}
-                </motion.div>
-            </AnimatePresence>
+            <div className="rounded-2xl shadow p-2">
+                <AnimatePresence mode='wait' custom={direction} >
+                    <motion.div className="space-y-3" key={currentMetric.key} custom={direction} variants={variants} initial='enter' animate='center' exit='exit' transition={{ duration: '0.25' }} >
+                    {leaderboard.map((entry, index) => (
+                        <div key={entry._id} className='flex flex-row justify-between items-center bg-[#2B2D42] rounded-xl p-2 text-xl'>
+                            <span>#{index + 1}</span>
+                            <span>{entry.user.username || 'Unknown'}</span>
+                            <span>{entry[currentMetric.key] || 0}SP</span>
+                        </div>
+                    ))}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
     )
 }
