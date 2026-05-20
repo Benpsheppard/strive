@@ -1,6 +1,7 @@
 // WorkoutDashboard.jsx
 
 // Component Imports
+import GuestCard from "../guest/GuestCard"
 import GamesSummary from "../games/GamesSummary"
 import Calendar from "../progress/Calendar"
 import WorkoutItem from "./WorkoutItem"
@@ -38,9 +39,9 @@ const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
                         Most Recent <span className="text-[#EF233C]">Workouts</span>
                     </h1>
 
-                    {lastThreeWorkouts && (
+                    {lastThreeWorkouts.length > 0 && (
                         lastThreeWorkouts.map((workout) => 
-                            <div key={workout.id} className="w-full">
+                            <div key={workout._id} className="w-full">
                                 <WorkoutItem workout={workout} />
                             </div>
                         )
