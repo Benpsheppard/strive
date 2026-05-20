@@ -7,7 +7,6 @@ import WorkoutItem from "./WorkoutItem"
 import MuscleGroupHeatmap from "../progress/MuscleGroupHeatmap"
 
 const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
-    const lastWorkout = workouts.length > 0 ? workouts[workouts.length - 1] : null
     const lastThreeWorkouts = workouts.length > 0 ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3) : []
 
     return (
