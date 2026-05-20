@@ -12,11 +12,11 @@ const ProgressBar = ({ numerator, denominator, unit }) => {
     }, [progressPercentage])
 
     return (
-        <div className='relative w-full bg-[#2B2D42] rounded-xl h-8 overflow-hidden border-2 border-[#EDF2F4]'>
+        <div className='relative w-full bg-[#2B2D42] rounded-xl h-10 overflow-hidden border-2 border-[#EDF2F4]'>
 
             {/* Fill */}
             <div
-                className='bg-[#EF233C] h-8 transition-[width] duration-700 delay-500 ease-out'
+                className='bg-[#EF233C] h-10 transition-[width] duration-700 delay-500 ease-out'
                 style={{ width: `${width}%` }}
             />
 

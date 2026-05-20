@@ -80,8 +80,7 @@ const Leaderboard = () => {
                     <motion.div className="space-y-3" key={currentMetric.key} custom={direction} variants={variants} initial='enter' animate='center' exit='exit' transition={{ duration: '0.25' }} >
                     {leaderboard.map((entry, index) => (
                         <div key={entry._id} className='flex flex-row justify-between items-center bg-[#2B2D42] rounded-xl p-2 text-xl'>
-                            <span>#{index + 1}</span>
-                            <span>{entry.user?.username || 'Unknown'}</span>
+                            <span>#{index + 1} {entry.user?.username || 'Unknown'}</span>
                             <span>{entry[currentMetric.key] || 0}SP</span>
                         </div>
                     ))}
