@@ -41,8 +41,8 @@ const Calendar = ({ workouts }) => {
 
     return (
         <div className="w-full mx-auto bg-[#8D99AE] shadow rounded-2xl p-4">
-            <p className="text-[#EDF2F4] font-semibold text-center mb-3">
-                This Week
+            <p className="text-xl text-[#EDF2F4] font-semibold text-center mb-3">
+                This <span className="text-[#EF233C]">Week</span>
             </p>
             <div className="flex justify-between items-center">
                 {weekDates.map((date, index) => {
@@ -53,16 +53,16 @@ const Calendar = ({ workouts }) => {
                         <div key={index} className="flex flex-col items-center gap-1">
                             <span className="text-xs text-[#EDF2F4] opacity-70">{days[index]}</span>
 
-                            <div className="relative w-8 h-8 flex items-center justify-center">
+                            <div className="relative w-10 h-10 md:w-16 md:h-16 flex items-center justify-center">
                                 {trained ? (
                                     <>
-                                        <FaFire className="absolute text-[#EF233C] text-3xl" />
-                                        <span className="relative z-10 font-bold text-[#EDF2F4]">
+                                        <FaFire className="absolute text-[#EF233C] text-5xl md:text-6xl" />
+                                        <span className="text-xl relative font-bold text-[#EDF2F4]">
                                             {date.getDate()}
                                         </span>
                                     </>
                                 ) : (
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                                    <div className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl font-bold
                                         ${isToday ? 'border-2 border-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42]/40 text-[#EDF2F4] opacity-50'}
                                     `}>
                                         {date.getDate()}
