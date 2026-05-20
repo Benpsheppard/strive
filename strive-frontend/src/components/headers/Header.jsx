@@ -65,6 +65,7 @@ const Header = () => {
                             <li><Link to="/prev-workouts" className={navOps}>Previous Workouts</Link></li>
                             <li><Link to="/progress" className={navOps}>Progress</Link></li>
                             <li><Link to="/games" className={navOps}>Games</Link></li>
+                            <li><Link to="/trainer" className={navOps}>Trainer</Link></li>
                             <li>
                                 {user ? (
                                     <Link to='/profile' className="text-[#EF233C] hover:text-[#D90429] inline-block transform transition duration-200 hover:scale-110">

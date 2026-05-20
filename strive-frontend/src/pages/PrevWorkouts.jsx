@@ -33,13 +33,8 @@ const PrevWorkouts = () => {
             const lowerSearch = searchTerm.toLowerCase()
 
             filtered = filtered.filter(workout => {
-                const titleMatch = workout.title 
-                    ?.toLowerCase()
-                    .includes(lowerSearch)
-                
-                const exerciseMatch = workout.exercises?.some(ex =>
-                    ex.exercise.name.toLowerCase().includes(lowerSearch)
-                )
+                const titleMatch = workout.title ?.toLowerCase() .includes(lowerSearch)
+                const exerciseMatch = workout.exercises?.some(ex => ex.exercise.name.toLowerCase().includes(lowerSearch) )
 
                 return titleMatch || exerciseMatch
             })
