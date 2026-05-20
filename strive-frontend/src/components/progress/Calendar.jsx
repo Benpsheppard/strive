@@ -40,7 +40,7 @@ const Calendar = ({ workouts }) => {
     const today = new Date()
 
     return (
-        <div className="w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl p-4">
+        <div className="w-full mx-auto bg-[#8D99AE] shadow rounded-2xl p-4">
             <p className="text-[#EDF2F4] font-semibold text-center mb-3">
                 This Week
             </p>

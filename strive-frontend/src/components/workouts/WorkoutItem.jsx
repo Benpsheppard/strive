@@ -43,7 +43,7 @@ const WorkoutItem = ({ workout }) => {
     const exerciseCount = workout.exercises?.length || 0
 
     return (
-        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 flex flex-col gap-2 max-w-2xl mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
+        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 flex flex-col gap-2 mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
             onClick={() => setWorkoutExpanded(!workoutExpanded)}>
             {/* X delete button in top right */}
             <div>
