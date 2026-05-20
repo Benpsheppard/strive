@@ -182,10 +182,10 @@ const genQuests = async (user, duration) => {
     const existingExercises = existingQuests.map(q => q.completion.exercise).filter(Boolean)
     const existingMuscleGroups = existingQuests.map(q => q.completion.filterTag || q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
 
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     const recentQuests = await Quest.find({
         user: user._id,
-        expiry: { $gte: twoDaysAgo, $lte: new Date() }
+        createdAt: { $gte: sevenDaysAgo }
     })
     const recentExercises = recentQuests.map(q => q.completion.exercise).filter(Boolean)
     const recentMuscleGroups = recentQuests.map(q => q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
