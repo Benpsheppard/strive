@@ -32,8 +32,12 @@ const MuscleGroupHeatmap = ({ workouts }) => {
 
     return (
         <div className="w-full h-full bg-[#8D99AE] shadow rounded-2xl px-6 py-2 flex flex-col">
-            <p className="text-[#EDF2F4] font-semibold text-center mb-1">Muscle Groups</p>
-            <p className="text-[#EDF2F4] text-xs text-center opacity-60 mb-4">Last Trained</p>
+            <p className="text-xl text-[#EDF2F4] font-semibold text-center mb-1">
+                Muscle <span className="text-[#EF233C]">Groups</span>
+            </p>
+            <p className="text-[#EDF2F4] text-xs text-center opacity-60 mb-4">
+                Recently Trained
+            </p>
 
             <div className="grid grid-cols-2 gap-2 flex-1">
                 {MUSCLE_GROUPS_HEATMAP.map((group) => {
