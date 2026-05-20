@@ -80,13 +80,13 @@ const Header = () => {
             </header>
 
             {/* Mobile Bottom Nav Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#2B2D42] border-t border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] z-100 p-5">
+            <nav className="md:hidden rounded-full fixed bottom-0 left-0 w-full bg-[#2B2D42] border-t border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] z-100 p-5">
                 <ul className="flex justify-around items-center py-2">
                     {mobileNavItems.map(({ to, label, icon: Icon }) => {
                         const isActive = location.pathname === to
                         return (
                             <li key={to}>
-                                <Link to={to} className={`flex flex-col items-center gap-1 text-xs transition duration-200 ${ isActive ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]' }`} >
+                                <Link to={to} className={`flex flex-col items-center gap-1 text-xs transition duration-200 ${ isActive ? 'text-[#EF233C] scale-120' : 'text-[#EDF2F4] hover:text-[#EF233C]' }`} >
                                     <Icon size={22} />
                                     <span>{label}</span>
                                 </Link>
