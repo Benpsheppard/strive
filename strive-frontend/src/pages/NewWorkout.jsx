@@ -10,6 +10,7 @@ import { toast } from 'react-toastify'
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { updateStreak, updateMomentum } from '../features/auth/authSlice.js'
+import { getSuggestions } from '../features/trainer/trainerSlice.js'
 
 // Alert Imports
 import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
@@ -34,6 +35,7 @@ const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
 	const { exercises: allExercises } = useSelector((state) => state.exercise)
+    const { suggestions } = useSelector((state) => state.trainer)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -108,6 +110,7 @@ const NewWorkout = () => {
         if (!user) { navigate('/login'); return }
         dispatch(getWorkouts())
 		dispatch(getExercises())
+        dispatch(getSuggestions())
     }, [user, message, isError, navigate, dispatch])
 
     // ----- REST TIMER -----
@@ -155,6 +158,7 @@ const NewWorkout = () => {
                     user={user}
                     workouts={workouts}
                     startWorkout={startWorkout}
+                    suggestions={suggestions}
                 />
             )}
 

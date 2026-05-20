@@ -81,7 +81,7 @@ const Leaderboard = () => {
                     {leaderboard.map((entry, index) => (
                         <div key={entry._id} className='flex flex-row justify-between items-center bg-[#2B2D42] rounded-xl p-2 text-xl'>
                             <span>#{index + 1}</span>
-                            <span>{entry.user.username || 'Unknown'}</span>
+                            <span>{entry?.user?.username || 'Unknown'}</span>
                             <span>{entry[currentMetric.key] || 0}SP</span>
                         </div>
                     ))}

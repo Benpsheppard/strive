@@ -4,6 +4,7 @@ import workoutReducer from '../features/workouts/workoutsSlice.js'
 import questReducer from '../features/quests/questSlice.js'
 import exerciseReducer from '../features/exercises/exerciseSlice.js'
 import leaderboardReducer from '../features/leaderboard/leaderboardSlice.js'
+import trainerReducer from '../features/trainer/trainerSlice.js'
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
         workout: workoutReducer,
         quest: questReducer,
         exercise: exerciseReducer,
-        leaderboard: leaderboardReducer
+        leaderboard: leaderboardReducer,
+        trainer: trainerReducer
     }
 })

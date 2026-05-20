@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import trainerService from './trainerService'
 
 const initialState = {
-    suggestions = [],
+    suggestions: [],
     isError: false,
     isSuccess: false,
     isLoading: false,
@@ -14,7 +14,8 @@ const initialState = {
 // Get Suggestions
 export const getSuggestions = createAsyncThunk('suggestions/getAll', async (_, thunkAPI) => {
     try {
-        return await trainerService.getSuggestions()
+        const token = thunkAPI.getState().auth.user.token
+        return await trainerService.getSuggestions(token)
     } catch (error) {
         const message = (error.response && error.response.data && error.response.data.message) 
 		|| error.message || error.toString()
@@ -38,7 +39,7 @@ export const trainerSlice = createSlice({
             .addCase(getSuggestions.fulfilled, (state, action) => {
                 state.isLoading = false
                 state.isSuccess = true
-                state.exercises = action.payload
+                state.suggestions = action.payload
             })
             .addCase(getSuggestions.rejected, (state, action) => {
                 state.isLoading = false

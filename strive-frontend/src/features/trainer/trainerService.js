@@ -7,10 +7,16 @@ import axios from 'axios'
 const API_URL = import.meta.env.VITE_API_URL + '/api/trainer/'
 
 // Get suggestions
-const getSuggestions = async () => {
-    const response = await axios.get(API_URL)
+const getSuggestions = async (token) => {
+    const config = {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	}
 
-    return response.data
+    const response = await axios.get(API_URL, config)
+
+    return response.data.suggestions
 }
 
 const trainerService = {
