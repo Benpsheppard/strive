@@ -34,8 +34,8 @@ const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-5">
-                <div className="fade-in-card flex flex-col items-center w-full space-y-5 p-2 bg-[#8D99AE] text-[#EDF2F4] text-2xl font-bold rounded-2xl" style={{ animationDelay: '0.8s' }}>
-                    <h1>
+                <div className="fade-in-card flex flex-col items-center w-full space-y-5 p-2 bg-[#8D99AE] text-[#EDF2F4] rounded-2xl" style={{ animationDelay: '0.8s' }}>
+                    <h1 className="text-3xl p-2 font-bold">
                         Most Recent <span className="text-[#EF233C]">Workouts</span>
                     </h1>
 
