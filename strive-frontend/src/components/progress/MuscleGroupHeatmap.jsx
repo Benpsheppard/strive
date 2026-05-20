@@ -31,16 +31,16 @@ const MuscleGroupHeatmap = ({ workouts }) => {
     }
 
     return (
-        <div className="w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl px-6 py-4 mb-4">
+        <div className="w-full h-full bg-[#8D99AE] shadow rounded-2xl px-6 py-2 flex flex-col">
             <p className="text-[#EDF2F4] font-semibold text-center mb-1">Muscle Groups</p>
             <p className="text-[#EDF2F4] text-xs text-center opacity-60 mb-4">Last Trained</p>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 flex-1">
                 {MUSCLE_GROUPS_HEATMAP.map((group) => {
                     const daysSince = getDaysSince(group)
 
                     return (
-                        <div key={group} className={`flex flex-col items-center justify-center rounded-xl p-2 text-center transition ${getColour(daysSince)}`}>
+                        <div key={group} className={`flex flex-col items-center justify-center rounded-xl p-2 text-center transition h-full ${getColour(daysSince)}`}>
                             <span className="text-xs font-semibold">{group}</span>
                             {daysSince !== null ? (
                                 <span className="text-xs opacity-75 mt-1">
