@@ -22,6 +22,7 @@ import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
 import MonthCalendar from '../components/progress/MonthCalendar.jsx'
 import MonthlyProgressCard from '../components/progress/MonthlyProgressCard.jsx'
 import TotalProgressCard from '../components/progress/TotalProgressCard.jsx'
+import OneRepMax from '../components/progress/OneRepMax.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
@@ -54,8 +55,6 @@ const Progress = () => {
         )
     }
 
-    
-
     return (
         <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
             <Header />
@@ -86,8 +85,9 @@ const Progress = () => {
                         <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial}/>
                     </div>
 
-                    <div className='fade-in-card' style={{ animationDelay: '1.0s'}}>
+                    <div className='fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6' style={{ animationDelay: '1.0s'}}>
                         <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial}/>
+                        <OneRepMax useImperial={user.useImperial} workouts={workouts}/>
                     </div>
                 </div>
             ) : (

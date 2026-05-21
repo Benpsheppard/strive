@@ -112,32 +112,20 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
     }
 
     return (
-        <div
-            onClick={() => { if (isMobile) setExpanded(!expanded) }}
-            className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}
-        >
+        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
             <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
                 Muscle Group <span className="text-[#EF233C]">Split</span>
             </h2>
 
             {/* View Mode Toggles */}
             <div onClick={(e) => e.stopPropagation()} className="flex gap-2 mb-6 justify-center flex-wrap">
-                <button
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'exercises' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`}
-                    onClick={() => setViewMode('exercises')}
-                >
+                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'exercises' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('exercises')} >
                     By Exercises
                 </button>
-                <button
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'sets' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`}
-                    onClick={() => setViewMode('sets')}
-                >
+                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'sets' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('sets')} >
                     By Sets
                 </button>
-                <button
-                    className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'weight' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`}
-                    onClick={() => setViewMode('weight')}
-                >
+                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'weight' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('weight')} >
                     By Weight
                 </button>
             </div>
