@@ -1,78 +1,196 @@
 // MonthlyProgressCard.jsx
 
 // Imports
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { formatWeight, formatDuration, formatNumber, formatDistance } from '../../utils/formatValues.js'
 
+// Component Imports
+import StatRow from './StatRow.jsx'
+
 const MonthlyProgressCard = ({ workouts }) => {
-	const { user } = useSelector((state) => state.auth)
+    const { user } = useSelector((state) => state.auth)
 
-	// Current date and month
-	const now = new Date()
-	const monthName = now.toLocaleString('default', { month: 'long' })
+    const [currentDate, setCurrentDate] = useState(new Date())
 
-	// Filter workouts for current month
-	const currentMonthWorkouts = workouts.filter((workout) => {
-		const workoutDate = new Date(workout.date)
-		return (
-			workoutDate.getMonth() === now.getMonth() &&
-			workoutDate.getFullYear() === now.getFullYear()
-		)
-	})
+    const today = new Date()
 
-	// Calculate totals
-	const totalWorkouts = currentMonthWorkouts.length
-	const totalDuration = currentMonthWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0)
+    // Navigation
+    const prevMonth = () => {
+        setCurrentDate(
+            new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - 1,
+                1
+            )
+        )
+    }
 
-	let totalWeight = 0
-	let totalReps = 0
-	let totalSets = 0
-	let totalExercises = 0
-	let totalDistance = 0
-	let heaviestLift = 0
+    const nextMonth = () => {
+        setCurrentDate(
+            new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() + 1,
+                1
+            )
+        )
+    }
 
-	currentMonthWorkouts.forEach((w) => {
-		w.exercises.forEach((ex) => {
-			totalExercises++
+    const isCurrentMonth =
+        currentDate.getMonth() === today.getMonth() &&
+        currentDate.getFullYear() === today.getFullYear()
 
-			ex.sets.forEach((set) => {
-				const weight = Number(set.weight) || 0
-				const reps = Number(set.reps) || 0
-				const distance = Number(set.distance) || 0
+    // Month labels
+    const monthName = currentDate.toLocaleString('default', {
+        month: 'long'
+    })
 
-				totalWeight += weight * reps
-				totalReps += reps
-				totalSets++
-				totalDistance += distance
+    const year = currentDate.getFullYear()
 
-				if (weight > heaviestLift) {
-					heaviestLift = weight
-				}
-			})
-		})
-	})
+    // Reusable stats calculator
+    const calculateStats = (targetDate) => {
+        const filtered = workouts.filter((workout) => {
+            const workoutDate = new Date(workout.date || workout.createdAt)
 
-	return (
-		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center text-xl w-full">
-			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
-                <span className="text-[#EF233C] font-bold">{monthName}</span> Summary
-			</h2>
+            return (
+                workoutDate.getMonth() === targetDate.getMonth() &&
+                workoutDate.getFullYear() === targetDate.getFullYear()
+            )
+        })
 
-			<div className="text-[#EDF2F4] space-y-2">
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Workouts <span className="text-[#EF233C] font-bold"> {formatNumber(totalWorkouts)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Exercises <span className="text-[#EF233C] font-bold"> {formatNumber(totalExercises)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Duration <span className="text-[#EF233C] font-bold"> {formatDuration(totalDuration)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Sets <span className="text-[#EF233C] font-bold"> {formatNumber(totalSets)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Weight <span className="text-[#EF233C] font-bold"> {formatWeight(totalWeight, user.useImperial)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Reps <span className="text-[#EF233C] font-bold"> {formatNumber(totalReps)} </span> </p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40"> Distance Covered <span className="text-[#EF233C] font-bold">{formatDistance(totalDistance, user.useImperial)}</span></p>
-			</div>
-		</div>
-	)
+        const stats = {
+            totalWorkouts: filtered.length,
+            totalDuration: 0,
+            totalWeight: 0,
+            totalReps: 0,
+            totalSets: 0,
+            totalExercises: 0,
+            totalDistance: 0,
+            heaviestLift: 0
+        }
+
+        filtered.forEach((w) => {
+            stats.totalDuration += w.duration || 0
+
+            w.exercises.forEach((ex) => {
+                stats.totalExercises++
+
+                ex.sets.forEach((set) => {
+                    const weight = Number(set.weight) || 0
+                    const reps = Number(set.reps) || 0
+                    const distance = Number(set.distance) || 0
+
+                    stats.totalWeight += weight * reps
+                    stats.totalReps += reps
+                    stats.totalSets++
+                    stats.totalDistance += distance
+
+                    if (weight > stats.heaviestLift) {
+                        stats.heaviestLift = weight
+                    }
+                })
+            })
+        })
+
+        return stats
+    }
+
+    // Current month stats
+    const currentStats = calculateStats(currentDate)
+
+    // Previous month stats
+    const previousMonthDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1
+    )
+
+    const previousStats = calculateStats(previousMonthDate)
+
+    return (
+        <div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center text-xl w-full">
+
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <button onClick={prevMonth} className="text-[#EDF2F4] hover:text-[#EF233C] transition text-xl px-2" >
+                    <FaChevronLeft />
+                </button>
+
+                <h2 className="text-[#EDF2F4] text-2xl font-semibold">
+                    <span className="text-[#EF233C] font-bold">
+                        {monthName}
+                    </span>{' '}
+                    {year} Summary
+                </h2>
+
+                <button onClick={nextMonth} disabled={isCurrentMonth} className={`text-xl px-2 transition ${ isCurrentMonth ? 'text-[#EDF2F4] opacity-20 cursor-not-allowed' : 'text-[#EDF2F4] hover:text-[#EF233C]' }`} >
+                    <FaChevronRight />
+                </button>
+            </div>
+
+            {/* Stats */}
+            <div className="text-[#EDF2F4] space-y-2">
+                <StatRow
+                    label="Heaviest Lift"
+                    value={formatWeight(currentStats.heaviestLift, user.useImperial)}
+                    current={currentStats.heaviestLift}
+                    previous={previousStats.heaviestLift}
+                />
+
+                <StatRow
+                    label="Workouts"
+                    value={formatNumber(currentStats.totalWorkouts)}
+                    current={currentStats.totalWorkouts}
+                    previous={previousStats.totalWorkouts}
+                />
+
+                <StatRow
+                    label="Exercises"
+                    value={formatNumber(currentStats.totalExercises)}
+                    current={currentStats.totalExercises}
+                    previous={previousStats.totalExercises}
+                />
+
+                <StatRow
+                    label="Duration"
+                    value={formatDuration(currentStats.totalDuration)}
+                    current={currentStats.totalDuration}
+                    previous={previousStats.totalDuration}
+                />
+
+                <StatRow
+                    label="Sets"
+                    value={formatNumber(currentStats.totalSets)}
+                    current={currentStats.totalSets}
+                    previous={previousStats.totalSets}
+                />
+
+                <StatRow
+                    label="Weight"
+                    value={formatWeight(currentStats.totalWeight, user.useImperial)}
+                    current={currentStats.totalWeight}
+                    previous={previousStats.totalWeight}
+                />
+
+                <StatRow
+                    label="Reps"
+                    value={formatNumber(currentStats.totalReps)}
+                    current={currentStats.totalReps}
+                    previous={previousStats.totalReps}
+                />
+
+                <StatRow
+                    label="Distance Covered"
+                    value={formatDistance(currentStats.totalDistance, user.useImperial)}
+                    current={currentStats.totalDistance}
+                    previous={previousStats.totalDistance}
+                />
+            </div>
+        </div>
+    )
 }
 
-// Export
 export default MonthlyProgressCard

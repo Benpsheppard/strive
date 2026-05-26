@@ -73,14 +73,14 @@ const MonthCalendar = ({ workouts }) => {
     const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()
 
     return (
-        <div className="w-full h-full bg-[#8D99AE] flex flex-col shadow rounded-2xl px-6 py-4">
+        <div className="w-full h-full bg-[#8D99AE] flex flex-col shadow rounded-2xl p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <button onClick={prevMonth} className="text-[#EDF2F4] hover:text-[#EF233C] transition text-xl px-2">
                     <FaChevronLeft />
                 </button>
 
-                <p className="text-[#EDF2F4] font-semibold text-lg">
+                <p className="text-[#EDF2F4] font-semibold text-2xl">
                     {monthName} <span className="text-[#EF233C]">{year}</span>
                 </p>
 
