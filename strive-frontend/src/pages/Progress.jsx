@@ -85,10 +85,18 @@ const Progress = () => {
                         <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial}/>
                     </div>
 
-                    <div className='fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6' style={{ animationDelay: '1.0s'}}>
-                        <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial}/>
-                        <OneRepMax useImperial={user.useImperial} workouts={workouts}/>
-                    </div>
+                    <MuscleGroupSplit 
+                        className="fade-in-card"
+                        style={{ animationDelay: '1.0s' }}
+                        workouts={workouts} 
+                        useImperial={user.useImperial}
+                    />
+                    <OneRepMax 
+                        className="fade-in-card"
+                        style={{ animationDelay: '1.2s' }}
+                        useImperial={user.useImperial} 
+                        workouts={workouts}
+                    />
                 </div>
             ) : (
                 <div className="text-[#EDF2F4] text-xl text-center mt-10">
