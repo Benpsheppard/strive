@@ -80,9 +80,13 @@ const OneRepMax = ({ workouts }) => {
 
     return (
         <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`flex flex-col text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
+            <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
                 One Rep <span className="text-[#EF233C]">Maxes</span>
             </h2>
+
+            <p className="text-center text-[#EDF2F4]/40 mb-8">
+                1RM = Weight x ( 1 + ( Reps / 30 ) )
+            </p>
 
             <div className="flex flex-row items-center w-full gap-3 mb-5">
                 <input 
