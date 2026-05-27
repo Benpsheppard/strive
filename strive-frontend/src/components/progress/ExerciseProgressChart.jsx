@@ -2,11 +2,9 @@
 
 // Imports
 import { useState, useMemo, useEffect } from 'react'
-import { 
-    Chart as ChartJS, CategoryScale, LinearScale,
-    PointElement, LineElement, Title, Tooltip, Legend,
-} from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
@@ -167,13 +165,22 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     }
 
     return (
-        <div
-            onClick={() => { if (isMobile) setExpanded(!expanded) }}
-            className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}
-        >
-            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
-                Exercise <span className="text-[#EF233C]">Progress</span>
-            </h2>
+        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
+            <div className="relative flex items-center justify-center gap-2 mb-8">
+                {isMobile && (
+                    <div className="absolute left-0">
+                        {expanded ? (
+                            <FaChevronDown size={22} />
+                        ) : (
+                            <FaChevronRight size={22} />
+                        )}
+                    </div>
+                )}
+                
+                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
+                    Exercise <span className="text-[#EF233C]">Progress</span>
+                </h2>
+            </div>
 
             {/* Exercise Dropdown */}
             <select

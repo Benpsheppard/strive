@@ -2,11 +2,9 @@
 
 // Imports
 import { useState, useEffect } from 'react'
-import {
-    Chart as ChartJS, CategoryScale, LinearScale,
-    BarElement, Title, Tooltip, Legend,
-} from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, } from 'chart.js'
 import { Bar } from 'react-chartjs-2'
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { calculatePersonalBests } from '../../utils/pbDetection.js'
@@ -109,13 +107,22 @@ const PBChart = ({ workouts, useImperial }) => {
     }
 
     return (
-        <div
-            onClick={() => { if (isMobile) setExpanded(!expanded) }}
-            className={`bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`}
-        >
-            <h2 className="text-[#EDF2F4] text-2xl font-semibold mb-8 text-center">
-                Personal <span className="text-[#EF233C]">Bests</span>
-            </h2>
+        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
+            <div className="relative flex items-center justify-center gap-2 mb-8">
+                {isMobile && (
+                    <div className="absolute left-0">
+                        {expanded ? (
+                            <FaChevronDown size={22} />
+                        ) : (
+                            <FaChevronRight size={22} />
+                        )}
+                    </div>
+                )}
+                
+                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
+                    Personal <span className="text-[#EF233C]">Bests</span>
+                </h2>
+            </div>
 
             {/* Muscle Group Filter */}
             <select
