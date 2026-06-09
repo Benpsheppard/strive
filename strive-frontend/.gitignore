@@ -26,3 +26,6 @@ dist-ssr
 #.env files
 .env.development
 .env.production
+
+#colours file
+colours.txt
