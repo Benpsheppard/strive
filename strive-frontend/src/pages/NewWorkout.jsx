@@ -203,6 +203,7 @@ const NewWorkout = () => {
 
                         {/* Exercise Form */}
                         <ExerciseForm 
+                            workouts={workouts}
                             useImperial={user.useImperial}
                             currentExercise={currentExercise}
                             setCurrentExercise={setCurrentExercise}
