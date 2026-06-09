@@ -22,7 +22,7 @@ const ProfileStats = ({ user }) => {
                 Momentum: <span className='text-[#EF233C]'>{user.momentum.current}</span>
             </p>
             <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
-                Target: <span className="text-[#EF233C]"> {user.target}-a-day</span> 
+                Target: <span className="text-[#EF233C]"> {user.target}-a-week</span> 
             </p>
             <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
                 Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
