@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { FaUndoAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { showChangeExerciseAlert } from '../../alerts/workout.js'
+import { calculatePersonalBests } from '../../utils/pbDetection.js'
+import { formatWeight } from '../../utils/formatValues.js'
 
 // Component Imports
 import SetForm from "./SetForm"
@@ -64,10 +66,14 @@ const buildSet = (trackingMode, currentSet) => {
     }
 }
 
-const ExerciseForm = ({ useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, exercises, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
+const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, exercises, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
     const [searchResults, setSearchResults] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
+
+    const personalBests = calculatePersonalBests(workouts)
+    const currentPB = currentExercise.exerciseName ? personalBests[currentExercise.exerciseName] : null
+
     
     const handleSearchChange = (e) => {
         const newValue = e.target.value
@@ -103,7 +109,7 @@ const ExerciseForm = ({ useImperial, currentExercise, setCurrentExercise, curren
             muscleGroup: exercise.muscleGroup,
             trackingMode: exercise.trackingMode,
             equipment: exercise.equipment,
-            selectedEquipment: exercise.equipment?.[0] || '',
+            selectedEquipment: 'not-selected',
             sets: []
         })
         setCurrentSet(EMPTY_SET)
@@ -136,7 +142,7 @@ const ExerciseForm = ({ useImperial, currentExercise, setCurrentExercise, curren
             toast.error('Please select an exercise from the list.')
             return
         }
-        if (!currentExercise.selectedEquipment) {
+        if (!currentExercise.selectedEquipment || currentExercise.selectedEquipment === 'not-selected') {
             toast.error('Please select equipment.')
             return
         }
@@ -209,14 +215,46 @@ const ExerciseForm = ({ useImperial, currentExercise, setCurrentExercise, curren
                 )}
             </div>
 
-            {/* Equipment Dropdown — shown after exercise selected */}
             {currentExercise.exerciseId && (
                 <>
+                    {/* Select Equipment Used */}
                     <select value={currentExercise.selectedEquipment} onChange={(e) => setCurrentExercise((prev) => ({ ...prev, selectedEquipment: e.target.value }))} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" >
+                        <option value={'not-selected'}>Not Selected</option>
                         {currentExercise.equipment.map((eq) => (
                             <option key={eq} value={eq}>{eq}</option>
                         ))}
                     </select>
+
+                    {/* Selected Exercise PB */}
+                    {currentPB && (
+                        <div className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4]">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm">
+                                    Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight)}</span>
+                                </span>
+                                <span className="text-xs text-[#EDF2F4]/60">
+                                    {new Date(currentPB.date).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <p className="text-xs mt-1 text-[#EF233C]">
+                                {(() => {
+                                    const currentMax = currentExercise.sets.length > 0
+                                        ? Math.max(...currentExercise.sets.map(s => s.weight || 0))
+                                        : null
+
+                                    if (currentMax === null) {
+                                        return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? 5 : 2.5))}!`
+                                    } else if (currentMax > currentPB.weight) {
+                                        return `New PB incoming! You're already lifting heavier than your best!`
+                                    } else if (currentMax === currentPB.weight) {
+                                        return `Matching your PB! Try one more rep or add ${useImperial ? '5 lbs' : '2.5 kg'} next set.`
+                                    } else {
+                                        return `${formatWeight(currentPB.weight - currentMax)} off your PB — push for it!`
+                                    }
+                                })()}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Set Input */}
                     <div className="space-y-2">
