@@ -82,17 +82,35 @@ const NewWorkout = () => {
         const hadShield = user.streak?.shield ?? false
         const oldMomentum = user.momentum?.current ?? 0
 
+        console.log('=== Pre-update stats ===')
+        console.log(`oldStreak: ${oldStreak}`)
+        console.log(`hadShield: ${hadShield}`)
+        console.log(`oldMomentum: ${oldMomentum}`)
+
         const checkGamification = async () => {
+            console.log('=== Checking gamification (Momentum and Streak) ===');
             const [updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
                 dispatch(updateStreak(user._id)).unwrap(),
                 dispatch(updateMomentum({})).unwrap()
             ])
 
+            console.log('=== User after updates ===')
+            console.log(`updatedUserAfterStreak: ${JSON.stringify(updatedUserAfterStreak)}`)
+            console.log(`updatedUserAfterMomentum: ${JSON.stringify(updatedUserAfterMomentum)}`)
+
             const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
             const shieldUsed = hadShield && !updatedUserAfterStreak.streak.shield
 
-            if (shieldUsed) showShieldUsedAlert()
-            else if (streakBroken) showStreakBrokenAlert(oldStreak)
+            console.log('=== User streak ===')
+            console.log(`streakBroken: ${streakBroken}`)
+            console.log(`shieldUsed: ${shieldUsed}`)
+
+            if (shieldUsed) {
+                showShieldUsedAlert()
+            }
+            else if (streakBroken) {
+                showStreakBrokenAlert(oldStreak)
+            }
 
             if (updatedUserAfterMomentum.momentum.current < oldMomentum) {
                 showMomentumDroppedAlert(updatedUserAfterMomentum.momentum.current)

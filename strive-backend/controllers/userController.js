@@ -356,10 +356,11 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 /**
  * @desc   Update user's streak count (increment or reset)
- * @route  POST /api/users/:id/streak
+ * @route  PUT /api/users/:id/streak
  * @access Private
  */
 const updateStreak = asyncHandler(async (req, res) => {
+    console.log('Updating streak')
     const user = await User.findById(req.params.id)
 
     if (!user) {
@@ -367,16 +368,26 @@ const updateStreak = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
+    console.log(`User found: ${user.username}`)
+
     const now = new Date()
     const currentWeek = getISOWeekString(now)
     const lastEvaluated = user.streak.lastEvaluatedWeek
 
-    if (lastEvaluated && lastEvaluated !== currentWeek) {
+    console.log(`currentWeek: ${currentWeek}`)
+    console.log(`lastEvaluated: ${lastEvaluated}`)
+
+    console.log((lastEvaluated) && (lastEvaluated !== currentWeek))
+
+    if ((lastEvaluated) && (lastEvaluated !== currentWeek)) {
         const weeksMissed = getWeeksBetween(lastEvaluated, currentWeek)
+        console.log(`weeksMissed: ${weeksMissed}`)
 
         if (weeksMissed > 0) {
+            console.log(`Weeks missed is greater than 0`)
             const startOfLastWeek = isoWeekToDate(lastEvaluated)
             const endOfLastWeek = new Date(startOfLastWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+            console.log(`Start: ${startOfLastWeek}, End: ${endOfLastWeek}`)
 
             const workoutsLastWeek = await Workout.countDocuments({
                 user: user._id,
@@ -386,21 +397,27 @@ const updateStreak = asyncHandler(async (req, res) => {
                 }
             })
             const missedTarget = workoutsLastWeek < user.target
+            console.log(`Workouts last week: ${workoutsLastWeek}`)
+            console.log(`Missed Target?: ${missedTarget}`)
 
             if (missedTarget) {
                 if (user.streak.shield) {
                     user.streak.shield = false
+                    console.log('Streak shield broken')
 
                     if (weeksMissed > 1) {
                         user.streak.current = 0
+                        console.log('Setting streak to 0')
                     }
                 } else {
                     user.streak.current = 0
+                    console.log('Setting streak to 0')
                 }
             }
         }   
     }
 
+    console.log('Checking this week')
     const startOfWeek = getStartOfWeek(now)
     const endOfWeek = getEndOfWeek(now)
 
@@ -411,30 +428,40 @@ const updateStreak = asyncHandler(async (req, res) => {
             $lte: endOfWeek
         }
     })
+    console.log(`workoutsThisWeek: ${workoutsThisWeek}`)
 
     const hitTarget = workoutsThisWeek >= user.target
     const alreadyIncrementedThisWeek = lastEvaluated === currentWeek
+    console.log(`hitTarget: ${hitTarget}`)
+    console.log(`alreadyIncrementedThisWeek: ${alreadyIncrementedThisWeek}`)
 
     if (hitTarget && !alreadyIncrementedThisWeek) {
+        console.log('Target hit and week not already incremented')
         user.streak.current += 1
+        console.log('Incremented streak')
 
         user.strivepoints += 1000
         user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1
+        console.log('Added 1000 SP reward')
 
         if (user.streak.current > user.streak.best) {
             user.streak.best = user.streak.current
+            console.log('Updated best streak')
         }
 
         if (user.streak.current % 4 === 0 && !user.streak.shield) {
             user.streak.shield = true
+            console.log('Given user shield')
         }
     }
 
     if (hitTarget) {
         user.streak.lastEvaluatedWeek = currentWeek
+        console.log('Updated lastEvaluatedWeek')
     }
 
     const updatedUser = await user.save()
+    console.log(`Updated streak: ${updatedUser.streak.current}; Updated lastEvaluatedWeek: ${updatedUser.streak.lastEvaluatedWeek}`)
     res.status(200).json(formatUser(updatedUser))
 })
 
