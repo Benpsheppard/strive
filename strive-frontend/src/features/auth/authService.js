@@ -140,19 +140,6 @@ const updateProfile = async (profileData, token) => {
 	return response.data
 }
 
-// Update streak
-const updateStreak = async (userId, token) => {
-    const config = {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    }
-
-    const response = await axios.put(API_URL + `${userId}/streak`, {}, config)
-
-    return response.data
-}
-
 // Check streak broken
 const checkIfStreakBroken = async (userId, token) => {
     const config = {
@@ -203,7 +190,6 @@ const authService = {
     updateUnitPreference,
     addPoints,
 	updateProfile,
-    updateStreak,
     checkIfStreakBroken,
     checkIfStreakIncreased,
     updateMomentum

@@ -119,19 +119,6 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (profi
     }
 })
 
-// Update streak
-export const updateStreak = createAsyncThunk('auth/updateStreak', async (id, thunkAPI) => {
-    try {
-        const token = thunkAPI.getState().auth.user.token
-        return await authService.updateStreak(id, token)
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message)
-            || error.message || error.toString()
-        return thunkAPI.rejectWithValue(message)
-    }
-})
-
 // Check if streak broken
 export const checkIfStreakBroken = createAsyncThunk('auth/streak-broken', async (id, thunkAPI) => {
     try {
@@ -333,25 +320,6 @@ export const authSlice = createSlice({
                     state.user.level = action.payload.user.level
                     localStorage.setItem('Strive:user', JSON.stringify(state.user))
                 }
-            })
-
-        // Update Streak
-            .addCase(updateStreak.pending, (state) => {
-                state.isLoading = true
-            })
-            .addCase(updateStreak.fulfilled, (state, action) => {
-                state.isLoading = false,
-                state.isSuccess = true
-                state.user = {
-                    ...state.user,
-                    ...action.payload
-                }
-                localStorage.setItem('Strive:user', JSON.stringify(state.user))
-            })
-            .addCase(updateStreak.rejected, (state, action) => {
-                state.isLoading = false
-                state.isError = true
-                state.message = action.payload
             })
 
         // Check if streak broken

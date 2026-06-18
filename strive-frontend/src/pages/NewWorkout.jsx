@@ -9,7 +9,7 @@ import { toast } from 'react-toastify'
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
-import { updateStreak, updateMomentum, checkIfStreakBroken } from '../features/auth/authSlice.js'
+import { updateMomentum, checkIfStreakBroken } from '../features/auth/authSlice.js'
 
 // Alert Imports
 import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'

@@ -7,7 +7,7 @@ import { toast } from "react-toastify"
 
 // Feature Imports
 import { createWorkout, setLastWorkoutStats } from "../features/workouts/workoutsSlice"
-import { addPoints, updateStreak, updateMomentum, checkIfStreakIncreased } from "../features/auth/authSlice"
+import { addPoints, updateMomentum, checkIfStreakIncreased } from "../features/auth/authSlice"
 
 export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutState }) => {
     const dispatch = useDispatch()
