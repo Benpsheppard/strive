@@ -7,8 +7,8 @@ const {
     registerUser, loginUser, getMe, 
     deleteUser, updateUnitPreference, 
     resetUser, addPoints, migrateUser, 
-    updateProfile, updateStreak, 
-    updateMomentum
+    updateProfile, updateStreak, checkIfStreakBroken,
+    checkIfStreakIncreased, updateMomentum
 } = require('../controllers/userController.js')
 const { protect } = require('../middleware/authMiddleware.js')
 const { validateObjectId } = require('../middleware/validateObjectId.js')
@@ -35,6 +35,8 @@ userRouter.delete('/:id', protect, validateObjectId('id'), deleteUser)
 userRouter.delete('/:id/reset', protect, validateObjectId('id'), resetUser)
 userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)
 userRouter.put('/:id/streak', protect, updateStreak)
+userRouter.put('/:id/streak-broken', protect, checkIfStreakBroken)
+userRouter.put('/:id/streak-increased', protect, checkIfStreakIncreased)
 
 // Export router
 module.exports = { userRouter }

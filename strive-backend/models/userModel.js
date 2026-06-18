@@ -72,6 +72,10 @@ const userSchema = mongoose.Schema ({
             type: String,
             default: null
         },
+        lastIncrementedWeek: {
+            type: String,
+            defualt: null
+        },
         best: {
             type: Number,
             default: 0

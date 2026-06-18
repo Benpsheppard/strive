@@ -7,7 +7,11 @@ const bcrypt = require('bcryptjs')
 const validator = require('validator')    
 
 // Function Imports
-const { getStartOfWeek, getEndOfWeek, getISOWeekString, getWeeksBetween, isoWeekToDate } = require('../utils/dateFormat.js')
+const { 
+    getStartOfWeek, getEndOfWeek, getPreviousWeekRange, 
+    getISOWeekString, getPreviousISOWeekString, 
+    getWeeksBetween, isoWeekToDate 
+} = require('../utils/dateFormat.js')
 const formatUser = require('../utils/formatUser.js')
 
 // Model Imports
@@ -466,6 +470,99 @@ const updateStreak = asyncHandler(async (req, res) => {
 })
 
 /**
+ * @desc    Check if user's streak broke
+ * @route   PUT /api/users/:id/streak-broken
+ * @access  Private
+ */
+const checkIfStreakBroken = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id)
+
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    const now = new Date()
+    const previousWeek = getPreviousISOWeekString(now)
+    const currentWeek = getISOWeekString(now)
+
+    if (user.streak.lastIncrementedWeek === currentWeek) {
+        user.streak.lastEvaluatedWeek = previousWeek
+        await user.save()
+        return res.status(200).json(formatUser(user))
+    }
+
+    if (user.streak.lastEvaluatedWeek === previousWeek) {
+        return res.status(200).json(formatUser(user))
+    }
+
+    const { start, end } = getPreviousWeekRange(now)
+
+    const completedWorkouts = await Workout.countDocuments({
+        user: user._id,
+        createdAt: {
+            $gte: start,
+            $lte: end
+        }
+    })
+
+    if (completedWorkouts < user.target) {
+        if (user.streak.shield) {
+            user.streak.shield = false
+        } else {
+            user.streak.current = 0
+        }
+    }
+
+    user.streak.lastEvaluatedWeek = previousWeek
+
+    const updatedUser = await user.save()
+    res.status(200).json(formatUser(updatedUser))
+})
+
+/**
+ * @desc    Check if user's streak needs incrementing
+ * @route   PUT /api/users/:id/streak-increased
+ * @access  Private
+ */
+const checkIfStreakIncreased = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id)
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
+
+    const now = new Date()
+    const currentWeek = getISOWeekString(now)
+
+    console.log(`currentWeek: ${currentWeek}`)
+    if (user.streak.lastIncrementedWeek === currentWeek) {
+        return res.status(200).json(formatUser(user))
+    }
+
+    const start = getStartOfWeek(now)
+    const end = getEndOfWeek(now)
+
+    const completedWorkouts = await Workout.countDocuments({
+        user: user._id,
+        createdAt: {
+            $gte: start,
+            $lte: end
+        }
+    })
+
+    if (completedWorkouts >= user.target) {
+        user.streak.current++
+        user.streak.best = Math.max(user.streak.best, user.streak.current)
+
+        user.streak.lastIncrementedWeek = currentWeek
+    }
+
+    const updatedUser = await user.save()
+    res.status(200).json(formatUser(updatedUser))
+})
+
+/**
  * @desc    Update user's momentum value
  * @route   PUT /api/users/momentum
  * @access  Private
@@ -506,5 +603,7 @@ module.exports = {
     addPoints,
     updateProfile,
     updateStreak,
+    checkIfStreakBroken,
+    checkIfStreakIncreased,
     updateMomentum
 }

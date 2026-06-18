@@ -9,7 +9,7 @@ import { toast } from 'react-toastify'
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
-import { updateStreak, updateMomentum } from '../features/auth/authSlice.js'
+import { updateStreak, updateMomentum, checkIfStreakBroken } from '../features/auth/authSlice.js'
 
 // Alert Imports
 import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
@@ -78,25 +78,25 @@ const NewWorkout = () => {
         if (!user || hasCheckedGamification.current) return
         hasCheckedGamification.current = true
 
-        const oldStreak = user.streak?.current ?? 0
-        const hadShield = user.streak?.shield ?? false
-        const oldMomentum = user.momentum?.current ?? 0
+        const oldStreak = user.streak.current
+        const hadShield = user.streak.shield
+        const oldMomentum = user.momentum.current
 
-        console.log('=== Pre-update stats ===')
-        console.log(`oldStreak: ${oldStreak}`)
-        console.log(`hadShield: ${hadShield}`)
-        console.log(`oldMomentum: ${oldMomentum}`)
+        const oldEvalWeek = user.streak.lastEvaluatedWeek
+        const oldIncrWeek = user.streak.lastIncrementedWeek
+
+        console.log('=== User before updates ===')
+        console.log(`oldStreak: ${oldStreak}; hadShield: ${hadShield}; oldMomentum: ${oldMomentum}`)
+        console.log(`oldEvalWeek: ${oldEvalWeek}; oldIncrWeek: ${oldIncrWeek}`)
 
         const checkGamification = async () => {
-            console.log('=== Checking gamification (Momentum and Streak) ===');
-            const [updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
-                dispatch(updateStreak(user._id)).unwrap(),
-                dispatch(updateMomentum({})).unwrap()
-            ])
+            console.log('=== Checking gamification (Momentum and Streak) ===')
+            const updatedUserAfterStreak = await dispatch(checkIfStreakBroken(user._id)).unwrap()
+            const updatedUserAfterMomentum = await dispatch(updateMomentum({})).unwrap()
 
             console.log('=== User after updates ===')
-            console.log(`updatedUserAfterStreak: ${JSON.stringify(updatedUserAfterStreak)}`)
-            console.log(`updatedUserAfterMomentum: ${JSON.stringify(updatedUserAfterMomentum)}`)
+            console.log(`New Streak Object: ${JSON.stringify(updatedUserAfterStreak.streak)}`)
+            console.log(`New Momentum Object: ${JSON.stringify(updatedUserAfterMomentum.momentum)}`)
 
             const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
             const shieldUsed = hadShield && !updatedUserAfterStreak.streak.shield

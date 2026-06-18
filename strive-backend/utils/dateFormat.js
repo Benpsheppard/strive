@@ -34,12 +34,29 @@ export function getEndOfWeek(date) {
 	return end
 }
 
+export function getPreviousWeekRange(date) {
+    const prev = new Date(date)
+    prev.setDate(prev.getDate() - 7)
+
+    const monday = getStartOfWeek(prev)
+    const sunday = getEndOfWeek(prev)
+	
+    return { start: monday, end: sunday }
+}
+
 export function getISOWeekString(date = new Date()) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+export function getPreviousISOWeekString(date) {
+	const prev = new Date(date)
+	prev.setDate(prev.getDate() - 7)
+
+	return getISOWeekString(prev)
 }
 
 export function getWeeksBetween(fromWeek, toWeek) {

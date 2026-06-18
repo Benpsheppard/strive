@@ -132,6 +132,32 @@ export const updateStreak = createAsyncThunk('auth/updateStreak', async (id, thu
     }
 })
 
+// Check if streak broken
+export const checkIfStreakBroken = createAsyncThunk('auth/streak-broken', async (id, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.checkIfStreakBroken(id, token)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
+// Check if streak broken
+export const checkIfStreakIncreased = createAsyncThunk('auth/streak-increased', async (id, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.checkIfStreakIncreased(id, token)
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message)
+            || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // Update momentum
 export const updateMomentum = createAsyncThunk('auth/updateMomentum', async (data, thunkAPI) => {
     try {
@@ -323,6 +349,44 @@ export const authSlice = createSlice({
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateStreak.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+
+        // Check if streak broken
+            .addCase(checkIfStreakBroken.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(checkIfStreakBroken.fulfilled, (state, action) => {
+                state.isLoading = false,
+                state.isSuccess = true
+                state.user = {
+                    ...state.user,
+                    ...action.payload
+                }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(checkIfStreakBroken.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+
+        // Check if streak broken
+            .addCase(checkIfStreakIncreased.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(checkIfStreakIncreased.fulfilled, (state, action) => {
+                state.isLoading = false,
+                state.isSuccess = true
+                state.user = {
+                    ...state.user,
+                    ...action.payload
+                }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(checkIfStreakIncreased.rejected, (state, action) => {
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload

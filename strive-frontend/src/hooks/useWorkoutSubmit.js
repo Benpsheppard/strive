@@ -7,7 +7,7 @@ import { toast } from "react-toastify"
 
 // Feature Imports
 import { createWorkout, setLastWorkoutStats } from "../features/workouts/workoutsSlice"
-import { addPoints, updateStreak, updateMomentum } from "../features/auth/authSlice"
+import { addPoints, updateStreak, updateMomentum, checkIfStreakIncreased } from "../features/auth/authSlice"
 
 export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutState }) => {
     const dispatch = useDispatch()
@@ -38,7 +38,6 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
                 quests: summary.questsCompleted
             }
 
-            // Streak info
             const oldStreak = user.streak.current
             const oldShield = user.streak.shield
             const oldMomentum = user.momentum.current
@@ -47,7 +46,7 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
                 summary.totalStrivePoints.total > 0
                     ? dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
                     : Promise.resolve(null),
-                dispatch(updateStreak(user._id)).unwrap(),
+                dispatch(checkIfStreakIncreased(user._id)).unwrap(),
                 dispatch(updateMomentum(momentumData)).unwrap()
             ])
 

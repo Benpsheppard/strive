@@ -153,6 +153,32 @@ const updateStreak = async (userId, token) => {
     return response.data
 }
 
+// Check streak broken
+const checkIfStreakBroken = async (userId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.put(API_URL + `${userId}/streak-broken`, {}, config)
+
+    return response.data
+}
+
+// Check streak increased
+const checkIfStreakIncreased = async (userId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.put(API_URL + `${userId}/streak-increased`, {}, config)
+
+    return response.data
+}
+
 // Update momentum
 const updateMomentum = async (data, token) => {
     const config = {
@@ -178,6 +204,8 @@ const authService = {
     addPoints,
 	updateProfile,
     updateStreak,
+    checkIfStreakBroken,
+    checkIfStreakIncreased,
     updateMomentum
 }
 
