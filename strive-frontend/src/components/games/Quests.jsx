@@ -42,7 +42,7 @@ const Quests = () => {
                     <InlineSpinner />
                 ) : quests.daily ? (
                     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>                        
-                        {daily.map(q => (
+                        {daily?.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
@@ -62,9 +62,9 @@ const Quests = () => {
 
                 {isLoading ? (
                     <InlineSpinner />
-                ) : quests.weekly ? (
+                ) : quests?.weekly ? (
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                        {weekly.map(q => (
+                        {weekly?.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
@@ -84,9 +84,9 @@ const Quests = () => {
 
                 {isLoading ? (
                     <InlineSpinner />
-                ) : quests.monthly ? (
+                ) : quests?.monthly ? (
                     <div className='grid grid-cols-1 md:grid-cols-1 gap-4'>
-                        {monthly.map(q => (
+                        {monthly?.map(q => (
                             <QuestCard key={q._id} quest={q} />
                         ))}
                     </div>
