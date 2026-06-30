@@ -1,11 +1,13 @@
 // App.jsx
 
 // Imports
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Spinner from './components/spinners/Spinner.jsx'
+import { getMe } from './features/auth/authSlice.js'
 
 // Lazy load pages for performance optimization
 // const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
@@ -29,37 +31,46 @@ const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
 // App
 const App = () => {
 
-  // Visuals
-  return (
-    <>
-		<Router>
-			<div className="w-full min-h-screen">
-				<Suspense fallback={<Spinner />}>
-					<Routes>
-						<Route path='/' element={<NewWorkout />} />
-						<Route path='/login' element={<Login />} />
-						<Route path='/register' element={<Register />} />
-						<Route path='/onboarding' element={<Onboarding />} />
-						<Route path='/workout-complete' element={<WorkoutComplete />} />
-						<Route path='/progress-update' element={<ProgressUpdate />} />
-						<Route path='/streaks' element={<StreakUpdate />} />
-						<Route path='/prev-workouts' element={<PrevWorkouts />} />
-						<Route path='/progress' element={<Progress />} />
-						<Route path='/games' element={<Games />} />
-						<Route path='/profile' element={<Profile />} />
-						<Route path='/migrate' element={<GuestMigration />} />
+	const dispatch = useDispatch()
 
-						{/* <Route path='/' element={<Dashboard />} /> */}
-						{/* <Route path='/contact' element={<Contact />} /> */}
-						{/* <Route path='/privacy-policy' element={<PrivacyPolicy />} /> */}
-						{/* <Route path='/help' element={<Help />} /> */}
-					</Routes>
-				</Suspense>
-			</div>
-		</Router>
-      	<ToastContainer />
-    </>
-  )
+	useEffect(() => {
+		const cachedUser = JSON.parse(localStorage.getItem('Strive:user'))
+		if (cachedUser) {
+			dispatch(getMe())
+		}
+	})
+
+	// Visuals
+	return (
+		<>
+			<Router>
+				<div className="w-full min-h-screen">
+					<Suspense fallback={<Spinner />}>
+						<Routes>
+							<Route path='/' element={<NewWorkout />} />
+							<Route path='/login' element={<Login />} />
+							<Route path='/register' element={<Register />} />
+							<Route path='/onboarding' element={<Onboarding />} />
+							<Route path='/workout-complete' element={<WorkoutComplete />} />
+							<Route path='/progress-update' element={<ProgressUpdate />} />
+							<Route path='/streaks' element={<StreakUpdate />} />
+							<Route path='/prev-workouts' element={<PrevWorkouts />} />
+							<Route path='/progress' element={<Progress />} />
+							<Route path='/games' element={<Games />} />
+							<Route path='/profile' element={<Profile />} />
+							<Route path='/migrate' element={<GuestMigration />} />
+
+							{/* <Route path='/' element={<Dashboard />} /> */}
+							{/* <Route path='/contact' element={<Contact />} /> */}
+							{/* <Route path='/privacy-policy' element={<PrivacyPolicy />} /> */}
+							{/* <Route path='/help' element={<Help />} /> */}
+						</Routes>
+					</Suspense>
+				</div>
+			</Router>
+			<ToastContainer />
+		</>
+	)
 }
 
 export default App
