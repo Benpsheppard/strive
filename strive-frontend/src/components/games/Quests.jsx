@@ -18,7 +18,7 @@ const Quests = () => {
     const { quests, isLoading } = useSelector((state) => state.quest)
     const { workouts } = useSelector((state) => state.workout)
 
-    const { daily, weekly, monthly } = quests
+    const { daily, weekly, monthly } = quests || {}
 
     useEffect(() => {
         if (!user?.isQuest && workouts.length >= 3) {
@@ -32,71 +32,84 @@ const Quests = () => {
 
     return (
         <>
-            {/* Daily Quests */}
-            <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center items-center'>
-                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
-                    Daily Quests
-                </h2>
+            {daily?.length || weekly?.length || monthly?.length ? (
+                <>
+                    {/* Daily Quests */}
+                    <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center items-center'>
+                        <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
+                            Daily Quests
+                        </h2>
 
-                {isLoading ? (
-                    <InlineSpinner />
-                ) : quests.daily ? (
-                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>                        
-                        {daily?.map(q => (
-                            <QuestCard key={q._id} quest={q} />
-                        ))}
+                        {isLoading ? (
+                            <InlineSpinner />
+                        ) : daily?.length > 0 ? (
+                            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>                        
+                                {daily.map(q => (
+                                    <QuestCard key={q._id} quest={q} />
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                <h1 className='text-lg text-[#EDF2F4] font-bold' >No Active Daily Quests</h1>
+                                <p>Come back tomorrow for new Quests!</p>
+                            </>
+                        )}
                     </div>
-                ) : (
-                    <>
-                        <h1 className='text-lg text-[#EDF2F4] font-bold' >No Active Daily Quests</h1>
-                        <p>Come back tomorrow for new Quests!</p>
-                    </>
-                )}
-            </div>
 
-            {/* Weekly Quests */}
-            <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
-                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
-                    Weekly Quests
-                </h2>
+                    {/* Weekly Quests */}
+                    <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
+                        <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
+                            Weekly Quests
+                        </h2>
 
-                {isLoading ? (
-                    <InlineSpinner />
-                ) : quests?.weekly ? (
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                        {weekly?.map(q => (
-                            <QuestCard key={q._id} quest={q} />
-                        ))}
+                        {isLoading ? (
+                            <InlineSpinner />
+                        ) : weekly?.length > 0 ? (
+                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                {weekly?.map(q => (
+                                    <QuestCard key={q._id} quest={q} />
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Weekly Quests</h1>
+                                <p>Come back next week for new Quests!</p>
+                            </>
+                        )}
                     </div>
-                ) : (
-                    <>
-                        <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Weekly Quests</h1>
-                        <p>Come back next week for new Quests!</p>
-                    </>
-                )}
-            </div>
 
-            {/* Monthly Quest */}
-            <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
-                <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
-                    Monthly Quests
-                </h2>
+                    {/* Monthly Quest */}
+                    <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center'>
+                        <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
+                            Monthly Quests
+                        </h2>
 
-                {isLoading ? (
-                    <InlineSpinner />
-                ) : quests?.monthly ? (
-                    <div className='grid grid-cols-1 md:grid-cols-1 gap-4'>
-                        {monthly?.map(q => (
-                            <QuestCard key={q._id} quest={q} />
-                        ))}
+                        {isLoading ? (
+                            <InlineSpinner />
+                        ) : monthly?.length > 0 ? (
+                            <div className='grid grid-cols-1 md:grid-cols-1 gap-4'>
+                                {monthly?.map(q => (
+                                    <QuestCard key={q._id} quest={q} />
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Monthly Quests</h1>
+                                <p>Come back next month for a new Quest!</p>
+                            </>
+                        )}
                     </div>
-                ) : (
-                    <>
-                        <h1 className='text-lg text-[#EDF2F4] font-bold'>No Active Monthly Quests</h1>
-                        <p>Come back next month for a new Quest!</p>
-                    </>
-                )}
-            </div>
+                </>
+            ) : (
+                <div className='bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center items-center text-[#EDF2F4]'>
+                    <h2 className='text-[#EDF2F4] text-3xl font-bold mb-4'>
+                        No Quests Available
+                    </h2>
+
+                    <p>Come back tomorrow for new Quests!</p>
+                </div>
+            )}
+           
         </>
     )
 }
