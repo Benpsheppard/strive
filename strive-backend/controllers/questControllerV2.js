@@ -95,38 +95,6 @@ const getExpiryDate = (expiryDays) => {
     return expiry
 }
 
-/**
- * Validate a quest completion object against actual workout history
- * Returns true if valid, false otherwise
- */
-const validateQuestCompletion = (quest, validExerciseNames, validMuscleGroups) => {
-    const { questType, completion } = quest
-
-    // Strength & Progressive quests must have a valid exercise
-    if (questType === 'strength' || questType === 'progressive') {
-        if (!completion.exercise || typeof completion.exercise !== 'string') {
-            return false
-        }
-        if (!validExerciseNames.has(completion.exercise)) {
-            return false
-        }
-    }
-
-    // Consistency & Volume quests may have a filterTag that must be valid
-    if (questType === 'consistency' || questType === 'volume') {
-        if (completion.filterTag) {
-            const tag = completion.filterTag
-            const isValidExercise = validExerciseNames.has(tag)
-            const isValidMuscleGroup = validMuscleGroups.has(tag)
-            if (!isValidExercise && !isValidMuscleGroup) {
-                return false
-            }
-        }
-    }
-
-    return true
-}
-
 const genQuests = async (user, duration) => {
     if (!QUEST_CONFIG[duration]) {
         throw new Error(`Invalid quest duration: ${duration}`)
@@ -262,13 +230,21 @@ const genQuests = async (user, duration) => {
             ]
         }
     `
+    let response
+    try {
+        response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            temperature: 1.0,
+            messages: [{ role: 'user', content: prompt }]
+        })
+    } catch (error) {
+        if (error.status === 400 && error.error?.error?.type === 'invalid_request_error') {
+            throw new Error('ANTHROPIC_CREDIT_EXHAUSTED')
+        }
 
-    const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        temperature: 1.0,
-        messages: [{ role: 'user', content: prompt }]
-    })
+        throw error
+    }
 
     let text = response.content[0].text
         .replace(/```json\s*/gi, '')
@@ -307,8 +283,36 @@ const genQuests = async (user, duration) => {
     return savedQuests
 }
 
+const validateQuestCompletion = (quest, validExerciseNames, validMuscleGroups) => {
+    const { questType, completion } = quest
+
+    // Strength & Progressive quests must have a valid exercise
+    if (questType === 'strength' || questType === 'progressive') {
+        if (!completion.exercise || typeof completion.exercise !== 'string') {
+            return false
+        }
+        if (!validExerciseNames.has(completion.exercise)) {
+            return false
+        }
+    }
+
+    // Consistency & Volume quests may have a filterTag that must be valid
+    if (questType === 'consistency' || questType === 'volume') {
+        if (completion.filterTag) {
+            const tag = completion.filterTag
+            const isValidExercise = validExerciseNames.has(tag)
+            const isValidMuscleGroup = validMuscleGroups.has(tag)
+            if (!isValidExercise && !isValidMuscleGroup) {
+                return false
+            }
+        }
+    }
+
+    return true
+}
+
 /**
- * Generate user's quests
+ * @desc    Generate user's quests
  * @route   POST /api/quests/generate/:duration
  * @access  Private
  */
@@ -321,6 +325,17 @@ const generateQuests = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
+    try {
+        const quests = await genQuests(user, duration)
+        res.status(200).json({ message: `${duration} quests generated!`, quests })
+    } catch (error) {
+        if (error.message === 'ANTHROPIC_CREDIT_EXHAUSTED') {
+            return res.status(502).json({ message: 'Quest generation is currently unavailable' })
+        }
+
+        throw error
+    }
+
     const quests = await genQuests(user, duration)
 
     res.status(200).json({
@@ -330,7 +345,7 @@ const generateQuests = asyncHandler(async (req, res) => {
 })
 
 /**
- * Retrieve all the user's quests (with auto-expiry and full refresh)
+ * @desc    Retrieve all the user's quests (with auto-expiry and full refresh)
  * @route   GET /api/quests
  * @access  Private
  */
@@ -375,15 +390,27 @@ const getQuests = asyncHandler(async (req, res) => {
         expiry: { $gte: now }
     })
 
+    const safeGenQuests = async (user, duration) => {
+        try {
+            await genQuests(user, duration)
+        } catch (error) {
+            if (error.message === 'ANTHROPIC_CREDIT_EXHAUSTED') {
+                return
+            }
+
+            throw error
+        }
+    }
+
     // Generate full set of new quests if we have none (or less than expected) that are not expired
     if (activeDaily === 0) {
-        await genQuests(user, 'daily')
+        await safeGenQuests(user, 'daily')
     }
     if (activeWeekly === 0) {
-        await genQuests(user, 'weekly')
+        await safeGenQuests(user, 'weekly')
     }
     if (activeMonthly === 0) {
-        await genQuests(user, 'monthly')
+        await safeGenQuests(user, 'monthly')
     }
 
     // Fetch all non-expired quests
