@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import questService from './questService'
 
 const initialState = {
-    quests: [],
+    quests: { daily: [], weekly: [], monthly: [] },
     isError: false,
     isSuccess: false,
     isLoading: false,
