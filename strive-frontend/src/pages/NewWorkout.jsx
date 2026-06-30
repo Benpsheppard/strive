@@ -85,25 +85,12 @@ const NewWorkout = () => {
         const oldEvalWeek = user.streak.lastEvaluatedWeek
         const oldIncrWeek = user.streak.lastIncrementedWeek
 
-        console.log('=== User before updates ===')
-        console.log(`oldStreak: ${oldStreak}; hadShield: ${hadShield}; oldMomentum: ${oldMomentum}`)
-        console.log(`oldEvalWeek: ${oldEvalWeek}; oldIncrWeek: ${oldIncrWeek}`)
-
         const checkGamification = async () => {
-            console.log('=== Checking gamification (Momentum and Streak) ===')
             const updatedUserAfterStreak = await dispatch(checkIfStreakBroken(user._id)).unwrap()
             const updatedUserAfterMomentum = await dispatch(updateMomentum({})).unwrap()
 
-            console.log('=== User after updates ===')
-            console.log(`New Streak Object: ${JSON.stringify(updatedUserAfterStreak.streak)}`)
-            console.log(`New Momentum Object: ${JSON.stringify(updatedUserAfterMomentum.momentum)}`)
-
             const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
             const shieldUsed = hadShield && !updatedUserAfterStreak.streak.shield
-
-            console.log('=== User streak ===')
-            console.log(`streakBroken: ${streakBroken}`)
-            console.log(`shieldUsed: ${shieldUsed}`)
 
             if (shieldUsed) {
                 showShieldUsedAlert()
