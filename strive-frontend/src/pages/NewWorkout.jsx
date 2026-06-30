@@ -75,7 +75,7 @@ const NewWorkout = () => {
 
     // Check streak & momentum on mount
     useEffect(() => {
-        if (!user || hasCheckedGamification.current) return
+        if (!user || !user.streak || hasCheckedGamification.current) return
         hasCheckedGamification.current = true
 
         const oldStreak = user.streak.current
@@ -122,8 +122,15 @@ const NewWorkout = () => {
 
     // Initial data fetch
     useEffect(() => {
-        if (isError) { console.log(message); return }
-        if (!user) { navigate('/login'); return }
+        if (isError) { 
+            console.log(message)
+            return 
+        }
+        if (!user) { 
+            navigate('/login')
+            return 
+        }
+        
         dispatch(getWorkouts())
 		dispatch(getExercises())
     }, [user, message, isError, navigate, dispatch])
