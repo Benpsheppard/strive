@@ -17,6 +17,17 @@ const initialState = {
     message: ''
 }
 
+export const getMe = createAsyncThunk('auth/getMe', async (_, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.getMe(token)
+    } catch (error) {
+        const message = (error.response && error.response.data && error.response.data.message)
+        || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 // Register user
 export const register = createAsyncThunk('auth/register', async (user, thunkAPI) => {
     try {
@@ -172,6 +183,20 @@ export const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+        // Get Me
+            .addCase(getMe.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(getMe.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.user = action.payload
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(getMe.rejected, (state, action) => {
+                state.user = null
+                localStorage.removeItem('Strive:user')
+            })
         // Register User
             .addCase(register.pending, (state) => {
                 state.isLoading = true

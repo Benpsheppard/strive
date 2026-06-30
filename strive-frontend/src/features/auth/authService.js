@@ -6,6 +6,19 @@ import { clearLocalStorage } from '../../hooks/useLocalStorage'
 
 const API_URL = import.meta.env.VITE_API_URL + '/api/users/'
 
+// Get up-to-date user info
+const getMe = async (token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+
+    const response = await axios.get(API_URL + `me`, {}, config)
+
+    return response.data
+}
+
 // Register user
 const register = async (userData) => {
     const response = await axios.post(API_URL, userData)
@@ -181,6 +194,7 @@ const updateMomentum = async (data, token) => {
 
 // Export functions
 const authService = {
+    getMe,
     register,
     logout,
     login,
