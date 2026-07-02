@@ -100,6 +100,9 @@ const summarySchema = mongoose.Schema({
             },
             newValue: {
                 type: Number
+            },
+            equipment: {
+                type: String
             }
         }
     ]
