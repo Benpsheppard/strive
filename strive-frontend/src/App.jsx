@@ -35,10 +35,11 @@ const App = () => {
 
 	useEffect(() => {
 		const cachedUser = JSON.parse(localStorage.getItem('Strive:user'))
+		
 		if (cachedUser) {
 			dispatch(getMe())
 		}
-	})
+	},[])
 
 	// Visuals
 	return (
