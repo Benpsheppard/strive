@@ -200,8 +200,9 @@ const migrateUser = asyncHandler(async (req, res) => {
  *   @access  Private
  */
 const getMe = asyncHandler(async (req, res) => {
-    // Return user info
-    res.status(200).json(formatUser(req.user))
+    const token = req.headers.authorization.split(' ')[1]
+
+    res.status(200).json(formatUser(req.user, token))
 })
 
 /**
