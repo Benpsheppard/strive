@@ -61,6 +61,7 @@ const setWorkout = asyncHandler(async (req, res) => {
         muscleGroup: ex.exercise.muscleGroup,
         subMuscleGroup: ex.exercise.subMuscleGroup,
         trackingMode: ex.exercise.trackingMode,
+        selectedEquipment: ex.selectedEquipment,
         sets: ex.sets
     }))
 
