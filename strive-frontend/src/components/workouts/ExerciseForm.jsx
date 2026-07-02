@@ -72,8 +72,13 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
     const [showSuggestions, setShowSuggestions] = useState(false)
 
     const personalBests = calculatePersonalBests(workouts)
-    const currentPB = currentExercise.exerciseName ? personalBests[currentExercise.exerciseName] : null
 
+    const currentPB =
+        currentExercise.exerciseName &&
+        currentExercise.selectedEquipment &&
+        currentExercise.selectedEquipment !== 'not-selected'
+            ? personalBests[`${currentExercise.exerciseName}||${currentExercise.selectedEquipment}`]
+            : null
     
     const handleSearchChange = (e) => {
         const newValue = e.target.value
