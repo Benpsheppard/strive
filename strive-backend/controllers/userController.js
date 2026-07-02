@@ -425,7 +425,6 @@ const checkIfStreakIncreased = asyncHandler(async (req, res) => {
     const now = new Date()
     const currentWeek = getISOWeekString(now)
 
-    console.log(`currentWeek: ${currentWeek}`)
     if (user.streak.lastIncrementedWeek === currentWeek) {
         return res.status(200).json(formatUser(user))
     }
