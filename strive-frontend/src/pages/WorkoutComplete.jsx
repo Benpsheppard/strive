@@ -49,10 +49,10 @@ const WorkoutComplete = () => {
 
     const onContinue = () => {
         if (hasStats) {
-                navigate('/progress-update')
-            } else {
-                navigate('/')
-            }
+            navigate('/progress-update')
+        } else {
+            navigate('/')
+        }
     }
 
     if (isLoading || !lastWorkoutStats?.workout) {
@@ -135,7 +135,7 @@ const WorkoutComplete = () => {
                             {workout.summary.personalBests.map((pb, index) => (
                                 <div key={index} className="bg-[#2B2D42] rounded-xl px-4 py-3 flex justify-between items-center">
                                     <div>
-                                        <p className="text-[#EDF2F4] font-semibold">{pb.exercise}</p>
+                                        <p className="text-[#EDF2F4] font-semibold">{pb.exercise} ({pb.equipment})</p>
                                         <p className="text-[#EDF2F4]/40 text-sm">
                                             {formatWeight(pb.previousValue, user.useImperial)} → <span className="text-[#EF233C] font-bold">{formatWeight(pb.newValue, user.useImperial)}</span>
                                         </p>
