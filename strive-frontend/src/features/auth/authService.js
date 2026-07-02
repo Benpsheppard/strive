@@ -14,7 +14,7 @@ const getMe = async (token) => {
         }
     }
 
-    const response = await axios.get(API_URL + `me`, {}, config)
+    const response = await axios.get(API_URL + `me`, config)
 
     return response.data
 }
