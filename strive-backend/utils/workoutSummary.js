@@ -162,7 +162,7 @@ const calculateStrengthPoints = async (user, workout, exercises) => {
 }
 
 const calculateProgressionPoints = async (user, workout, exercises, personalBests) => {
-    const existingPBs = await getExistingPBs(user._id, workout._id)
+    const existingPBs = await getExistingPBs(user._id, workout)
 
     if (Object.keys(existingPBs).length === 0) {
         return { progressionReward: 40, progressionScore: 1 }
@@ -173,10 +173,12 @@ const calculateProgressionPoints = async (user, workout, exercises, personalBest
 
     exercises.forEach(exercise => {
         const name = exercise.name.trim().toLowerCase()
+        const key = buildPBKey(name, exercise.selectedEquipment)
+
         const pb = getPBMetric(exercise.trackingMode, exercise.sets)
         if (!pb || pb.value === 0) return
 
-        const existingPB = existingPBs[name]
+        const existingPB = existingPBs[key]
         if (!existingPB) return
 
         const exerciseScore = pb.value / existingPB.value
@@ -286,6 +288,11 @@ const getPBMetric = (trackingMode, sets) => {
     }
 }
 
+const buildPBKey = (name, equipment) => {
+    const normalizedEquipment = (equipment || 'unspecified').trim().toLowerCase()
+    return `${name}||${normalizedEquipment}`
+}
+
 const getExistingPBs = async (userId, workout) => {
     const existingWorkouts = await Workout.find({ 
         user: userId,
@@ -299,31 +306,40 @@ const getExistingPBs = async (userId, workout) => {
             const trackingMode = ex.exercise?.trackingMode
             if (!name || !trackingMode) return
 
+            const key = buildPBKey(name, ex.selectedEquipment)
+
             const pb = getPBMetric(trackingMode, ex.sets)
             if (!pb || pb.value === 0) return
 
-            if (!existingPBs[name] || pb.value > existingPBs[name].value) {
-                existingPBs[name] = { metric: pb.metric, value: pb.value }
+            if (!existingPBs[key] || pb.value > existingPBs[key].value) {
+                existingPBs[key] = { metric: pb.metric, value: pb.value, equipment: ex.selectedEquipment }
             }
         })
     })
 
+    console.log('ExistingPBs: ' + JSON.stringify(existingPBs))
     return existingPBs
 }
 
 const detectPersonalBests = async (userId, exercises, workout) => {
     const existingPBs = await getExistingPBs(userId, workout)
+    console.log('Incoming exercises: ' + JSON.stringify(exercises, null, 2))
 
     const newPBs = []
+    
     exercises.forEach(exercise => {
         const name = exercise.name.trim().toLowerCase()
+        const key = buildPBKey(name, exercise.selectedEquipment)
+
         const pb = getPBMetric(exercise.trackingMode, exercise.sets)
         if (!pb || pb.value === 0) return
 
-        const existingPB = existingPBs[name]
+        const existingPB = existingPBs[key]
+
         if (!existingPB || pb.value > existingPB.value) {
             newPBs.push({
                 exercise: exercise.name,
+                equipment: exercise.selectedEquipment,
                 metric: pb.metric,
                 previousValue: existingPB ? existingPB.value : 0,
                 newValue: pb.value
