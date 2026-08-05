@@ -28,9 +28,6 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
 
         try {
             const { workout, user, gamification } = await dispatch(createWorkout(workoutData)).unwrap()
-            
-            console.log(JSON.stringify(workout))
-            console.log(JSON.stringify(gamification))
 
             dispatch(setLastWorkoutStats({
                 workout,

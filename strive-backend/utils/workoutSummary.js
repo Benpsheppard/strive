@@ -317,13 +317,11 @@ const getExistingPBs = async (userId, workout) => {
         })
     })
 
-    console.log('ExistingPBs: ' + JSON.stringify(existingPBs))
     return existingPBs
 }
 
 const detectPersonalBests = async (userId, exercises, workout) => {
     const existingPBs = await getExistingPBs(userId, workout)
-    console.log('Incoming exercises: ' + JSON.stringify(exercises, null, 2))
 
     const newPBs = []
     
