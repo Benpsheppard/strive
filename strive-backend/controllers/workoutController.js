@@ -7,6 +7,7 @@ const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const { addPointsToUser, checkAndBreakStreak, checkAndIncreaseStreak, updateUserMomentum } = require('../utils/workoutServices.js')
+const { getStartOfWeek, getEndOfWeek } = require('../utils/dateFormat.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -81,6 +82,18 @@ const setWorkout = asyncHandler(async (req, res) => {
 
     await updateLeaderboardEntry(req.user, workout)
 
+    const start = getStartOfWeek(workoutDate)
+    const end = getEndOfWeek(workoutDate)
+
+    const workoutsThisWeek = await Workout.countDocuments({
+        user: req.user._id,
+        createdAt: {
+            $gte: start,
+            $lte: end
+        }
+    })
+
+    // Store old values for gamification
     const oldStreak = req.user.streak.current
     const oldShield = req.user.streak.oldShield
     const oldMomentum = req.user.momentum.current
@@ -92,7 +105,7 @@ const setWorkout = asyncHandler(async (req, res) => {
         : null
 
     // Check if user's streak has increased
-    await checkAndIncreaseStreak(req.user.id)
+    await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
 
     // Update User Momentum
     await updateUserMomentum(req.user.id, {
@@ -102,6 +115,7 @@ const setWorkout = asyncHandler(async (req, res) => {
     })
 
     const updatedUser = await User.findById(req.user.id)
+    console.log(updatedUser.streak.current)
 
     // Output created workout + user + gamification flags
     res.status(201).json({

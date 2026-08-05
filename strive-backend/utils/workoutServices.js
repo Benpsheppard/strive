@@ -75,36 +75,21 @@ const checkAndBreakStreak = async (userId) => {
 }
 
 // Check if Streak is Increased
-const checkAndIncreaseStreak = async (userId) => {
+const checkAndIncreaseStreak = async (userId, workoutsThisWeek) => {
+    if (workoutsThisWeek !== 1) {
+        return 
+    }
+
+    const currentWeek = getISOWeekString(new Date())
+
     const user = await User.findById(userId)
     if (!user) {
-        throw new Error('User not found')
+        throw new Error('User Not Found')
     }
 
-    const now = new Date()
-    const currentWeek = getISOWeekString(now)
-
-    if (user.streak.lastIncrementedWeek === currentWeek) {
-        return user
-    }
-
-    const start = getStartOfWeek(now)
-    const end = getEndOfWeek(now)
-
-    const completedWorkouts = await Workout.countDocuments({
-        user: user._id,
-        createdAt: {
-            $gte: start,
-            $lte: end
-        }
-    })
-
-    if (completedWorkouts >= user.target) {
-        user.streak.current++
-        user.streak.best = Math.max(user.streak.best, user.streak.current)
-
-        user.streak.lastIncrementedWeek = currentWeek
-    }
+    user.streak.current++
+    user.streak.best = Math.max(user.streak.best, user.streak.current)
+    user.streak.lastIncrementedWeek = currentWeek
 
     const updatedUser = await user.save()
     return updatedUser
