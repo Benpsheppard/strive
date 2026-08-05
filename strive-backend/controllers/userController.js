@@ -13,6 +13,7 @@ const {
     getWeeksBetween, isoWeekToDate 
 } = require('../utils/dateFormat.js')
 const formatUser = require('../utils/formatUser.js')
+const { addPointsToUser, updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak } = require('../utils/workoutServices.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -287,32 +288,9 @@ const updateUnitPreference = asyncHandler(async (req, res) => {
  */
 const addPoints = asyncHandler(async (req, res) => {
     const { amount } = req.body    // Amount of SP to be added
-    const user = await User.findById(req.params.id)      // Get user
+    const user = await addPointsToUser(req.params.id, amount)
 
-    // Check user exists
-    if (!user) {
-        res.status(404)
-        throw new Error('User not found')
-    }
-
-    const pointsToAdd = Number(amount)
-
-    if (isNaN(pointsToAdd)){
-        res.status(400)
-        throw new Error('Amount is not a valid number')
-    }
-
-    user.strivepoints += pointsToAdd    // Add points to user
-
-    user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1    // Level up rate (lower divisor is quicker leveling)
-    
-    await user.save()  // Save updates to user
-
-    res.json({
-        message: `Added ${amount} SP to ${user.username}`,
-        strivepoints: user.strivepoints,
-        level: user.level,
-    })
+    res.status(200).json(formatUser(user))
 })
 
 /**
@@ -365,49 +343,9 @@ const updateProfile = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const checkIfStreakBroken = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id)
+    const user = await checkAndBreakStreak(req.params.id)
 
-    if (!user) {
-        res.status(404)
-        throw new Error('User not found')
-    }
-
-    const now = new Date()
-    const previousWeek = getPreviousISOWeekString(now)
-    const currentWeek = getISOWeekString(now)
-
-    if (user.streak.lastIncrementedWeek === currentWeek) {
-        user.streak.lastEvaluatedWeek = previousWeek
-        await user.save()
-        return res.status(200).json(formatUser(user))
-    }
-
-    if (user.streak.lastEvaluatedWeek === previousWeek) {
-        return res.status(200).json(formatUser(user))
-    }
-
-    const { start, end } = getPreviousWeekRange(now)
-
-    const completedWorkouts = await Workout.countDocuments({
-        user: user._id,
-        createdAt: {
-            $gte: start,
-            $lte: end
-        }
-    })
-
-    if (completedWorkouts < user.target) {
-        if (user.streak.shield) {
-            user.streak.shield = false
-        } else {
-            user.streak.current = 0
-        }
-    }
-
-    user.streak.lastEvaluatedWeek = previousWeek
-
-    const updatedUser = await user.save()
-    res.status(200).json(formatUser(updatedUser))
+    res.status(200).json(formatUser(user))
 })
 
 /**
@@ -416,38 +354,7 @@ const checkIfStreakBroken = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const checkIfStreakIncreased = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id)
-    if (!user) {
-        res.status(404)
-        throw new Error('User not found')
-    }
-
-    const now = new Date()
-    const currentWeek = getISOWeekString(now)
-
-    if (user.streak.lastIncrementedWeek === currentWeek) {
-        return res.status(200).json(formatUser(user))
-    }
-
-    const start = getStartOfWeek(now)
-    const end = getEndOfWeek(now)
-
-    const completedWorkouts = await Workout.countDocuments({
-        user: user._id,
-        createdAt: {
-            $gte: start,
-            $lte: end
-        }
-    })
-
-    if (completedWorkouts >= user.target) {
-        user.streak.current++
-        user.streak.best = Math.max(user.streak.best, user.streak.current)
-
-        user.streak.lastIncrementedWeek = currentWeek
-    }
-
-    const updatedUser = await user.save()
+    const user = await checkAndIncreaseStreak(req.params.id)
     res.status(200).json(formatUser(updatedUser))
 })
 
@@ -457,20 +364,8 @@ const checkIfStreakIncreased = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const updateMomentum = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user.id)
-    if (!user) {
-        res.status(404)
-        throw new Error('User not found')
-    }
-
-    const newMomentum = calculateMomentum(user, req.body || {})
-    user.momentum.current = newMomentum
-
-    const newLastCalculated = new Date()
-    user.momentum.lastCalculated = newLastCalculated
-    
-    const updatedUser = await user.save()
-    res.status(200).json(formatUser(updatedUser))
+    const user = await updateUserMomentum(req.user.id, req.body)
+    res.status(200).json(formatUser(user))
 })
 
 // Generate JWT token

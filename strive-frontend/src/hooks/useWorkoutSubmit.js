@@ -7,12 +7,10 @@ import { toast } from "react-toastify"
 
 // Feature Imports
 import { createWorkout, setLastWorkoutStats } from "../features/workouts/workoutsSlice"
-import { addPoints, updateMomentum, checkIfStreakIncreased } from "../features/auth/authSlice"
 
 export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutState }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const { user } = useSelector((state) => state.auth)
 
     const submitWorkout = async () => {
         if (!title.trim()) { 
@@ -29,42 +27,14 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
         const workoutData = { title, exercises, duration: durationMinutes }
 
         try {
-            const savedWorkout = await dispatch(createWorkout(workoutData)).unwrap()
-            const { summary } = savedWorkout
-
-            const momentumData = {
-                workoutCompleted: true,
-                personalBests: summary.personalBests.length || 0,
-                quests: summary.questsCompleted
-            }
-
-            const oldStreak = user.streak.current
-            const oldShield = user.streak.shield
-            const oldMomentum = user.momentum.current
-
-            const [pointsResult, updatedUserAfterStreak, updatedUserAfterMomentum] = await Promise.all([
-                summary.totalStrivePoints.total > 0
-                    ? dispatch(addPoints({ userId: user._id, amount: summary.totalStrivePoints.total })).unwrap()
-                    : Promise.resolve(null),
-                dispatch(checkIfStreakIncreased(user._id)).unwrap(),
-                dispatch(updateMomentum(momentumData)).unwrap()
-            ])
-
-            const levelUp = pointsResult?.level > user.level ? pointsResult.level : null
-            const streakIncreased = updatedUserAfterStreak.streak.current > oldStreak
-            const shieldEarned = !oldShield && updatedUserAfterStreak.streak.shield
-            const shieldUsed = oldShield && !updatedUserAfterStreak.streak.shield && updatedUserAfterStreak.streak.current === oldStreak
-            const streakBroken = updatedUserAfterStreak.streak.current === 0 && oldStreak > 0
-            const momentumGained = updatedUserAfterMomentum.momentum.current - oldMomentum
+            const { workout, user, gamification } = await dispatch(createWorkout(workoutData)).unwrap()
+            
+            console.log(JSON.stringify(workout))
+            console.log(JSON.stringify(gamification))
 
             dispatch(setLastWorkoutStats({
-                workout: savedWorkout,
-                levelUp,
-                streakIncreased,
-                momentumGained,
-                shieldEarned,
-                shieldUsed,
-                streakBroken
+                workout,
+                ...gamification
             }))
 
             navigate('/workout-complete')

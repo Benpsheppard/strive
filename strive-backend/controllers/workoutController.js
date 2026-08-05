@@ -3,8 +3,10 @@
 
 // Imports
 const asyncHandler = require('express-async-handler') 
+const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
+const { addPointsToUser, checkAndBreakStreak, checkAndIncreaseStreak, updateUserMomentum } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -30,7 +32,6 @@ const getWorkouts = asyncHandler(async (req, res) => {
  *  @access Private
  */
 const setWorkout = asyncHandler(async (req, res) => {
-
     // Check if workout includes a title
     if(!req.body.title){
         res.status(400)
@@ -80,8 +81,41 @@ const setWorkout = asyncHandler(async (req, res) => {
 
     await updateLeaderboardEntry(req.user, workout)
 
-    // Output created workout
-    res.status(201).json(workout)
+    const oldStreak = req.user.streak.current
+    const oldShield = req.user.streak.oldShield
+    const oldMomentum = req.user.momentum.current
+    const oldLevel = req.user.level
+
+    // Adjust user's strive points
+    const points = summary.totalStrivePoints?.total > 0
+        ? await addPointsToUser(req.user.id, summary.totalStrivePoints.total)
+        : null
+
+    // Check if user's streak has increased
+    await checkAndIncreaseStreak(req.user.id)
+
+    // Update User Momentum
+    await updateUserMomentum(req.user.id, {
+        workoutCompleted: true,
+        personalBests: summary.personalBests?.length || 0,
+        quests: summary.questsCompleted
+    })
+
+    const updatedUser = await User.findById(req.user.id)
+
+    // Output created workout + user + gamification flags
+    res.status(201).json({
+        workout,
+        user: formatUser(updatedUser),
+        gamification: {
+            levelUp: points?.level > oldLevel ? points.level : null,
+            streakIncreased: updatedUser.streak.current > oldStreak,
+            shieldEarned: !oldShield && updatedUser.streak.shield,
+            shieldUsed: oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak,
+            streakBroken: updatedUser.streak.current === 0 && oldStreak > 0,
+            momentumGained: updatedUser.momentum.current - oldMomentum
+        }
+    })
 })
 
 /**
