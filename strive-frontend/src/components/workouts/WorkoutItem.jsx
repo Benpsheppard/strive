@@ -40,21 +40,14 @@ const WorkoutItem = ({ workout }) => {
         }))
     }
 
-    const exerciseCount = workout.exercises?.length || 0
+    const exerciseCount = workout.exercises?.length
 
     return (
-        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-4 flex flex-col gap-2 mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[120px] overflow-hidden"}`}
+        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-2 flex flex-col gap-2 mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[50px] overflow-hidden"}`}
             onClick={() => setWorkoutExpanded(!workoutExpanded)}>
-            {/* X delete button in top right */}
-            <div>
-                <button onClick={onDelete} className="absolute top-2 right-2 text-[#EF233C] hover:text-[#D90429] text-lg font-bold">
-                    <FaTimes />
-                </button>
-            </div>
-
-            {/* Header: Title + Date */}
-            <div className="flex justify-between items-center text-[#EDF2F4]">
-                <div className='flex flex-row gap-2 justify-center items-center'>
+            <div className="flex flex-row justify-between">
+                {/* Header: Title + Date */}
+                <div className="flex justify-between items-center gap-3 text-[#EDF2F4]">
                     <button>
                         {workoutExpanded ? (
                             <FaChevronDown />
@@ -62,22 +55,29 @@ const WorkoutItem = ({ workout }) => {
                             <FaChevronRight />
                         )}
                     </button>
+
                     <h2 className="text-xl font-semibold">
                         {workout.title}
                     </h2>
                 </div>
 
-                <span className="text-sm text-[#2B2D42]">
-                    {formatWorkoutStartTime(workout.createdAt, workout.duration)}
-                </span>
-            </div>
+                <div className="flex flex-row items-center gap-3">
+                    {/* Summary info */}
+                    <p className="text-sm text-[#EDF2F4]">
+                        {formatDuration(workout.duration)}
+                    </p>
 
-            {/* Summary info */}
-            <p className="text-sm text-[#2B2D42]">
-                Duration: <span className="font-medium">{formatDuration(workout.duration) || 0}</span> 
-                {" | "}
-                {exerciseCount} {exerciseCount === 1 ? "exercise" : "exercises"}
-            </p>
+                    {/* Date and starting time */}
+                    <p className="text-sm text-[#2B2D42]">
+                        {formatWorkoutStartTime(workout.createdAt, workout.duration)}
+                    </p>
+
+                    {/* X delete button in top right */}
+                    <button onClick={onDelete} className="text-[#EF233C] hover:text-[#D90429] text-sm font-bold">
+                        <FaTimes />
+                    </button>
+                </div>
+            </div>
 
             {/* Workout Expanded content */}
             {workoutExpanded && (
