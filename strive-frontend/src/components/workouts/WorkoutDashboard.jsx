@@ -8,7 +8,7 @@ import WorkoutItem from "./WorkoutItem"
 import MuscleGroupHeatmap from "../progress/MuscleGroupHeatmap"
 
 const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
-    const lastThreeWorkouts = workouts.length > 0 ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3) : []
+    const lastFourWorkouts = workouts.length > 0 ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4) : []
 
     return (
         <section className="space-y-5 w-full">
@@ -41,8 +41,8 @@ const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
                         Most Recent <span className="text-[#EF233C]">Workouts</span>
                     </h1>
 
-                    {lastThreeWorkouts.length > 0 && (
-                        lastThreeWorkouts.map((workout) => 
+                    {lastFourWorkouts.length > 0 && (
+                        lastFourWorkouts.map((workout) => 
                             <div key={workout._id} className="w-full">
                                 <WorkoutItem workout={workout} />
                             </div>
