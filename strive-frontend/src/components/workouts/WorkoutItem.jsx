@@ -55,18 +55,13 @@ const WorkoutItem = ({ workout }) => {
                             <FaChevronRight />
                         )}
                     </button>
-
-                    <h2 className="text-xl font-semibold">
+                    
+                    <h2 className="text-xl font-semibold items-center">
                         {workout.title}
                     </h2>
                 </div>
 
                 <div className="flex flex-row items-center gap-3">
-                    {/* Summary info */}
-                    <p className="text-sm text-[#EDF2F4]">
-                        {formatDuration(workout.duration)}
-                    </p>
-
                     {/* Date and starting time */}
                     <p className="text-sm text-[#2B2D42]">
                         {formatWorkoutStartTime(workout.createdAt, workout.duration)}
@@ -99,6 +94,11 @@ const WorkoutItem = ({ workout }) => {
                         </div>
 
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                            <p className="text-xs text-[#EDF2F4]">Duration</p>
+                            <p className="font-semibold text-[#EF233C]">{formatDuration(workout.duration)}</p>
+                        </div>
+
+                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Distance</p>
                             <p className="font-semibold text-[#EF233C]">{formatDistance(workout.summary.totalDistance, user.useImperial)}</p>
                         </div>
@@ -112,9 +112,7 @@ const WorkoutItem = ({ workout }) => {
                             <p className="text-xs text-[#EDF2F4]">SP</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints.total)}</p>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2 mb-4">
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
