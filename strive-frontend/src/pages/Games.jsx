@@ -21,6 +21,7 @@ import StreakCard from '../components/games/StreakCard.jsx'
 import GamesSummary from '../components/games/GamesSummary.jsx'
 import Leaderboard from '../components/games/Leaderboard.jsx'
 import MomentumCard from '../components/games/MomentumCard.jsx'
+import BonusCard from '../components/games/BonusCard.jsx'
 
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
@@ -98,7 +99,8 @@ const Games = () => {
 
                     {/* Streak and Momentum Card */}
                     <div className='fade-in-card grid grid-cols-1 md:grid-cols-2 gap-5' style={{ animationDelay: '0.4s' }}>
-                        <StreakCard user={user} workouts={workouts} />
+                        {/* <StreakCard user={user} workouts={workouts} /> */}
+                        <BonusCard user={user} workouts={workouts} />
                         <MomentumCard user={user} />
                     </div>
 
