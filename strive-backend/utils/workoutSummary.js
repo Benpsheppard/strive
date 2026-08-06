@@ -3,6 +3,8 @@
 // Imports
 const Workout = require('../models/workoutModel')
 const Quest = require('../models/questModel')
+const { getStartOfWeek, getEndOfWeek } = require('./dateFormat')
+const { getWorkoutsThisWeek } = require('./workoutServices')
 
 const REP_BUFFER = 2
 
@@ -62,6 +64,25 @@ const getWeeklyFrequency = async (userId) => {
 }
 
 // ─── Calculate Strive Points ─────────────────────────────────────────────────
+const getWeeklyBonus = (target) => {
+    switch (target) {
+        case 1:
+            return 100
+        case 2:
+            return 200
+        case 3:
+            return 500
+        case 4:
+            return 750
+        case 5:
+        case 6:
+        case 7:
+            return 1000
+        default: 
+            return 0
+    }
+}
+
 const calculateVolumePoints = async (user, workout, totalWeight) => {
     // Get recent workouts
     const recentWorkouts = await Workout.find({ 
@@ -244,19 +265,20 @@ const calculateConsistencyMultiplier = async (user, workout) => {
 
 const calculateTotalStrivePoints = async (user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
-
     const { volumeReward, volumeScore } = await calculateVolumePoints(user, workout, totalWeight)
-
     const { strengthReward, strengthScore } = await calculateStrengthPoints(user, workout, exercises)
-
     const { progressionReward, progressionScore } = await calculateProgressionPoints(user, workout, exercises, personalBests)
-
     const consistencyMultiplier = await calculateConsistencyMultiplier(user, workout)
-
     const personalBestsReward = personalBests.length * 500
 
+    const workoutsThisWeek = await getWorkoutsThisWeek(user, workout.createdAt)
+
+    const target = user.target
+    const targetReached = workoutsThisWeek === target
+    const targetBonus = targetReached ? getWeeklyBonus(target) : 0
+
     const completeReward = Math.ceil((volumeReward + strengthReward + progressionReward) * consistencyMultiplier)
-    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward) * momentumMultiplier)
+    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward + targetBonus) * momentumMultiplier)
     
     return {
         total,
@@ -266,7 +288,8 @@ const calculateTotalStrivePoints = async (user, workout, exercises, personalBest
         consistencyMultiplier,
         momentumMultiplier,
         totalQuestSP,
-        personalBestsReward
+        personalBestsReward,
+        bonus: targetBonus
     }
 }
 

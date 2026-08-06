@@ -6,8 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
-const { addPointsToUser, checkAndBreakStreak, checkAndIncreaseStreak, updateUserMomentum } = require('../utils/workoutServices.js')
-const { getStartOfWeek, getEndOfWeek } = require('../utils/dateFormat.js')
+const { addPointsToUser, checkAndBreakStreak, checkAndIncreaseStreak, updateUserMomentum, getWeeklyBonus, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -39,24 +38,25 @@ const setWorkout = asyncHandler(async (req, res) => {
         throw new Error('Please add a title field')
     }
 
-    const workoutCount = await Workout.countDocuments({ user: req.user._id })
-
     // Check if user is guest account
+    const workoutCount = await Workout.countDocuments({ 
+        user: req.user._id 
+    })
+
     if (req.user.isGuest && workoutCount >= 5) {
         res.status(403)
         throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
     }
 
-    const exercises = req.body.exercises
-
-    // Create new workout with given req data
+    // Create new workout
     const workout = await Workout.create({
         user: req.user.id,
         title: req.body.title,
         duration: req.body.duration,
-        exercises
+        exercises: req.body.exercises
     })
 
+    // Populate variables for calculations
     const populatedWorkout = await workout.populate('exercises.exercise')
     const populatedExercises = populatedWorkout.exercises.map(ex => ({
         name: ex.exercise.name,
@@ -67,10 +67,12 @@ const setWorkout = asyncHandler(async (req, res) => {
         sets: ex.sets
     }))
 
+    // Calculate workout summary
     const summary = await calculateWorkoutSummary(req.user, populatedExercises, workout)
     workout.summary = summary
     await workout.save()
 
+    // Update user object with new workout
     const workoutDate = new Date()
     await User.findByIdAndUpdate(
         req.user.id,
@@ -80,18 +82,8 @@ const setWorkout = asyncHandler(async (req, res) => {
         }
     )
 
+    // Update leaderboards
     await updateLeaderboardEntry(req.user, workout)
-
-    const start = getStartOfWeek(workoutDate)
-    const end = getEndOfWeek(workoutDate)
-
-    const workoutsThisWeek = await Workout.countDocuments({
-        user: req.user._id,
-        createdAt: {
-            $gte: start,
-            $lte: end
-        }
-    })
 
     // Store old values for gamification
     const oldStreak = req.user.streak.current
@@ -99,13 +91,14 @@ const setWorkout = asyncHandler(async (req, res) => {
     const oldMomentum = req.user.momentum.current
     const oldLevel = req.user.level
 
+    // Check if user's streak has increased
+    const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
+    await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
+
     // Adjust user's strive points
     const points = summary.totalStrivePoints?.total > 0
         ? await addPointsToUser(req.user.id, summary.totalStrivePoints.total)
         : null
-
-    // Check if user's streak has increased
-    await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
 
     // Update User Momentum
     await updateUserMomentum(req.user.id, {
@@ -115,7 +108,6 @@ const setWorkout = asyncHandler(async (req, res) => {
     })
 
     const updatedUser = await User.findById(req.user.id)
-    console.log(updatedUser.streak.current)
 
     // Output created workout + user + gamification flags
     res.status(201).json({
@@ -127,7 +119,7 @@ const setWorkout = asyncHandler(async (req, res) => {
             shieldEarned: !oldShield && updatedUser.streak.shield,
             shieldUsed: oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak,
             streakBroken: updatedUser.streak.current === 0 && oldStreak > 0,
-            momentumGained: updatedUser.momentum.current - oldMomentum
+            momentumGained: updatedUser.momentum.current - oldMomentum,
         }
     })
 })

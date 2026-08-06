@@ -62,6 +62,10 @@ const summarySchema = mongoose.Schema({
         personalBestsReward: {
             type: Number,
             default: 0
+        },
+        bonus: {
+            type: Number,
+            default: 0
         }
     },
     // Quests Completed

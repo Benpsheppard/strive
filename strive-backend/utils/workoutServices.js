@@ -6,6 +6,21 @@ const Workout = require('../models/workoutModel')
 const { getPreviousISOWeekString, getISOWeekString, getPreviousWeekRange, getStartOfWeek, getEndOfWeek } = require('./dateFormat')
 const { calculateMomentum } = require('./momentum')
 
+// Get number of workouts completed this week
+const getWorkoutsThisWeek = async (userId, date) => {
+    const start = getStartOfWeek(date)
+    const end = getEndOfWeek(date)
+    const workoutsThisWeek = await Workout.countDocuments({
+        user: userId,
+        createdAt: {
+            $gte: start,
+            $lte: end
+        }
+    })
+
+    return workoutsThisWeek
+}
+
 // Add Strive Points to User
 const addPointsToUser = async (userId, amount) => {
     const user = await User.findById(userId)
@@ -76,16 +91,16 @@ const checkAndBreakStreak = async (userId) => {
 
 // Check if Streak is Increased
 const checkAndIncreaseStreak = async (userId, workoutsThisWeek) => {
+    const user = await User.findById(userId)
+    if (!user) {
+        throw new Error('User Not Found')
+    }
+    
     if (workoutsThisWeek !== 1) {
         return 
     }
 
     const currentWeek = getISOWeekString(new Date())
-
-    const user = await User.findById(userId)
-    if (!user) {
-        throw new Error('User Not Found')
-    }
 
     user.streak.current++
     user.streak.best = Math.max(user.streak.best, user.streak.current)
@@ -113,6 +128,7 @@ const updateUserMomentum = async (userId, data) => {
 }
 
 module.exports = {
+    getWorkoutsThisWeek,
     addPointsToUser,
     checkAndBreakStreak,
     checkAndIncreaseStreak,
