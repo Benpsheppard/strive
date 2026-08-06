@@ -87,7 +87,7 @@ const StrivePointsEarned = ({ workout }) => {
                 </div>
             </div>
             
-            {workout.summary.bonus != 0 &&
+            {workout.summary.totalStrivePoints.bonus != 0 &&
                 <div className="flex flex-col items-center space-y-1 mb-3 p-2 border-t border-[#EDF2F4]/20">
                     <h2 className="text-[#EDF2F4] font-semibold text-xl flex items-center gap-2">
                         Weekly Target Hit!
