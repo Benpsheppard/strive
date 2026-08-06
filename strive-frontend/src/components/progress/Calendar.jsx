@@ -41,7 +41,7 @@ const Calendar = ({ workouts }) => {
 
     return (
         <div className="w-full mx-auto bg-[#8D99AE] shadow rounded-2xl p-4">
-            <p className="text-xl text-[#EDF2F4] font-semibold text-center mb-3">
+            <p className="text-lg text-[#EDF2F4] font-semibold text-center mb-3">
                 This <span className="text-[#EF233C]">Week</span>
             </p>
             <div className="flex justify-between items-center">

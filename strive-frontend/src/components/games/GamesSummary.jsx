@@ -19,10 +19,10 @@ const GamesSummary = ({ user }) => {
 
     return (
         <div className='fade-in-card bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center' style={{ animationDelay: '0.2s' }}>
-            <p className='text-[#EDF2F4] text-xl font-semibold'>
+            <p className='text-[#EDF2F4] text-lg font-semibold'>
                 Level: <span className='text-[#EF233C]'>{user?.level}</span>
             </p>
-            <p className='text-[#EDF2F4] text-xl font-semibold'>
+            <p className='text-[#EDF2F4] text-lg font-semibold'>
                 Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
             </p>
 
