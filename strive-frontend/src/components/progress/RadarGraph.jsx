@@ -28,9 +28,9 @@ const RadarGraph = ({ workouts }) => {
     const averageProgressionPoints = averageReward(workouts, "progression")
 
     const data = [
-        { subject: "Strength", Last: lastWorkoutStrengthPoints, Average: averageStrengthPoints, fullMark: 150 },
-        { subject: "Volume", Last: lastWorkoutVolumePoints, Average: averageVolumePoints, fullMark: 150 },
-        { subject: "Progression", Last: lastWorkoutProgressionPoints, Average: averageProgressionPoints, fullMark: 150}
+        { subject: "Strength SP", Last: lastWorkoutStrengthPoints, Average: averageStrengthPoints, fullMark: 150 },
+        { subject: "Volume SP", Last: lastWorkoutVolumePoints, Average: averageVolumePoints, fullMark: 150 },
+        { subject: "Progression SP", Last: lastWorkoutProgressionPoints, Average: averageProgressionPoints, fullMark: 150}
     ]
 
     return (
@@ -41,23 +41,25 @@ const RadarGraph = ({ workouts }) => {
 
             <div style={{ width: "100%", height: 400 }}>
                 <ResponsiveContainer>
-                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+                    <RadarChart cx="50%" cy="50%" outerRadius="60%" data={data}>
                     <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={30} domain={[0, 150]} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: "#EDF2F4" }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 150]} tick={{ fill: "#EDF2F4", fontSize: 12 }} />
                     <Radar
                         name="Last"
                         dataKey="Last"
                         stroke="#EF233C"
                         fill="#EF233C"
                         fillOpacity={0.5}
+                        animationEasing="ease-out"
+                        animationDuration={800}
                     />
                     <Radar
                         name="Average"
                         dataKey="Average"
                         stroke="#EDF2F4"
                         fill="#EDF2F4"
-                        fillOpacity={0.4}
+                        fillOpacity={0.3}
                     />
                     <Legend />
                     <Tooltip />
