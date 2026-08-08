@@ -27,16 +27,8 @@ const getTotalDuration = (sets) =>
     sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
 
 const getReward = (score) => {
-    let reward = 0
-
-    if (score <= 0.9) reward = 25
-    else if (score <= 1.0) reward = 40
-    else if (score <= 1.05) reward = 60
-    else if (score <= 1.1) reward = 80
-    else if (score <= 1.25) reward = 100
-    else reward = 150
-
-    return reward
+    const clamped = Math.max(0.7, Math.min(score, 1.3))
+    return Math.round(25 + ((clamped - 0.7) / 0.6) * 125)
 }
 
 const getMomentumMultiplier = (momentum) => {
@@ -202,7 +194,7 @@ const calculateProgressionPoints = async (user, workout, exercises, personalBest
         const existingPB = existingPBs[key]
         if (!existingPB) return
 
-        const exerciseScore = pb.value / existingPB.value
+        const exerciseScore = 0.7 + 0.3 * (pb.value / existingPB.value)
         runningScore += exerciseScore
         matchedExerciseCount++
     })
