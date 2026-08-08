@@ -77,7 +77,7 @@ const WorkoutItem = ({ workout }) => {
             {/* Workout Expanded content */}
             {workoutExpanded && (
                 <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                         <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
                             <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
