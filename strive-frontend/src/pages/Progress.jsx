@@ -23,6 +23,7 @@ import MonthCalendar from '../components/progress/MonthCalendar.jsx'
 import MonthlyProgressCard from '../components/progress/MonthlyProgressCard.jsx'
 import TotalProgressCard from '../components/progress/TotalProgressCard.jsx'
 import OneRepMax from '../components/progress/OneRepMax.jsx'
+import RadarGraph from '../components/progress/RadarGraph.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
@@ -95,6 +96,9 @@ const Progress = () => {
                         className="fade-in-card"
                         style={{ animationDelay: '1.2s' }}
                         useImperial={user.useImperial} 
+                        workouts={workouts}
+                    />
+                    <RadarGraph
                         workouts={workouts}
                     />
                 </div>

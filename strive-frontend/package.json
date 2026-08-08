@@ -25,6 +25,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.1",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.10.1",
     "sweetalert2": "^11.26.20",
     "vite-plugin-pwa": "^1.1.0"
   },
