@@ -74,7 +74,7 @@ const PrevWorkouts = () => {
                 filtered.sort( (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) )
                 break
             case 'sp':
-                filtered.sort( (a, b) => (b.summary?.totalStrivePoints || 0) - (a.summary?.totalStrivePoints || 0) )
+                filtered.sort( (a, b) => (b.summary?.totalStrivePoints.total || 0) - (a.summary?.totalStrivePoints.total || 0) )
                 break
             default:
                 break
