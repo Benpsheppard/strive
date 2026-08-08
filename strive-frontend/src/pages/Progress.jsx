@@ -80,6 +80,10 @@ const Progress = () => {
                         </div>
                     </div>
 
+                    <RadarGraph
+                        workouts={workouts}
+                    />
+
                     {/* Charts Section */}
                     <div className="fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.8s'}}>
                         <PBChart workouts={workouts} useImperial={user.useImperial}/>
@@ -96,9 +100,6 @@ const Progress = () => {
                         className="fade-in-card"
                         style={{ animationDelay: '1.2s' }}
                         useImperial={user.useImperial} 
-                        workouts={workouts}
-                    />
-                    <RadarGraph
                         workouts={workouts}
                     />
                 </div>
