@@ -19,8 +19,10 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: strive-backend
         run: npm ci
 
-      - name: Run tests
+      - name: Run backend tests
+        working-directory: strive-backend
         run: npm test
