@@ -9,7 +9,7 @@
     "client": "npm run dev --prefix strive-frontend",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "npm run build --prefix strive-frontend",
-    "test": "cd strive-backend && npm test"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
