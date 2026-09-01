@@ -355,7 +355,7 @@ const checkIfStreakBroken = asyncHandler(async (req, res) => {
  */
 const checkIfStreakIncreased = asyncHandler(async (req, res) => {
     const user = await checkAndIncreaseStreak(req.params.id)
-    res.status(200).json(formatUser(updatedUser))
+    res.status(200).json(formatUser(user))
 })
 
 /**
