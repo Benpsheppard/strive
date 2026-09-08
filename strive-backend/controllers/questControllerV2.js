@@ -335,13 +335,6 @@ const generateQuests = asyncHandler(async (req, res) => {
 
         throw error
     }
-
-    const quests = await genQuests(user, duration)
-
-    res.status(200).json({
-        message: `${duration} quests generated!`,
-        quests
-    })
 })
 
 /**
