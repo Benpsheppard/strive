@@ -6,7 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
-const { addPointsToUser, checkAndBreakStreak, checkAndIncreaseStreak, updateUserMomentum, getWeeklyBonus, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
+const { addPointsToUser, checkAndIncreaseStreak, updateUserMomentum, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
