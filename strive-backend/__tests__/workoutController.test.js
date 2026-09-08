@@ -568,7 +568,9 @@ describe('workoutController', () => {
                 _id: 'workout123',
                 user: '123',
                 summary: {
-                    totalStrivePoints: 50
+                    totalStrivePoints: {
+                        total: 50
+                    }
                 },
                 deleteOne: jest.fn().mockResolvedValue({})
             }
