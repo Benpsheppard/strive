@@ -193,7 +193,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
-    const pointsToDeduct = workout.summary.totalStrivePoints
+    const pointsToDeduct = workout.summary.totalStrivePoints.total
 
     const newSP = Math.max(0, user.strivepoints - pointsToDeduct)
 
