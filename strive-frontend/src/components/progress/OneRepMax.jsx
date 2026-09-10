@@ -101,16 +101,18 @@ const OneRepMax = ({ workouts }) => {
                 1RM = Weight x ( 1 + ( Reps / 30 ) )
             </p>
 
-            <div className="flex flex-row items-center w-full gap-3 mb-5">
+            <div 
+                className="flex flex-row items-center w-full gap-3 mb-5" 
+                onClick={(e) => e.stopPropagation()}
+            >
                 <input 
                     placeholder="Search Maxes..."
                     className="bg-[#2B2D42] text-[#EDF2F4] rounded-2xl w-full p-4 flex-3"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}    
+                    onChange={(e) => setSearch(e.target.value)}   
                 />
 
                 <select
-                    onClick={(e) => e.stopPropagation()}
                     className="w-full bg-[#2B2D42] text-[#EDF2F4] p-4 rounded-2xl outline-none w-full flex-1"
                     value={selectedMuscleGroup}
                     onChange={(e) => setSelectedMuscleGroup(e.target.value)}
