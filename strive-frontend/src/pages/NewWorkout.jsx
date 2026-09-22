@@ -29,6 +29,7 @@ import ExerciseForm from '../components/workouts/ExerciseForm.jsx'
 
 // Constants
 import { EMPTY_EXERCISE, EMPTY_SET } from '../utils/constants.js'
+import RollingStats from '../components/workouts/RollingStats.jsx'
 
 const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
@@ -215,6 +216,11 @@ const NewWorkout = () => {
                         {/* Exercises List */}
                         <ExerciseList exercises={exercises} useImperial={user.useImperial} />
                     </div>
+
+                    {/* Rolling stats card */}
+                    <RollingStats 
+                        exercises={exercises}
+                    />
 
                     {/* Submit / Cancel */}
                     <div className="space-y-4 p-4 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl flex flex-col items-center">

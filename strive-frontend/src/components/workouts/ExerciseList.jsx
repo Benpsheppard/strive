@@ -31,8 +31,8 @@ const ExerciseList = ({ exercises, useImperial }) => {
         }
 
         return (
-            <li key={idx} className="text-[#2B2D42] flex justify-between border-t border-[#EDF2F4]/40">
-                <span>Set {idx + 1}:</span>
+            <li key={idx} className="text-[#2B2D42] bg-[#EDF2F4]/30 rounded-xl flex justify-between p-2">
+                <span>Set {idx + 1}</span>
                 <span>{summary}</span>
             </li>
         )
@@ -49,9 +49,9 @@ const ExerciseList = ({ exercises, useImperial }) => {
                         {ex.muscleGroup} {ex.selectedEquipment && `— ${ex.selectedEquipment}`}
                     </p>
                     {ex.sets && ex.sets.length > 0 && (
-                        <ul className="space-y-3">
+                        <div className="space-y-3">
                             {ex.sets.map((s, idx) => renderSet(s, idx, ex.trackingMode))}
-                        </ul>
+                        </div>
                     )}
                 </div>
             ))}
