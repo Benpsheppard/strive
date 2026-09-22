@@ -20,7 +20,7 @@ const updateLeaderboardEntry = async (user, workout) => {
         },
         {
             upsert: true,
-            new: true
+            returnDocument: 'after'
         }
     )
 }
