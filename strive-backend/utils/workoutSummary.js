@@ -40,18 +40,19 @@ const getMomentumMultiplier = (momentum) => {
     return 1
 }
 
-const getWeeklyFrequency = async (userId) => {
-    const allWorkouts = await Workout.find({ user: userId }).sort({ createdAt: 1 })
-    if (allWorkouts.length < 2) return 3
+const getWeeklyFrequency = (workoutHistory) => {
+    if (workoutHistory.length < 2) return 3
 
-    const first = allWorkouts[0].createdAt
-    const last = allWorkouts[allWorkouts.length - 1].createdAt
+    const first = workoutHistory[workoutHistory.length - 1].createdAt
+    const last = workoutHistory[0].createdAt
+
     const totalWeeks = (last - first) / (1000 * 60 * 60 * 24 * 7)
     if (totalWeeks < 1) return 3
 
-    const calculated = allWorkouts.length / totalWeeks
+    const calculated = workoutHistory.length / totalWeeks
 
     const confidence = Math.min(totalWeeks / 8, 1)
+
     return (calculated * confidence) + (3 * (1 - confidence))
 }
 
@@ -75,15 +76,10 @@ const getWeeklyBonus = (target) => {
     }
 }
 
-const calculateVolumePoints = async (user, workout, totalWeight) => {
-    // Get recent workouts
-    const recentWorkouts = await Workout.find({ 
-        user: user._id,
-        _id: { $ne: workout._id },
-        summary: { $exists: true }
-    })
-    .sort({ createdAt: -1 })
-    .limit(5)
+const calculateVolumePoints = async (workoutHistory, totalWeight) => {
+    const recentWorkouts = workoutHistory
+        .filter(w => w.summary)
+        .slice(0, 5)
 
     if (recentWorkouts.length < 5) {
         return { volumeReward: 40, volumeScore: 1 }
@@ -111,15 +107,11 @@ const calculateVolumePoints = async (user, workout, totalWeight) => {
     }
 }
 
-const calculateStrengthPoints = async (user, workout, exercises) => {
+const calculateStrengthPoints = async (workoutHistory, exercises) => {
     const exerciseIds = exercises.map(e => e.exerciseId)
-    const recentWorkouts = await Workout.find({
-        user: user._id,
-        _id: { $ne: workout._id },
-        'exercises.exerciseId': { $in: exerciseIds }
-    })
-    .sort({ createdAt: -1 })
-    .limit(15)
+    const recentWorkouts = workoutHistory
+        .filter(w => w.exercises.some(ex => exerciseIds.includes(ex.exerciseId)))
+        .slice(0, 15)
 
     if (recentWorkouts.length < 5) {
         return { strengthReward: 40, strengthScore: 1 }
@@ -174,9 +166,7 @@ const calculateStrengthPoints = async (user, workout, exercises) => {
     }
 }
 
-const calculateProgressionPoints = async (user, workout, exercises, personalBests) => {
-    const existingPBs = await getExistingPBs(user._id, workout)
-
+const calculateProgressionPoints = (existingPBs, exercises, personalBests) => {
     if (Object.keys(existingPBs).length === 0) {
         return { progressionReward: 40, progressionScore: 1 }
     }
@@ -216,24 +206,20 @@ const calculateProgressionPoints = async (user, workout, exercises, personalBest
     }
 }
 
-const calculateConsistencyMultiplier = async (user, workout) => {
+const calculateConsistencyMultiplier = async (workoutHistory) => {
     const WEEKS_TO_CHECK = 6
     const now = new Date()
     const cutoff = new Date(now - WEEKS_TO_CHECK * 7 * 24 * 60 * 60 * 1000)
 
-    const recentWorkouts = await Workout.find({
-        user: user._id,
-        _id: { $ne: workout._id },
-        createdAt: { $gte: cutoff }
-    }).sort({ createdAt: -1 })
-
+    const recentWorkouts = workoutHistory.filter(w => w.createdAt >= cutoff)
     if (recentWorkouts.length === 0) {
         return 1.0
     }
 
     const workoutsPerWeek = recentWorkouts.length / WEEKS_TO_CHECK
 
-    const typicalWeeklyFrequency = await getWeeklyFrequency(user._id)
+    const typicalWeeklyFrequency = getWeeklyFrequency(workoutHistory)
+
     const frequencyScore = Math.min(workoutsPerWeek / typicalWeeklyFrequency, 1.0)
 
     const gaps = []
@@ -247,20 +233,21 @@ const calculateConsistencyMultiplier = async (user, workout) => {
     const stdDev = Math.sqrt(variance)
 
     const regularityScore = Math.max(0, 1 - (stdDev / (avgGap + 1)))
-
     const consistencyScore = (frequencyScore * 0.6) + (regularityScore * 0.4)
-
     const multiplier = 0.8 + (consistencyScore * 0.7)
 
     return Math.round(multiplier * 100) / 100
 }
 
-const calculateTotalStrivePoints = async (user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
+const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
-    const { volumeReward, volumeScore } = await calculateVolumePoints(user, workout, totalWeight)
-    const { strengthReward, strengthScore } = await calculateStrengthPoints(user, workout, exercises)
-    const { progressionReward, progressionScore } = await calculateProgressionPoints(user, workout, exercises, personalBests)
-    const consistencyMultiplier = await calculateConsistencyMultiplier(user, workout)
+    const { progressionReward, progressionScore } = calculateProgressionPoints(existingPBs, exercises, personalBests)
+    const [{ volumeReward, volumeScore }, { strengthReward, strengthScore }, consistencyMultiplier] = await Promise.all([
+        calculateVolumePoints(workoutHistory, totalWeight),
+        calculateStrengthPoints(workoutHistory, exercises),
+        calculateConsistencyMultiplier(workoutHistory)
+    ])
+
     const personalBestsReward = personalBests.length * 500
 
     const workoutsThisWeek = await getWorkoutsThisWeek(user, workout.createdAt)
@@ -308,26 +295,62 @@ const buildPBKey = (name, equipment) => {
     return `${name}||${normalizedEquipment}`
 }
 
-const getExistingPBs = async (userId, workout) => {
-    const existingWorkouts = await Workout.find({ 
-        user: userId,
-        _id: { $ne: workout._id }
-    }).populate('exercises.exercise')
+// const getExistingPBs = async (userId, workout) => {
+//     const existingWorkouts = await Workout.find({ 
+//         user: userId,
+//         _id: { $ne: workout._id }
+//     },
+//     {
+//         'exercises.exercise': 1,
+//         'exercises.selectedEquipment': 1,
+//         'exercises.sets': 1
+//     })
+//     .populate('exercises.exercise', 'name trackingMode')
+//     .lean()
 
+//     const existingPBs = {}
+//     existingWorkouts.forEach(workout => {
+//         workout.exercises.forEach(ex => {
+//             const name = ex.exercise?.name?.trim().toLowerCase()
+//             const trackingMode = ex.exercise?.trackingMode
+//             if (!name || !trackingMode) return
+
+//             const key = buildPBKey(name, ex.selectedEquipment)
+
+//             const pb = getPBMetric(trackingMode, ex.sets)
+//             if (!pb || pb.value === 0) return
+
+//             if (!existingPBs[key] || pb.value > existingPBs[key].value) {
+//                 existingPBs[key] = { metric: pb.metric, value: pb.value, equipment: ex.selectedEquipment }
+//             }
+//         })
+//     })
+
+//     return existingPBs
+// }
+
+const getExistingPBs = (workoutHistory) => {
     const existingPBs = {}
-    existingWorkouts.forEach(workout => {
+
+    workoutHistory.forEach(workout => {
         workout.exercises.forEach(ex => {
             const name = ex.exercise?.name?.trim().toLowerCase()
             const trackingMode = ex.exercise?.trackingMode
+
             if (!name || !trackingMode) return
 
             const key = buildPBKey(name, ex.selectedEquipment)
 
             const pb = getPBMetric(trackingMode, ex.sets)
+
             if (!pb || pb.value === 0) return
 
             if (!existingPBs[key] || pb.value > existingPBs[key].value) {
-                existingPBs[key] = { metric: pb.metric, value: pb.value, equipment: ex.selectedEquipment }
+                existingPBs[key] = {
+                    metric: pb.metric,
+                    value: pb.value,
+                    equipment: ex.selectedEquipment
+                }
             }
         })
     })
@@ -335,9 +358,7 @@ const getExistingPBs = async (userId, workout) => {
     return existingPBs
 }
 
-const detectPersonalBests = async (userId, exercises, workout) => {
-    const existingPBs = await getExistingPBs(userId, workout)
-
+const detectPersonalBests = (exercises, existingPBs) => {
     const newPBs = []
     
     exercises.forEach(exercise => {
@@ -519,12 +540,31 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
     })
 
     const totalExercises = exercises.length
-    
-    const personalBests = await detectPersonalBests(user._id, exercises, workout)
+
+    const workoutHistory = await Workout.find(
+        {
+            user: user._id,
+            _id: { $ne: workout._id }
+        },
+        {
+            createdAt: 1,
+            'summary.totalWeight': 1,
+            'exercises.exercise': 1,
+            'exercises.selectedEquipment': 1,
+            'exercises.sets': 1
+        }
+    )
+    .populate('exercises.exercise', 'name trackingMode')
+    .sort({ createdAt: -1 })
+    .lean()
+
+    const existingPBs = getExistingPBs(workoutHistory)
 
     const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
 
-    const totalStrivePoints = await calculateTotalStrivePoints(user, workout, exercises, personalBests, totalWeight, totalQuestSP)
+    const personalBests = detectPersonalBests(exercises, existingPBs)
+
+    const totalStrivePoints = await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, totalWeight, totalQuestSP)
 
     return {
         totalWeight,

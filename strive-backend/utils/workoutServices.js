@@ -44,6 +44,49 @@ const addPointsToUser = async (userId, amount) => {
     }
 }
 
+// Update Momentum
+const updateUserMomentum = async (userId, data) => {
+    const user = await User.findById(userId)
+    if (!user) {
+        throw new Error('User not found')
+    }
+
+    const newMomentum = calculateMomentum(user, data || {})
+    user.momentum.current = newMomentum
+
+    const newLastCalculated = new Date()
+    user.momentum.lastCalculated = newLastCalculated
+
+    const updatedUser = await user.save()
+    return updatedUser
+}
+
+// Update points and momentum
+const updateUserPointsAndMomentum = async (userId, points, momentumData) => {
+    const user = await User.findById(userId)
+    if (!user) {
+        throw new Error('User not found')
+    }
+
+    // Update Points
+    const pointsToAdd = Number(points)
+    if (isNaN(pointsToAdd)) {
+        throw new Error('Amount is not a valid number')
+    }
+
+    user.strivepoints += pointsToAdd
+    user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1
+
+    // Update Momentum
+    const newMomentum = calculateMomentum(user, momentumData || {})
+    user.momentum.current = newMomentum
+
+    const newLastCalculated = new Date()
+    user.momentum.lastCalculated = newLastCalculated
+
+    return await user.save()
+}
+
 // Check if Streak is Broken
 const checkAndBreakStreak = async (userId) => {
     const user = await User.findById(userId)
@@ -110,27 +153,11 @@ const checkAndIncreaseStreak = async (userId, workoutsThisWeek) => {
     return updatedUser
 }
 
-// Update Momentum
-const updateUserMomentum = async (userId, data) => {
-    const user = await User.findById(userId)
-    if (!user) {
-        throw new Error('User not found')
-    }
-
-    const newMomentum = calculateMomentum(user, data || {})
-    user.momentum.current = newMomentum
-
-    const newLastCalculated = new Date()
-    user.momentum.lastCalculated = newLastCalculated
-
-    const updatedUser = await user.save()
-    return updatedUser
-}
-
 module.exports = {
     getWorkoutsThisWeek,
-    addPointsToUser,
+    updateUserPointsAndMomentum,
     checkAndBreakStreak,
     checkAndIncreaseStreak,
-    updateUserMomentum
+    // addPointsToUser,
+    // updateUserMomentum
 }

@@ -6,7 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
-const { addPointsToUser, checkAndIncreaseStreak, updateUserMomentum, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
+const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -32,6 +32,9 @@ const getWorkouts = asyncHandler(async (req, res) => {
  *  @access Private
  */
 const setWorkout = asyncHandler(async (req, res) => {
+    console.log("===== NEW WORKOUT =====")
+    console.time("Total Workout Submission")
+
     // Check if workout includes a title
     if(!req.body.title){
         res.status(400)
@@ -39,24 +42,26 @@ const setWorkout = asyncHandler(async (req, res) => {
     }
 
     // Check if user is guest account
-    const workoutCount = await Workout.countDocuments({ 
-        user: req.user._id 
-    })
-
+    const workoutCount = req.user.workouts.length
     if (req.user.isGuest && workoutCount >= 5) {
         res.status(403)
         throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
     }
 
     // Create new workout
-    const workout = await Workout.create({
+    console.time("Create Workout")
+    const workout = new Workout({
         user: req.user.id,
         title: req.body.title,
         duration: req.body.duration,
-        exercises: req.body.exercises
+        exercises: req.body.exercises,
+        createdAt: new Date(),
+        updatedAt: new Date()
     })
+    console.timeEnd("Create Workout")
 
     // Populate variables for calculations
+    console.time("Populate Exercises from Workout")
     const populatedWorkout = await workout.populate('exercises.exercise')
     const populatedExercises = populatedWorkout.exercises.map(ex => ({
         name: ex.exercise.name,
@@ -66,24 +71,34 @@ const setWorkout = asyncHandler(async (req, res) => {
         selectedEquipment: ex.selectedEquipment,
         sets: ex.sets
     }))
+    console.timeEnd("Populate Exercises from Workout")
 
     // Calculate workout summary
+    console.time("Calculate Workout Summary")
     const summary = await calculateWorkoutSummary(req.user, populatedExercises, workout)
+    console.timeEnd("Calculate Workout Summary")
+
     workout.summary = summary
+    console.time("Save Workout")
     await workout.save()
+    console.timeEnd("Save Workout")
 
     // Update user object with new workout
-    const workoutDate = new Date()
-    await User.findByIdAndUpdate(
-        req.user.id,
+    const workoutDate = new Date() 
+
+    console.time("Find User and Update")
+    await User.findByIdAndUpdate(req.user.id,
         { 
             $push: { workouts: workout._id },
             $max: { lastWorkout: workoutDate }
         }
     )
+    console.timeEnd("Find User and Update")
 
     // Update leaderboards
+    console.time("Update Leaderboard Entry")
     await updateLeaderboardEntry(req.user, workout)
+    console.timeEnd("Update Leaderboard Entry")
 
     // Store old values for gamification
     const oldStreak = req.user.streak.current
@@ -92,22 +107,28 @@ const setWorkout = asyncHandler(async (req, res) => {
     const oldLevel = req.user.level
 
     // Check if user's streak has increased
+    console.time("Get Workouts from This Week")
     const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
+    console.timeEnd("Get Workouts from This Week")
+
+    console.time("Check and Increase Streak")
     await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
+    console.timeEnd("Check and Increase Streak")
 
-    // Adjust user's strive points
+    // Update user's points and momentum
+    console.time("Update user points and momentum")
     const points = summary.totalStrivePoints?.total > 0
-        ? await addPointsToUser(req.user.id, summary.totalStrivePoints.total)
-        : null
+            ? summary.totalStrivePoints.total
+            : 0
 
-    // Update User Momentum
-    await updateUserMomentum(req.user.id, {
+    const updatedUser = await updateUserPointsAndMomentum(req.user.id, points, {
         workoutCompleted: true,
         personalBests: summary.personalBests?.length || 0,
         quests: summary.questsCompleted
     })
+    console.timeEnd("Update user points and momentum")
 
-    const updatedUser = await User.findById(req.user.id)
+    console.timeEnd("Total Workout Submission")
 
     // Output created workout + user + gamification flags
     res.status(201).json({
@@ -152,7 +173,7 @@ const updateWorkout = asyncHandler(async (req, res) => {
     }
     
     // Update workout with given id with new data
-    const updatedWorkout = await Workout.findByIdAndUpdate(req.params.id, req.body, {new: true})
+    const updatedWorkout = await Workout.findByIdAndUpdate(req.params.id, req.body, {returnDocument: 'after'})
 
     // Output updated workout
     res.status(200).json(updatedWorkout)

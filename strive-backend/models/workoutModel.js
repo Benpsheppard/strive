@@ -165,4 +165,7 @@ const workoutSchema = mongoose.Schema({
     timestamps: true
 })
 
+// Index
+workoutSchema.index({ user: 1, createdAt: -1 })
+
 module.exports = mongoose.model('Workout', workoutSchema)
