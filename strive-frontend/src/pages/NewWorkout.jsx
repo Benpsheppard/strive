@@ -12,7 +12,7 @@ import { getExercises } from '../features/exercises/exerciseSlice.js'
 import { updateMomentum, checkIfStreakBroken } from '../features/auth/authSlice.js'
 
 // Alert Imports
-import { showCancelWorkoutAlert, showChangeExerciseAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
+import { showCancelWorkoutAlert, showMomentumDroppedAlert, showStreakBrokenAlert, showShieldUsedAlert } from '../alerts/workout.js'
 
 // Hook Imports
 import { useLocalStorage } from '../hooks/useLocalStorage.js'
@@ -26,10 +26,10 @@ import ExerciseList from '../components/workouts/ExerciseList.jsx'
 import Timer from '../components/workouts/Timer.jsx'
 import WorkoutDashBoard from '../components/workouts/WorkoutDashboard.jsx'
 import ExerciseForm from '../components/workouts/ExerciseForm.jsx'
+import RollingStats from '../components/workouts/RollingStats.jsx'
 
 // Constants
 import { EMPTY_EXERCISE, EMPTY_SET } from '../utils/constants.js'
-import RollingStats from '../components/workouts/RollingStats.jsx'
 
 const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
@@ -82,9 +82,6 @@ const NewWorkout = () => {
         const oldStreak = user.streak.current
         const hadShield = user.streak.shield
         const oldMomentum = user.momentum.current
-
-        const oldEvalWeek = user.streak.lastEvaluatedWeek
-        const oldIncrWeek = user.streak.lastIncrementedWeek
 
         const checkGamification = async () => {
             const updatedUserAfterStreak = await dispatch(checkIfStreakBroken(user._id)).unwrap()
@@ -218,9 +215,12 @@ const NewWorkout = () => {
                     </div>
 
                     {/* Rolling stats card */}
-                    <RollingStats 
-                        exercises={exercises}
-                    />
+                    {exercises.length > 0 && 
+                        <RollingStats 
+                            workouts={workouts}
+                            exercises={exercises}
+                        />
+                    }
 
                     {/* Submit / Cancel */}
                     <div className="space-y-4 p-4 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl flex flex-col items-center">
