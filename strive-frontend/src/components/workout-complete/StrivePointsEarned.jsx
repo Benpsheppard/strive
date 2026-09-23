@@ -34,33 +34,22 @@ const StrivePointsEarned = ({ workout }) => {
                 <FaStar className="text-[#EF233C]" /> Strive Points Earned
             </h2>
 
-            <div className="text-center mb-5">
+            <div className="text-center mb-5 bg-[#EDF2F4]/30 rounded-lg p-8">
                 <p className="text-[#EF233C] text-7xl font-bold">+{workout.summary.totalStrivePoints.total} SP</p>
             </div>
 
-            <div className="flex flex-col items-center space-y-1 mb-3 p-2 border-t border-[#EDF2F4]/20">
-                <h2 className="text-[#EDF2F4] font-semibold text-xl flex items-center gap-2">
-                    Base Points
-                </h2>
-                
-                <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col space-y-1 mb-3">
+                <div className="grid grid-cols-3 gap-3 bg-[#EDF2F4]/30 rounded-lg p-4 w-full">
                     {categories.map(category => {
                         const rating = getRating(category.data.score)
 
                         return (
-                            <div
-                                key={category.title}
-                                className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2"
-                                style={{ borderColor: rating.colour }}
-                            >
+                            <div key={category.title} className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2" style={{ borderColor: rating.colour }} >
                                 <p className="font-bold">{category.title}</p>
 
                                 <p>+{category.data.reward} SP</p>
 
-                                <p
-                                    className="font-bold tracking-widest text-xs mt-1"
-                                    style={{ color: rating.colour }}
-                                >
+                                <p className="font-bold tracking-widest text-xs mt-1" style={{ color: rating.colour }} >
                                     {rating.label}
                                 </p>
                             </div>
@@ -69,12 +58,8 @@ const StrivePointsEarned = ({ workout }) => {
                 </div>
             </div>
 
-            <div className="flex flex-col items-center space-y-1 mb-3 p-2 border-t border-[#EDF2F4]/20">
-                <h2 className="text-[#EDF2F4] font-semibold text-xl flex items-center gap-2">
-                    Multipliers
-                </h2>
-
-                <div className="grid grid-cols-2 gap-3 items-center text-center">
+            <div className="flex flex-col items-center space-y-1 mb-3">
+                <div className="grid grid-cols-2 gap-3 bg-[#EDF2F4]/30 rounded-lg p-4 w-full">
                     <div className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2 border-[#EF27A6]">
                         <p className="font-bold">Consistency</p>
                         <p>x{workout.summary.totalStrivePoints.consistencyMultiplier}</p>

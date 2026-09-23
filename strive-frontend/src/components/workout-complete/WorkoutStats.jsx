@@ -11,21 +11,21 @@ const WorkoutStats = ({ workout, user }) => {
                 <FaDumbbell className="text-[#EF233C]" /> Workout Stats
             </h2>
             <div className="grid grid-cols-4 gap-4 text-center">
-                <div>
+                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
                     <p className="text-[#EF233C] text-2xl font-bold">{formatDuration(workout.duration)}</p>
                     <p className="text-[#EDF2F4]/40 text-xs mt-1">Duration</p>
                 </div>
-                <div>
+                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
                     <p className="text-[#EF233C] text-2xl font-bold">{workout.exercises.length}</p>
                     <p className="text-[#EDF2F4]/40 text-xs mt-1">Exercises</p>
                 </div>
-                <div>
+                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
                     <p className="text-[#EF233C] text-2xl font-bold">
                         {workout.exercises.reduce((acc, ex) => acc + (ex.sets?.length || 0), 0)}
                     </p>
                     <p className="text-[#EDF2F4]/40 text-xs mt-1">Sets</p>
                 </div>
-                <div>
+                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
                     <p className="text-[#EF233C] text-2xl font-bold">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
                     <p className="text-[#EDF2F4]/40 text-xs mt-1">Lifted</p>
                 </div>
