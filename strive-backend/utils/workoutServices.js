@@ -158,6 +158,6 @@ module.exports = {
     updateUserPointsAndMomentum,
     checkAndBreakStreak,
     checkAndIncreaseStreak,
-    // addPointsToUser,
-    // updateUserMomentum
+    addPointsToUser,
+    updateUserMomentum
 }
