@@ -60,7 +60,7 @@ const RollingStats = ({ workouts, exercises }) => {
             </h2>
 
             {/* General stats */}
-            <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+            <div className="grid grid-cols-2 gap-4 mb-6 text-center">
                 <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
                     <p className="text-3xl font-bold text-[#EF233C]">
                         {workoutStats.sets}
@@ -85,6 +85,15 @@ const RollingStats = ({ workouts, exercises }) => {
                     </p>
                     <p className="text-sm text-[#EDF2F4]/70">
                         PBs
+                    </p>
+                </div>
+
+                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
+                    <p className="text-3xl font-bold text-[#EF233C]">
+                        {exercises.length}
+                    </p>
+                    <p className="text-sm text-[#EDF2F4]/70">
+                        Exercises
                     </p>
                 </div>
             </div>

@@ -78,7 +78,7 @@ const ExerciseList = ({ exercises, useImperial }) => {
 
                         <div className="grid grid-cols-3 gap-2 mt-2 text-center"> 
                             <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="text-lg font-bold text-[#EF233C]">
+                                <p className="font-bold text-[#EF233C]">
                                     {totalSets}
                                 </p>
                                 <p className="text-xs text-[#EDF2F4]/70">
@@ -86,7 +86,7 @@ const ExerciseList = ({ exercises, useImperial }) => {
                                 </p>
                             </div>
                             <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="text-lg font-bold text-[#EF233C]">
+                                <p className="font-bold text-[#EF233C]">
                                     {totalReps}
                                 </p>
                                 <p className="text-xs text-[#EDF2F4]/70">
@@ -94,7 +94,7 @@ const ExerciseList = ({ exercises, useImperial }) => {
                                 </p>
                             </div> 
                             <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="text-lg font-bold text-[#EF233C]">
+                                <p className="font-bold text-[#EF233C]">
                                     {formatWeight(totalWeight, useImperial)} 
                                 </p> 
                                 <p className="text-xs text-[#EDF2F4]/70">

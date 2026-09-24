@@ -12,7 +12,7 @@ const QuestsCompleted = ({ workout }) => {
             {workout.summary.questsCompleted.length > 0 ? (
                 <div className="space-y-3">
                     {workout.summary.questsCompleted.map((quest, index) => (
-                        <div key={index} className="bg-[#2B2D42] rounded-xl px-4 py-3 flex justify-between items-center">
+                        <div key={index} className="bg-[#EDF2F4]/30 rounded-xl px-4 py-3 flex justify-between items-center">
                             <p className="text-[#EDF2F4] font-semibold">{quest.title}</p>
                             <p className="text-[#EF233C] font-bold">+{quest.reward} SP</p>
                         </div>
