@@ -13,7 +13,7 @@ const SetList = ({ sets, trackingMode, useImperial = false }) => {
 
     return (
         <AnimatePresence>
-            <ul className="flex w-full justify-center gap-2 mb-2">
+            <ul className="flex flex-col w-full justify-center gap-2 mb-2">
                 {sets.map((s, i) => (
                     <SetItem key={i} set={s} setNumber={i + 1} trackingMode={trackingMode} useImperial={useImperial} />
                 ))}
