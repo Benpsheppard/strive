@@ -212,7 +212,7 @@ const calculateConsistencyMultiplier = async (workoutHistory) => {
     const cutoff = new Date(now - WEEKS_TO_CHECK * 7 * 24 * 60 * 60 * 1000)
 
     const recentWorkouts = workoutHistory.filter(w => w.createdAt >= cutoff)
-    if (recentWorkouts.length === 0) {
+    if (recentWorkouts.length <= 1) {
         return 1.0
     }
 
