@@ -14,6 +14,7 @@ import SetList from './SetList.jsx'
 import { formatDistance, formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
+    const FIELD_STYLING = "bg-[#EDF2F4]/30 bg-opacity-20 rounded-lg p-2 text-center hover:scale-102"
     const { user } = useSelector((state) => state.auth)
 
     const dispatch = useDispatch()
@@ -78,47 +79,47 @@ const WorkoutItem = ({ workout }) => {
             {workoutExpanded && (
                 <>
                     <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
                             <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Reps</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalReps)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Sets</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalSets)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Duration</p>
                             <p className="font-semibold text-[#EF233C]">{formatDuration(workout.duration)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Distance</p>
                             <p className="font-semibold text-[#EF233C]">{formatDistance(workout.summary.totalDistance, user.useImperial)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Cardio</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDuration)}m</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">SP</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints.total)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
                         </div>
 
-                        <div className="bg-[#2B2D42] bg-opacity-20 rounded-lg p-2 text-center hover:scale-102">
+                        <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
                             <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.personalBests.length)}</p>
                         </div>
@@ -129,21 +130,19 @@ const WorkoutItem = ({ workout }) => {
                             <h3 className="text-sm font-semibold text-[#EDF2F4] mb-2">Exercises</h3>
                             <ul className="space-y-2">
                                 {workout.exercises.map((ex, index) => (
-                                    <li key={index} className="bg-[#2B2D42] bg-opacity-20 rounded-lg">
+                                    <li key={index} className="bg-[#EDF2F4]/30 bg-opacity-20 rounded-lg">
                                         {/* Exercise Header */}
-                                        <div className="flex justify-between items-center p-3 cursor-pointer hover:bg-[#2B2D42] hover:bg-opacity-30 rounded-lg transition-colors" onClick={(e) => toggleExercise(e, index)}>
+                                        <div className="flex justify-between items-center p-3 cursor-pointer rounded-lg transition-colors" onClick={(e) => toggleExercise(e, index)}>
                                             <div className="flex items-center gap-2">
                                                 {ex.sets?.length > 0 && (
                                                     exerciseExpanded[index]
                                                         ? <FaChevronDown className="text-[#EDF2F4] text-xs" />
                                                         : <FaChevronRight className="text-[#EDF2F4] text-xs" />
                                                 )}
-                                                <span className="text-sm font-medium text-[#EDF2F4]">
-                                                    {ex.exercise?.name}
-                                                    {" | "}
-                                                    <span className="text-[#EF233C]">{ex.exercise?.muscleGroup}</span>
-                                                    {" | "}
-                                                    <span className="text-[#D90429]">{ex.selectedEquipment}</span>
+                                                <span className="text-sm font-medium text-[#EF233C]">
+                                                    {ex.exercise?.name}{'   '}
+                                                    <span className="text-[#EDF2F4]">{ex.exercise?.muscleGroup}{" | "}</span>
+                                                    <span className="text-[#EDF2F4]">{ex.selectedEquipment}</span>
                                                 </span>
                                             </div>
                                             <span className="text-xs text-[#2B2D42]">
