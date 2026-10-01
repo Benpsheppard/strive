@@ -8,22 +8,16 @@ import { useNavigate, Link } from 'react-router-dom'
 // Feature Imports
 import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
 
-// Util Imports
-import { formatWeight, formatDuration, formatNumber } from '../utils/formatValues.js'
-
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import PBChart from '../components/progress/PBChart.jsx'
-import ProgressCard from '../components/progress/TotalProgressCard.jsx'
-import CondensedProgressCard from '../components/progress/TotalProgressCard.jsx'
 import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
 import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
 import MonthCalendar from '../components/progress/MonthCalendar.jsx'
 import MonthlyProgressCard from '../components/progress/MonthlyProgressCard.jsx'
 import TotalProgressCard from '../components/progress/TotalProgressCard.jsx'
 import OneRepMax from '../components/progress/OneRepMax.jsx'
-import RadarGraph from '../components/progress/RadarGraph.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
@@ -79,10 +73,6 @@ const Progress = () => {
                             <TotalProgressCard workouts={workouts} />
                         </div>
                     </div>
-
-                    <RadarGraph
-                        workouts={workouts}
-                    />
 
                     {/* Charts Section */}
                     <div className="fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.8s'}}>

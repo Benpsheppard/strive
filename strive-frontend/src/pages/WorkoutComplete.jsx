@@ -4,23 +4,19 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
-
-// Util Imports
-import { formatDuration, formatWeight } from '../utils/formatValues'
 
 // Function Imports
-import { getWorkouts, reset } from '../features/workouts/workoutsSlice'
+import { getWorkouts } from '../features/workouts/workoutsSlice'
 
 // Component Imports
 import Header from '../components/headers/Header'
 import Spinner from '../components/spinners/Spinner'
 import GuestCard from '../components/guest/GuestCard'
-import ProgressBar from '../components/games/ProgressBar'
 import StrivePointsEarned from '../components/workout-complete/StrivePointsEarned'
 import WorkoutStats from '../components/workout-complete/WorkoutStats'
 import PBDisplay from '../components/workout-complete/PBDisplay'
 import QuestsCompleted from '../components/workout-complete/QuestsCompleted'
+import RadarGraph from '../components/workout-complete/RadarGraph'
 
 const WorkoutComplete = () => {
     const { user } = useSelector((state) => state.auth)
@@ -89,6 +85,9 @@ const WorkoutComplete = () => {
 
                 {/* Strive Points Earned */}
                 <StrivePointsEarned workout={workout} />
+
+                {/* Radar Diagram */}
+                <RadarGraph workouts={workouts} workout={workout} />
 
                 {/* PBs */}
                 <PBDisplay workout={workout} user={user} />
