@@ -6,7 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
-const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek } = require('../utils/workoutServices.js')
+const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -135,7 +135,7 @@ const setWorkout = asyncHandler(async (req, res) => {
         workout,
         user: formatUser(updatedUser),
         gamification: {
-            levelUp: points?.level > oldLevel ? points.level : null,
+            levelUp: updatedUser.level > oldLevel ? updatedUser.level : null,
             streakIncreased: updatedUser.streak.current > oldStreak,
             shieldEarned: !oldShield && updatedUser.streak.shield,
             shieldUsed: oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak,
@@ -218,7 +218,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
 
     const newSP = Math.max(0, user.strivepoints - pointsToDeduct)
 
-    const newLevel = Math.floor(Math.sqrt(newSP / 100)) + 1
+    const newLevel = calculateLevel(newSP)
 
     await User.findByIdAndUpdate(
         req.user.id,

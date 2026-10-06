@@ -75,7 +75,7 @@ const updateUserPointsAndMomentum = async (userId, points, momentumData) => {
     }
 
     user.strivepoints += pointsToAdd
-    user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1
+    user.level = calculateLevel(user.strivepoints)
 
     // Update Momentum
     const newMomentum = calculateMomentum(user, momentumData || {})
@@ -85,6 +85,11 @@ const updateUserPointsAndMomentum = async (userId, points, momentumData) => {
     user.momentum.lastCalculated = newLastCalculated
 
     return await user.save()
+}
+
+// Calculate users level
+const calculateLevel = (sp) => {
+    return Math.floor(Math.sqrt(sp / 100)) + 1
 }
 
 // Check if Streak is Broken
@@ -159,5 +164,6 @@ module.exports = {
     checkAndBreakStreak,
     checkAndIncreaseStreak,
     addPointsToUser,
-    updateUserMomentum
+    updateUserMomentum,
+    calculateLevel
 }
