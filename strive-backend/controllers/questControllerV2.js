@@ -155,8 +155,14 @@ const genQuests = async (user, duration) => {
         user: user._id,
         createdAt: { $gte: sevenDaysAgo }
     })
-    const recentExercises = recentQuests.map(q => q.completion.exercise).filter(Boolean)
-    const recentMuscleGroups = recentQuests.map(q => q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
+    const recentTags = recentQuests
+        .map(q => q.completion.filterTag || q.completion.muscleGroup)
+        .filter(Boolean)
+    const recentExercises = recentQuests
+        .flatMap(q => [q.completion.exercise, q.completion.filterTag])
+        .filter(tag => tag && validExerciseNames.has(tag))
+    const recentMuscleGroups = recentTags
+        .filter(tag => validMuscleGroups.has(tag))
 
     const filteredExerciseNames = new Set(
         [...validExerciseNames].filter(ex =>
@@ -396,14 +402,14 @@ const getQuests = asyncHandler(async (req, res) => {
     }
 
     // Generate full set of new quests if we have none (or less than expected) that are not expired
-    if (activeDaily === 0) {
-        await safeGenQuests(user, 'daily')
+    if (activeMonthly === 0) {
+        await safeGenQuests(user, 'monthly')
     }
     if (activeWeekly === 0) {
         await safeGenQuests(user, 'weekly')
     }
-    if (activeMonthly === 0) {
-        await safeGenQuests(user, 'monthly')
+    if (activeDaily === 0) {
+        await safeGenQuests(user, 'daily')
     }
 
     // Fetch all non-expired quests
