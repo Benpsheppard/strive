@@ -24,7 +24,8 @@ jest.mock('../utils/leaderboard.js', () => ({
 jest.mock('../utils/workoutServices.js', () => ({
     updateUserPointsAndMomentum: jest.fn(),
     checkAndIncreaseStreak: jest.fn(),
-    getWorkoutsThisWeek: jest.fn()
+    getWorkoutsThisWeek: jest.fn(),
+    calculateLevel: jest.fn()
 }))
 
 const Workout = require('../models/workoutModel.js')
@@ -38,7 +39,8 @@ const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const {
     updateUserPointsAndMomentum,
     checkAndIncreaseStreak,
-    getWorkoutsThisWeek
+    getWorkoutsThisWeek,
+    calculateLevel
 } = require('../utils/workoutServices.js')
 const {
     getWorkouts,
@@ -493,7 +495,7 @@ describe('workoutController', () => {
                 'workout123',
                 req.body,
                 {
-                    ReturnDocument: 'after'
+                    returnDocument: 'after'
                 }
             )
 
@@ -560,7 +562,7 @@ describe('workoutController', () => {
             req.user = {
                 id: '123'
             }
-
+        
             const workout = {
                 _id: 'workout123',
                 user: '123',
@@ -571,34 +573,35 @@ describe('workoutController', () => {
                 },
                 deleteOne: jest.fn().mockResolvedValue({})
             }
-
+        
             const user = {
                 _id: '123',
                 strivepoints: 250
             }
-
+        
             const updatedUser = {
                 _id: '123',
                 strivepoints: 200,
                 level: 2
             }
-
+        
             Workout.findById.mockResolvedValue(workout)
-
+        
             User.findById
                 .mockResolvedValueOnce(user)
                 .mockResolvedValueOnce(updatedUser)
-
+        
             User.findByIdAndUpdate.mockResolvedValue({})
-
+        
+            calculateLevel.mockReturnValue(2)
+        
             await deleteWorkout(req, res)
-
-            expect(Workout.findById).toHaveBeenCalledWith(
-                'workout123'
-            )
-
+        
+            expect(Workout.findById).toHaveBeenCalledWith('workout123')
             expect(User.findById).toHaveBeenCalledWith('123')
-
+        
+            expect(calculateLevel).toHaveBeenCalledWith(200)
+        
             expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
                 '123',
                 {
@@ -609,14 +612,59 @@ describe('workoutController', () => {
                     }
                 }
             )
-
+        
             expect(workout.deleteOne).toHaveBeenCalled()
-
+        
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith({
                 user: updatedUser,
                 message: 'Workout deleted successfully'
             })
+        })
+ 
+        test('never lets strivepoints drop below zero', async () => {
+            req.params.id = 'workout123'
+            req.user = {
+                id: '123'
+            }
+        
+            const workout = {
+                _id: 'workout123',
+                user: '123',
+                summary: {
+                    totalStrivePoints: {
+                        total: 50
+                    }
+                },
+                deleteOne: jest.fn().mockResolvedValue({})
+            }
+        
+            Workout.findById.mockResolvedValue(workout)
+        
+            User.findById
+                .mockResolvedValueOnce({ _id: '123', strivepoints: 30 })
+                .mockResolvedValueOnce({ _id: '123', strivepoints: 0, level: 1 })
+        
+            User.findByIdAndUpdate.mockResolvedValue({})
+            calculateLevel.mockReturnValue(1)
+        
+            await deleteWorkout(req, res)
+        
+            // 30 - 50 would be -20, so it is clamped to 0 before calculating the level
+            expect(calculateLevel).toHaveBeenCalledWith(0)
+        
+            expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+                '123',
+                {
+                    strivepoints: 0,
+                    level: 1,
+                    $pull: {
+                        workouts: 'workout123'
+                    }
+                }
+            )
+        
+            expect(res.status).toHaveBeenCalledWith(200)
         })
 
         test('returns 404 when workout does not exist', async () => {
