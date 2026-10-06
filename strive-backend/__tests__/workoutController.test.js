@@ -22,9 +22,8 @@ jest.mock('../utils/leaderboard.js', () => ({
 }))
 
 jest.mock('../utils/workoutServices.js', () => ({
-    addPointsToUser: jest.fn(),
+    updateUserPointsAndMomentum: jest.fn(),
     checkAndIncreaseStreak: jest.fn(),
-    updateUserMomentum: jest.fn(),
     getWorkoutsThisWeek: jest.fn()
 }))
 
@@ -37,11 +36,10 @@ const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const {
-    addPointsToUser,
+    updateUserPointsAndMomentum,
     checkAndIncreaseStreak,
-    updateUserMomentum,
     getWorkoutsThisWeek
-} = require ('../utils/workoutServices.js')
+} = require('../utils/workoutServices.js')
 const {
     getWorkouts,
     setWorkout,
@@ -53,33 +51,70 @@ const {
     deleteExercise
 } = require('../controllers/workoutController.js')
 
+const createUser = (overrides = {}) => ({
+    _id: '123',
+    id: '123',
+    isGuest: false,
+    workouts: [],
+    streak: {
+        current: 2,
+        oldShield: false,
+        shield: false
+    },
+    momentum: {
+        current: 50
+    },
+    level: 3,
+    ...overrides
+})
+
+const createUpdatedUser = (overrides = {}) => ({
+    _id: '123',
+    level: 3,
+    streak: {
+        current: 2,
+        shield: false
+    },
+    momentum: {
+        current: 50
+    },
+    ...overrides
+})
+ 
+const defaultSummary = {
+    totalStrivePoints: { total: 20 },
+    personalBests: [],
+    questsCompleted: 0
+}
+
 describe('workoutController', () => {
     let req
     let res
-
+ 
+    afterAll(() => {
+        jest.restoreAllMocks()
+    })
+ 
     beforeEach(() => {
         jest.clearAllMocks()
-
+    
         req = {
             body: {},
             params: {},
             user: {}
         }
-
+    
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn()
         }
-
-        formatUser.mockImplementation((user) => {
-            id: user._id
-        })
-
+    
+        formatUser.mockImplementation((user) => ({ id: user._id }))
+    
         getWorkoutsThisWeek.mockResolvedValue(1)
         checkAndIncreaseStreak.mockResolvedValue({})
-        updateUserMomentum.mockResolvedValue({})
         updateLeaderboardEntry.mockResolvedValue({})
-        addPointsToUser.mockResolvedValue(null)
+        updateUserPointsAndMomentum.mockResolvedValue(createUpdatedUser())
     })
 
     // Get Workouts
@@ -121,145 +156,106 @@ describe('workoutController', () => {
 
     // Set Workout
     describe('setWorkout', () => {
-        const createWorkout = () => {
-            const workout = {
-                _id: 'workout123',
-                user: '123',
-                title: 'Chest Workout',
-                duration: 45,
-                exercises: [],
-                summary: {},
-                populate: jest.fn(),
-                save: jest.fn()
-            }
-
-            return workout
-        }
-
-        const createUser = () => ({
-            _id: '123',
-            id: '123',
-            streak: {
-                current: 2,
-                oldShield: false,
-                shield: false
-            },
-            momentum: {
-                current: 50
-            },
-            level: 3
+        const createWorkout = () => ({
+            _id: 'workout123',
+            user: '123',
+            title: 'Chest Workout',
+            duration: 45,
+            exercises: [],
+            summary: {},
+            populate: jest.fn(),
+            save: jest.fn()
         })
-
+ 
+        const arrangeWorkout = ({ summary = defaultSummary, populatedExercises = [] } = {}) => {
+            const workout = createWorkout()
+            const populatedWorkout = { ...workout, exercises: populatedExercises }
+    
+            workout.populate.mockResolvedValue(populatedWorkout)
+            workout.save.mockResolvedValue(workout)
+    
+            Workout.mockImplementation(() => workout)
+            calculateWorkoutSummary.mockResolvedValue(summary)
+            User.findByIdAndUpdate.mockResolvedValue({})
+    
+            return { workout, populatedWorkout }
+        }
+ 
+        const baseBody = () => ({
+            title: 'Chest Workout',
+            duration: 45,
+            exercises: []
+        })
+ 
         test('rejects workout when title missing', async () => {
             req.body = {
                 duration: 45,
                 exercises: []
             }
-
+    
             await expect(setWorkout(req, res))
                 .rejects
                 .toThrow('Please add a title field')
-
+    
             expect(res.status).toHaveBeenCalledWith(400)
-            expect(Workout.create).not.toHaveBeenCalled()
+            expect(Workout).not.toHaveBeenCalled()
         })
-
+    
         test('rejects guest user after reaching five workouts', async () => {
-            req.user = {
-                _id: '123',
-                id: '123',
-                isGuest: true
-            }
-
-            req.body = {
-                title: 'Chest Workout',
-                duration: 45,
-                exercises: []
-            }
-
-            Workout.countDocuments.mockResolvedValue(5)
-
+            // Guest limit now comes from req.user.workouts.length, not Workout.countDocuments
+            req.user = createUser({
+                isGuest: true,
+                workouts: new Array(5).fill('workoutId')
+            })
+            req.body = baseBody()
+    
             await expect(setWorkout(req, res))
                 .rejects
                 .toThrow('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
-        
-            expect(Workout.countDocuments).toHaveBeenCalledWith({
-                user: '123'
-            })
+    
             expect(res.status).toHaveBeenCalledWith(403)
-            expect(Workout.create).not.toHaveBeenCalled()
+            expect(Workout).not.toHaveBeenCalled()
+            expect(calculateWorkoutSummary).not.toHaveBeenCalled()
         })
-
+ 
         test('allows guest user with fewer than five workouts', async () => {
-            req.user = {
-                _id: '123',
-                id: '123',
+            req.user = createUser({
                 isGuest: true,
-                streak: {
-                    current: 2,
-                    oldShield: false,
-                    shield: false
-                },
-                momentum: {
-                    current: 50
-                },
-                level: 3
-            }
-
-            req.body = {
-                title: 'Chest Workout',
-                duration: 45,
-                exercises: []
-            }
-
-            Workout.countDocuments.mockResolvedValue(4)
-
-            const workout = createWorkout()
-
-            const populatedExercises = []
-
-            workout.populate.mockResolvedValue({
-                ...workout,
-                exercises: populatedExercises
+                workouts: new Array(4).fill('workoutId')
             })
-
-            workout.save.mockResolvedValue(workout)
-
-            Workout.create.mockResolvedValue(workout)
-
-            calculateWorkoutSummary.mockResolvedValue({
-                totalStrivePoints: {
-                    total: 20
-                },
-                personalBests: [],
-                questsCompleted: 0
-            })
-
-            User.findById.mockResolvedValue({
-                ...createUser(),
-                _id: '123'
-            })
-
-            addPointsToUser.mockResolvedValue({
-                _id: '123',
-                level: 3
-            })
-
+            req.body = baseBody()
+    
+            arrangeWorkout()
+    
             await setWorkout(req, res)
-
-            expect(Workout.create).toHaveBeenCalledWith({
+    
+            expect(Workout).toHaveBeenCalledWith({
                 user: '123',
                 title: 'Chest Workout',
                 duration: 45,
-                exercises: []
+                exercises: [],
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
             })
-
             expect(res.status).toHaveBeenCalledWith(201)
         })
-
+ 
+        test('does not apply the workout limit to non-guest users', async () => {
+            req.user = createUser({
+                isGuest: false,
+                workouts: new Array(20).fill('workoutId')
+            })
+            req.body = baseBody()
+    
+            arrangeWorkout()
+    
+            await setWorkout(req, res)
+    
+            expect(res.status).toHaveBeenCalledWith(201)
+        })
+ 
         test('creates a workout successfully', async () => {
             req.user = createUser()
-
             req.body = {
                 title: 'Chest Workout',
                 duration: 45,
@@ -267,90 +263,57 @@ describe('workoutController', () => {
                     {
                         exercise: 'exercise123',
                         selectedEquipment: 'barbell',
-                        sets: [
-                            {
-                                weight: 80,
-                                reps: 10
-                            }
-                        ]
+                        sets: [{ weight: 80, reps: 10 }]
                     }
                 ]
             }
-
-            Workout.countDocuments.mockResolvedValue(2)
-
-            const workout = createWorkout()
-
-            const populatedWorkout = {
-                ...workout,
-                exercises: [
-                    {
-                        exercise: {
-                            name: 'Bench Press',
-                            muscleGroup: 'Chest',
-                            subMuscleGroup: 'Upper Chest',
-                            trackingMode: 'weight_reps'
-                        },
-                        selectedEquipment: 'barbell',
-                        sets: [
-                            {
-                                weight: 80,
-                                reps: 10
-                            }
-                        ]
-                    }
-                ]
-            }
-
-            workout.populate.mockResolvedValue(populatedWorkout)
-            workout.save.mockResolvedValue(workout)
-
-            Workout.create.mockResolvedValue(workout)
-
+    
+            const populatedExercises = [
+                {
+                    exercise: {
+                        name: 'Bench Press',
+                        muscleGroup: 'Chest',
+                        subMuscleGroup: 'Upper Chest',
+                        trackingMode: 'weight_reps'
+                    },
+                    selectedEquipment: 'barbell',
+                    sets: [{ weight: 80, reps: 10 }]
+                }
+            ]
+    
             const summary = {
-                totalStrivePoints: {
-                    total: 25
-                },
-                personalBests: [
-                    'Bench Press'
-                ],
+                totalStrivePoints: { total: 25 },
+                personalBests: ['Bench Press'],
                 questsCompleted: 1
             }
-
-            calculateWorkoutSummary.mockResolvedValue(summary)
-
-            User.findByIdAndUpdate.mockResolvedValue({})
-            User.findById.mockResolvedValue({
-                _id: '123',
-                streak: {
-                    current: 3,
-                    oldShield: false,
-                    shield: true
-                },
-                momentum: {
-                    current: 60
-                },
-                level: 4
+    
+            const { workout } = arrangeWorkout({ summary, populatedExercises })
+    
+            const updatedUser = createUpdatedUser({
+                level: 4,
+                streak: { current: 3, shield: true },
+                momentum: { current: 60 }
             })
-
-            addPointsToUser.mockResolvedValue({
-                level: 4
-            })
-
+            updateUserPointsAndMomentum.mockResolvedValue(updatedUser)
             getWorkoutsThisWeek.mockResolvedValue(2)
-
+    
             await setWorkout(req, res)
-
-            expect(Workout.create).toHaveBeenCalledWith({
+    
+            // Workout is built with `new Workout(...)`
+            expect(Workout).toHaveBeenCalledWith({
                 user: '123',
                 title: 'Chest Workout',
                 duration: 45,
-                exercises: req.body.exercises
+                exercises: req.body.exercises,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
             })
-
+    
+            expect(workout.populate).toHaveBeenCalledWith('exercises.exercise')
+    
             expect(calculateWorkoutSummary).toHaveBeenCalledWith(
                 req.user,
-                populatedWorkout.exercises.map(ex => ({
+                populatedExercises.map(ex => ({
                     name: ex.exercise.name,
                     muscleGroup: ex.exercise.muscleGroup,
                     subMuscleGroup: ex.exercise.subMuscleGroup,
@@ -360,107 +323,141 @@ describe('workoutController', () => {
                 })),
                 workout
             )
-
+    
             expect(workout.summary).toEqual(summary)
             expect(workout.save).toHaveBeenCalled()
-
-            expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
-                '123',
-                expect.objectContaining({
-                    $push: {
-                        workouts: workout._id
-                    },
-                    $max: expect.objectContaining({
-                        lastWorkout: expect.any(Date)
-                    })
-                })
-            )
-
-            expect(updateLeaderboardEntry).toHaveBeenCalledWith(
-                req.user,
-                workout
-            )
-
-            expect(getWorkoutsThisWeek).toHaveBeenCalled()
-            expect(checkAndIncreaseStreak).toHaveBeenCalledWith(
-                '123',
-                2
-            )
-
-            expect(addPointsToUser).toHaveBeenCalledWith(
-                '123',
-                25
-            )
-
-            expect(updateUserMomentum).toHaveBeenCalledWith(
-                '123',
-                {
-                    workoutCompleted: true,
-                    personalBests: 1,
-                    quests: 1
-                }
-            )
-
-            expect(formatUser).toHaveBeenCalled()
-
+    
+            expect(User.findByIdAndUpdate).toHaveBeenCalledWith('123', {
+                $push: { workouts: 'workout123' },
+                $max: { lastWorkout: expect.any(Date) }
+            })
+    
+            expect(updateLeaderboardEntry).toHaveBeenCalledWith(req.user, workout)
+    
+            expect(getWorkoutsThisWeek).toHaveBeenCalledWith('123', expect.any(Date))
+            expect(checkAndIncreaseStreak).toHaveBeenCalledWith('123', 2)
+    
+            // One combined call replaces addPointsToUser + updateUserMomentum
+            expect(updateUserPointsAndMomentum).toHaveBeenCalledWith('123', 25, {
+                workoutCompleted: true,
+                personalBests: 1,
+                quests: 1
+            })
+    
+            expect(formatUser).toHaveBeenCalledWith(updatedUser)
+    
             expect(res.status).toHaveBeenCalledWith(201)
-            expect(res.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    workout,
-                    gamification: expect.any(Object)
-                })
-            )
+            expect(res.json).toHaveBeenCalledWith({
+                workout,
+                user: { id: '123' },
+                gamification: {
+                    levelUp: 4, // NOTE: needs the controller fix described in the notes
+                    streakIncreased: true,
+                    shieldEarned: true,
+                    shieldUsed: false,
+                    streakBroken: false,
+                    momentumGained: 10
+                }
+            })
         })
-
-        test('does not add points when workout earns zero points', async () => {
+ 
+        test('passes zero points when workout earns none', async () => {
             req.user = createUser()
-
-            req.body = {
-                title: 'Easy Workout',
-                duration: 20,
-                exercises: []
-            }
-
-            Workout.countDocuments.mockResolvedValue(1)
-
-            const workout = createWorkout()
-
-            workout.populate.mockResolvedValue({
-                ...workout,
-                exercises:[]
-            })
-
-            workout.save.mockResolvedValue(workout)
-            Workout.create.mockResolvedValue(workout)
-
-            calculateWorkoutSummary.mockResolvedValue({
-                totalStrivePoints: {
-                    total: 0
-                },
-                personalBests: [],
-                questsCompleted: 0
-            })
-
-            User.findByIdAndUpdate.mockResolvedValue({})
-
-            User.findById.mockResolvedValue({
-                ...createUser()
-            })
-
-            await setWorkout(req, res)
-
-            expect(addPointsToUser).not.toHaveBeenCalled()
-
-            expect(updateUserMomentum).toHaveBeenCalledWith(
-                '123',
-                {
-                    workoutCompleted: true,
-                    personalBests: 0,
-                    quests: 0
+            req.body = { title: 'Easy Workout', duration: 20, exercises: [] }
+    
+            arrangeWorkout({
+                summary: {
+                    totalStrivePoints: { total: 0 },
+                    personalBests: [],
+                    questsCompleted: 0
                 }
-            )
-
+            })
+    
+            await setWorkout(req, res)
+    
+            // updateUserPointsAndMomentum is now ALWAYS called, with 0 points
+            expect(updateUserPointsAndMomentum).toHaveBeenCalledWith('123', 0, {
+                workoutCompleted: true,
+                personalBests: 0,
+                quests: 0
+            })
             expect(res.status).toHaveBeenCalledWith(201)
+        })
+ 
+        test('defaults points and personal bests when summary fields are missing', async () => {
+            req.user = createUser()
+            req.body = baseBody()
+    
+            arrangeWorkout({ summary: {} })
+    
+            await setWorkout(req, res)
+    
+            expect(updateUserPointsAndMomentum).toHaveBeenCalledWith('123', 0, {
+                workoutCompleted: true,
+                personalBests: 0,
+                quests: undefined
+            })
+        })
+ 
+        describe('gamification flags', () => {
+            const run = async ({ before, after }) => {
+                req.user = createUser(before)
+                req.body = baseBody()
+                arrangeWorkout()
+                updateUserPointsAndMomentum.mockResolvedValue(createUpdatedUser(after))
+    
+                await setWorkout(req, res)
+    
+                return res.json.mock.calls[0][0].gamification
+            }
+    
+            test('reports a level up when the level increases', async () => {
+                const gamification = await run({
+                    before: { level: 3 },
+                    after: { level: 4 }
+                })
+    
+                expect(gamification.levelUp).toBe(4)
+            })
+    
+            test('reports no level up when the level is unchanged', async () => {
+                const gamification = await run({
+                    before: { level: 3 },
+                    after: { level: 3 }
+                })
+    
+                expect(gamification.levelUp).toBeNull()
+            })
+    
+            test('reports a broken streak when the streak resets to zero', async () => {
+                const gamification = await run({
+                    before: { streak: { current: 5, oldShield: false, shield: false } },
+                    after: { streak: { current: 0, shield: false } }
+                })
+    
+                expect(gamification.streakBroken).toBe(true)
+                expect(gamification.streakIncreased).toBe(false)
+            })
+    
+            test('reports a shield used when the shield is consumed and the streak holds', async () => {
+                const gamification = await run({
+                    before: { streak: { current: 4, oldShield: true, shield: true } },
+                    after: { streak: { current: 4, shield: false } }
+                })
+    
+                expect(gamification.shieldUsed).toBe(true)
+                expect(gamification.shieldEarned).toBe(false)
+                expect(gamification.streakBroken).toBe(false)
+            })
+    
+            test('reports negative momentum when momentum drops', async () => {
+                const gamification = await run({
+                    before: { momentum: { current: 50 } },
+                    after: { momentum: { current: 45 } }
+                })
+    
+                expect(gamification.momentumGained).toBe(-5)
+            })
         })
     })
 
@@ -496,7 +493,7 @@ describe('workoutController', () => {
                 'workout123',
                 req.body,
                 {
-                    new: true
+                    ReturnDocument: 'after'
                 }
             )
 
@@ -770,7 +767,6 @@ describe('workoutController', () => {
             expect(res.json).not.toHaveBeenCalled()
         })
     })
-
 
     // Add Exercise
     describe('addExercise', () => {
