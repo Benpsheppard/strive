@@ -3,6 +3,7 @@
 // Imports
 const User = require('../models/userModel')
 const Workout = require('../models/workoutModel')
+const LeaderboardEntry = require('../models/leaderboardEntryModel')
 const { getPreviousISOWeekString, getISOWeekString, getPreviousWeekRange, getStartOfWeek, getEndOfWeek } = require('./dateFormat')
 const { calculateMomentum } = require('./momentum')
 
@@ -19,29 +20,6 @@ const getWorkoutsThisWeek = async (userId, date) => {
     })
 
     return workoutsThisWeek
-}
-
-// Add Strive Points to User
-const addPointsToUser = async (userId, amount) => {
-    const user = await User.findById(userId)
-    if (!user) {
-        throw new Error('User not found')
-    }
-
-    const pointsToAdd = Number(amount)
-    if (isNaN(pointsToAdd)) {
-        throw new Error('Amount is not a valid number')
-    }
-
-    user.strivepoints += pointsToAdd
-    user.level = Math.floor(Math.sqrt(user.strivepoints / 100)) + 1
-
-    await user.save()
-
-    return {
-        strivepoints: user.strivepoints,
-        level: user.level
-    }
 }
 
 // Update Momentum
@@ -90,6 +68,34 @@ const updateUserPointsAndMomentum = async (userId, points, momentumData) => {
 // Calculate users level
 const calculateLevel = (sp) => {
     return Math.floor(Math.sqrt(sp / 100)) + 1
+}
+
+const resetWorkoutData = async (user) => {
+    const workouts = await Workout.find({ user: user._id })
+        .select('summary.totalStrivePoints.total')
+        .lean()
+    const pointsEarnedFromWorkouts = workouts.reduce(
+        (total, workout) => total + (Number(workout.summary?.totalStrivePoints?.total) || 0),
+        0
+    )
+
+    await Workout.deleteMany({ user: user._id })
+    await LeaderboardEntry.deleteMany({ user: user._id })
+
+    user.workouts = []
+    user.lastWorkout = null
+    user.strivepoints = Math.max(0, (Number(user.strivepoints) || 0) - pointsEarnedFromWorkouts)
+    user.level = calculateLevel(user.strivepoints)
+    user.momentum.current = 30
+    user.momentum.lastCalculated = null
+    user.streak.current = 0
+    user.streak.shield = false
+    user.streak.lastEvaluatedWeek = null
+    user.streak.lastIncrementedWeek = null
+    user.streak.best = 0
+    await user.save()
+
+    return user
 }
 
 // Check if Streak is Broken
@@ -143,12 +149,10 @@ const checkAndIncreaseStreak = async (userId, workoutsThisWeek) => {
     if (!user) {
         throw new Error('User Not Found')
     }
-    
-    if (workoutsThisWeek !== 1) {
-        return 
-    }
-
     const currentWeek = getISOWeekString(new Date())
+    if (workoutsThisWeek !== 1 || user.streak.lastIncrementedWeek === currentWeek) {
+        return user
+    }
 
     user.streak.current++
     user.streak.best = Math.max(user.streak.best, user.streak.current)
@@ -163,7 +167,7 @@ module.exports = {
     updateUserPointsAndMomentum,
     checkAndBreakStreak,
     checkAndIncreaseStreak,
-    addPointsToUser,
     updateUserMomentum,
-    calculateLevel
+    calculateLevel,
+    resetWorkoutData
 }
