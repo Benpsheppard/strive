@@ -6,7 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
-const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel } = require('../utils/workoutServices.js')
+const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')
 
 // Model Imports
 const Workout = require('../models/workoutModel.js')    
@@ -244,20 +244,19 @@ const deleteWorkout = asyncHandler(async (req, res) => {
  *  @access Private
  */
 const deleteAllWorkouts = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id)
+    const userId = req.user?.id
+    if (!userId) {
+        res.status(401)
+        throw new Error('Not authorised')
+    }
 
+    const user = await User.findById(userId)
     if (!user) {
         res.status(404)
         throw new Error('User not found')
     }
 
-    // Only allow user to delete their own workouts
-    if (user._id.toString() !== req.user._id.toString()) {
-        res.status(401)
-        throw new Error('User not authorized to reset this account')
-    }
-
-    await Workout.deleteMany({ user: req.user._id })
+    await resetWorkoutData(user)
 
     res.status(200).json({
         message: 'All workouts deleted successfully'
