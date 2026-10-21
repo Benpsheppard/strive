@@ -40,7 +40,10 @@ const QuestCard = ({ quest }) => {
                 {/* Completion */}
                 {type === 'strength' && (
                     <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>{quest.completion.exercise}</p>
+                        <p className='font-semibold'>
+                            {quest.completion.exercise}
+                            {quest.completion.selectedEquipment && ` (${quest.completion.selectedEquipment})`}
+                        </p>
                         <p className='text-sm text-[#EDF2F4]/20'>{formatWeight(quest.completion.weight, user.useImperial)} x {quest.completion.reps} reps</p>
                     </div>
                 )}
@@ -59,7 +62,10 @@ const QuestCard = ({ quest }) => {
 
                 {type === 'progressive' && (
                     <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>{quest.completion.exercise}</p>
+                        <p className='font-semibold'>
+                            {quest.completion.exercise}
+                            {quest.completion.selectedEquipment && ` (${quest.completion.selectedEquipment})`}
+                        </p>
                         <p className='text-sm text-[#EDF2F4]/20'>Current Progress: {formatWeight(quest.completion.baseline, user.useImperial)}</p>
                     </div>
                 )}

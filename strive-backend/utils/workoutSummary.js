@@ -18,6 +18,20 @@ const getTotalDistance = (sets) => sets.reduce((sum, s) => sum + (Number(s.dista
 
 const getTotalDuration = (sets) => sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
 
+const matchesQuestExercise = (candidate, exercise, selectedEquipment) => {
+    if (candidate.name.toLowerCase().trim() !== exercise.toLowerCase().trim()) {
+        return false
+    }
+
+    if (selectedEquipment == null || selectedEquipment === '') {
+        return true
+    }
+
+    return typeof selectedEquipment === 'string' &&
+        typeof candidate.selectedEquipment === 'string' &&
+        candidate.selectedEquipment.toLowerCase().trim() === selectedEquipment.toLowerCase().trim()
+}
+
 const getReward = (score) => {
     const clamped = Math.max(0.7, Math.min(score, 1.3))
     return Math.round(25 + ((clamped - 0.7) / 0.6) * 125)
@@ -382,11 +396,9 @@ const detectPersonalBests = (exercises, existingPBs) => {
 // ─── Quest Checkers ──────────────────────────────────────────────────────────
 const questCheckers = {
     strength: (quest, exercises) => {
-        const { exercise, weight, reps } = quest.completion
+        const { exercise, selectedEquipment, weight, reps } = quest.completion
 
-        const match = exercises.find(e =>
-            e.name.toLowerCase().trim() === exercise.toLowerCase().trim()
-        )
+        const match = exercises.find(e => matchesQuestExercise(e, exercise, selectedEquipment))
 
         if (!match) {
             return false
@@ -463,11 +475,9 @@ const questCheckers = {
     },
 
     progressive: (quest, exercises) => {
-        const { exercise, metric, baseline } = quest.completion
+        const { exercise, selectedEquipment, metric, baseline } = quest.completion
 
-        const match = exercises.find(e =>
-            e.name.toLowerCase().trim() === exercise.toLowerCase().trim()
-        )
+        const match = exercises.find(e => matchesQuestExercise(e, exercise, selectedEquipment))
         if (!match) return false
 
         switch (metric) {

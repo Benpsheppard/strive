@@ -100,6 +100,21 @@ const workouts = [
             },
             {
                 exercise: {
+                    name: 'Bench Press',
+                    muscleGroup: 'Chest',
+                    subMuscleGroup: 'Upper Chest',
+                    trackingMode: 'weight_reps'
+                },
+                selectedEquipment: 'Smith Machine',
+                sets: [
+                    {
+                        weight: 55,
+                        reps: 8
+                    }
+                ]
+            },
+            {
+                exercise: {
                     name: 'Squat',
                     muscleGroup: 'Legs',
                     subMuscleGroup: 'Quads',
@@ -181,6 +196,7 @@ describe('questControllerV2', () => {
                     description: 'Hit a stronger bench press.',
                     completion: {
                         exercise: 'Bench Press',
+                        selectedEquipment: 'Barbell',
                         weight: 65,
                         reps: 8
                     }
@@ -197,14 +213,15 @@ describe('questControllerV2', () => {
                     }
                 },
                 {
-                    title: 'Squat Strength',
+                    title: 'Smith Machine Bench Strength',
                     questType: 'strength',
                     duration: 'daily',
-                    description: 'Improve your squat.',
+                    description: 'Improve your Smith machine bench.',
                     completion: {
-                        exercise: 'Squat',
-                        weight: 85,
-                        reps: 6
+                        exercise: 'Bench Press',
+                        selectedEquipment: 'Smith Machine',
+                        weight: 60,
+                        reps: 8
                     }
                 }
             ]
@@ -245,6 +262,20 @@ describe('questControllerV2', () => {
                 currentCount: 0,
                 filterTag: 'Bench Press'
             })
+            expect(insertedQuests[0].completion).toEqual({
+                exercise: 'Bench Press',
+                selectedEquipment: 'Barbell',
+                weight: 65,
+                reps: 8
+            })
+            expect(insertedQuests[2].completion).toEqual({
+                exercise: 'Bench Press',
+                selectedEquipment: 'Smith Machine',
+                weight: 60,
+                reps: 8
+            })
+            expect(mockCreate.mock.calls[0][0].messages[0].content)
+                .toContain('selectedEquipment: "Smith Machine"')
 
             expect(res.status).toHaveBeenCalledWith(200)
 
@@ -254,6 +285,54 @@ describe('questControllerV2', () => {
                     quests: savedQuests
                 })
             )
+        })
+
+        test('uses an equipment variant present in history for progressive quests', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce([])
+
+            mockAIResponse([
+                {
+                    title: 'Smith Machine Bench',
+                    questType: 'progressive',
+                    duration: 'weekly',
+                    description: 'Beat your Smith machine bench press best.',
+                    completion: {
+                        exercise: 'bench press',
+                        selectedEquipment: 'smith machine',
+                        metric: 'max_weight',
+                        baseline: 55
+                    }
+                },
+                {
+                    title: 'Weekly Volume',
+                    questType: 'volume',
+                    duration: 'weekly',
+                    description: 'Accumulate lifting volume this week.',
+                    completion: {
+                        targetVolume: 1000,
+                        currentVolume: 0,
+                        filterTag: null
+                    }
+                }
+            ])
+            Quest.insertMany.mockResolvedValue([])
+
+            const req = createReq({ params: { duration: 'weekly' } })
+            const res = createRes()
+
+            await generateQuests(req, res)
+
+            const insertedQuests = Quest.insertMany.mock.calls[0][0]
+            expect(insertedQuests[0].completion).toEqual({
+                exercise: 'Bench Press',
+                selectedEquipment: 'Smith Machine',
+                metric: 'max_weight',
+                baseline: 55
+            })
         })
 
         test('does not call AI when there are no workouts', async () => {
@@ -293,7 +372,8 @@ describe('questControllerV2', () => {
                     duration: 'daily',
                     description: 'Invalid exercise.',
                     completion: {
-                        exercise: 'Deadlift',
+                        exercise: 'Bench Press',
+                        selectedEquipment: 'Cable Machine',
                         weight: 100,
                         reps: 5
                     }
@@ -305,6 +385,7 @@ describe('questControllerV2', () => {
                     description: 'Another quest.',
                     completion: {
                         exercise: 'Bench Press',
+                        selectedEquipment: 'Barbell',
                         weight: 65,
                         reps: 8
                     }
@@ -316,6 +397,7 @@ describe('questControllerV2', () => {
                     description: 'Third quest.',
                     completion: {
                         exercise: 'Squat',
+                        selectedEquipment: 'Barbell',
                         weight: 85,
                         reps: 6
                     }
@@ -354,6 +436,7 @@ describe('questControllerV2', () => {
                     description: 'Bench press quest.',
                     completion: {
                         exercise: 'Bench Press',
+                        selectedEquipment: 'Barbell',
                         weight: 65,
                         reps: 8
                     }
@@ -388,21 +471,21 @@ describe('questControllerV2', () => {
                     questType: 'strength',
                     duration: 'daily',
                     description: 'Bench press quest.',
-                    completion: { exercise: 'Bench Press', weight: '65', reps: 8 }
+                    completion: { exercise: 'Bench Press', selectedEquipment: 'Barbell', weight: '65', reps: 8 }
                 },
                 {
                     title: 'Squat Goal',
                     questType: 'strength',
                     duration: 'daily',
                     description: 'A second strength quest instead of consistency.',
-                    completion: { exercise: 'Squat', weight: 85, reps: 6 }
+                    completion: { exercise: 'Squat', selectedEquipment: 'Barbell', weight: 85, reps: 6 }
                 },
                 {
                     title: 'Squat Strength',
                     questType: 'strength',
                     duration: 'daily',
                     description: 'Improve your squat.',
-                    completion: { exercise: 'Squat', weight: 85, reps: 6 }
+                    completion: { exercise: 'Squat', selectedEquipment: 'Barbell', weight: 85, reps: 6 }
                 }
             ])
 

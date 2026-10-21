@@ -3,6 +3,15 @@
 // Imports
 const mongoose = require('mongoose')
 
+const questCompletionSchema = new mongoose.Schema({
+    selectedEquipment: {
+        type: String
+    }
+}, {
+    _id: false,
+    strict: false
+})
+
 // Quest Schema
 const questSchema = mongoose.Schema({
     // User
@@ -59,7 +68,7 @@ const questSchema = mongoose.Schema({
     },
     // Completion data
     completion: {
-        type: mongoose.Schema.Types.Mixed,
+        type: questCompletionSchema,
         required: [true, 'Missing completion data']
     },
     // Progress log
@@ -83,7 +92,7 @@ const questSchema = mongoose.Schema({
 
 module.exports = mongoose.model('Quest', questSchema)
 
-// Strength - exercise, weight, reps
+// Strength - exercise, selectedEquipment, weight, reps
 // Consistency - targetCount, currentCount, filterTag
 // Volume - targetVolume, currentVolume, filterTag
-// Progressive - exercise, metric, baseline
+// Progressive - exercise, selectedEquipment, metric, baseline

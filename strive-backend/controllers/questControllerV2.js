@@ -40,10 +40,11 @@ const QUEST_TYPE_PROMPTS = {
         description: `A single-session strength goal. The user must hit a specific weight x reps in one workout.`,
         completionSchema: `{
             "exercise": "string (exact name from workout history)",
+            "selectedEquipment": "string (exact equipment used for that exercise in workout history)",
             "weight": number,
             "reps": number (1-12)
         }`,
-        extraRules: `Follow the progressive overload rules strictly. Pick a weight_reps exercise from their history.`
+        extraRules: `Follow the progressive overload rules strictly. Pick an exact exercise/equipment pair from their history.`
     },
     consistency: {
         description: `A consistency goal. The user must complete a certain number of workouts within the quest window, optionally filtered to a muscle group or exercise.`,
@@ -92,10 +93,11 @@ const QUEST_TYPE_PROMPTS = {
         description: `A personal best goal. The user must beat their current best for a specific metric on a chosen exercise.`,
         completionSchema: `{
             "exercise": "string (exact name from workout history)",
+            "selectedEquipment": "string (exact equipment used for that exercise in workout history)",
             "metric": "max_weight" | "max_reps" | "session_volume",
             "baseline": number (their current best value for this metric)
         }`,
-        extraRules: `Analyse their history to determine the actual current baseline. Choose metric based on what makes sense for the exercise and their recent pattern.`
+        extraRules: `Analyse their history to determine the baseline for this exact exercise/equipment pair. Choose a metric supported by that exercise's tracking mode.`
     }
 }
 
@@ -114,6 +116,9 @@ const genQuests = async (user, duration) => {
     
     const { count, expiryDays } = QUEST_CONFIG[duration]
     const assignedTypes = duration === 'monthly' ? [QUEST_TYPE_DISTRIBUTION.monthly[Math.floor(Math.random() * QUEST_TYPE_DISTRIBUTION.monthly.length)]] : QUEST_TYPE_DISTRIBUTION[duration]
+    const requiresExerciseEquipment = assignedTypes.some(type =>
+        type === 'strength' || type === 'progressive'
+    )
 
     const recentWorkouts = await Workout.find({ user: user._id })
         .sort({ date: -1 })
@@ -128,6 +133,7 @@ const genQuests = async (user, duration) => {
     const validExerciseNames = new Set()
     const validMuscleGroups = new Set()
     const exerciseTrackingModes = new Map()
+    const exerciseEquipmentPairs = new Map()
     const validVolumeExerciseNames = new Set()
     const validVolumeMuscleGroups = new Set()
     recentWorkouts.forEach(w => {
@@ -138,7 +144,17 @@ const genQuests = async (user, duration) => {
             }
 
             validExerciseNames.add(exerciseData.name)
-            exerciseTrackingModes.set(exerciseData.name, exerciseData.trackingMode)
+            const equipment = ex.selectedEquipment
+            if (typeof equipment === 'string' && equipment.trim()) {
+                const normalizedName = exerciseData.name.trim().toLowerCase()
+                const normalizedEquipment = equipment.trim().toLowerCase()
+                const pairKey = `${normalizedName}||${normalizedEquipment}`
+                exerciseTrackingModes.set(pairKey, exerciseData.trackingMode)
+                exerciseEquipmentPairs.set(pairKey, {
+                    exercise: exerciseData.name,
+                    selectedEquipment: equipment
+                })
+            }
             if (exerciseData.trackingMode === 'weight_reps') {
                 validVolumeExerciseNames.add(exerciseData.name)
                 if (exerciseData.muscleGroup) {
@@ -158,6 +174,10 @@ const genQuests = async (user, duration) => {
         })
     })
 
+    if (requiresExerciseEquipment && exerciseEquipmentPairs.size === 0) {
+        throw new Error('No exercise/equipment history found for strength or progressive quests')
+    }
+
     const summary = recentWorkouts.map(w => ({
         date: w.date,
         exercises: w.exercises
@@ -172,7 +192,12 @@ const genQuests = async (user, duration) => {
     }))
 
     const existingQuests = await Quest.find({ user: user._id, status: 'active', expiry: { $gt: new Date() } })
-    const existingExercises = existingQuests.map(q => q.completion.exercise).filter(Boolean)
+    const existingExerciseTargets = existingQuests
+        .filter(q => q.completion?.exercise)
+        .map(q => ({
+            exercise: q.completion.exercise,
+            selectedEquipment: q.completion.selectedEquipment
+        }))
     const existingMuscleGroups = existingQuests.map(q => q.completion.filterTag || q.completion.muscleGroup).filter(tag => tag && validMuscleGroups.has(tag))
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -183,18 +208,32 @@ const genQuests = async (user, duration) => {
     const recentTags = recentQuests
         .map(q => q.completion.filterTag || q.completion.muscleGroup)
         .filter(Boolean)
-    const recentExercises = recentQuests
-        .flatMap(q => [q.completion.exercise, q.completion.filterTag])
-        .filter(tag => tag && validExerciseNames.has(tag))
+    const recentExerciseTargets = recentQuests
+        .filter(q => q.completion?.exercise)
+        .map(q => ({
+            exercise: q.completion.exercise,
+            selectedEquipment: q.completion.selectedEquipment
+        }))
     const recentMuscleGroups = recentTags
         .filter(tag => validMuscleGroups.has(tag))
 
-    const filteredExerciseNames = new Set(
-        [...validExerciseNames].filter(ex =>
-            !recentExercises.includes(ex) &&
-            !existingExercises.includes(ex)
+    const normalizeTargetKey = (exercise, selectedEquipment) =>
+        `${exercise.trim().toLowerCase()}||${(selectedEquipment || '').trim().toLowerCase()}`
+    const isTargetAvoided = ({ exercise, selectedEquipment }, targetList) =>
+        targetList.some(target =>
+            target.exercise.trim().toLowerCase() === exercise.trim().toLowerCase() &&
+            (!target.selectedEquipment ||
+                target.selectedEquipment.trim().toLowerCase() === selectedEquipment.trim().toLowerCase())
         )
-    )
+    const filteredExerciseTargets = [...exerciseEquipmentPairs.entries()]
+        .filter(([, target]) =>
+            !isTargetAvoided(target, existingExerciseTargets) &&
+            !isTargetAvoided(target, recentExerciseTargets)
+        )
+    const finalExerciseTargets = filteredExerciseTargets.length > 0
+        ? filteredExerciseTargets
+        : [...exerciseEquipmentPairs.entries()]
+    const allowedExerciseEquipmentPairs = new Map(finalExerciseTargets)
 
     const filteredMuscleGroups = new Set(
         [...validMuscleGroups].filter(mg =>
@@ -203,8 +242,10 @@ const genQuests = async (user, duration) => {
         )
     )
 
-    const finalExerciseNames = filteredExerciseNames.size > 0 ? filteredExerciseNames : validExerciseNames
     const finalMuscleGroups = filteredMuscleGroups.size > 0 ? filteredMuscleGroups : validMuscleGroups
+    const existingExercises = existingExerciseTargets.map(target =>
+        `${target.exercise}${target.selectedEquipment ? ` (${target.selectedEquipment})` : ''}`
+    )
 
     const unitSystem = user.useImperial ? 'imperial (lbs)' : 'metric (kg)'
 
@@ -225,15 +266,19 @@ const genQuests = async (user, duration) => {
         Generate EXACTLY ${count} fitness quest(s) for the "${duration}" duration.
         Each quest has a PRE-ASSIGNED type — you must follow each type's schema exactly.
 
-        VALID EXERCISE NAMES (use these EXACTLY):
-        ${Array.from(finalExerciseNames).map(e => `- ${e}`).join('\n')}
+        VALID EXERCISE AND EQUIPMENT PAIRS (use both values EXACTLY; only choose one of these pairs):
+        ${finalExerciseTargets.map(([, target]) =>
+            `- exercise: "${target.exercise}", selectedEquipment: "${target.selectedEquipment}"`
+        ).join('\n')}
 
         VALID MUSCLE GROUPS (use these EXACTLY if needed):
         ${Array.from(finalMuscleGroups).map(m => `- ${m}`).join('\n')}
 
-        VALID PROGRESSIVE METRICS BY EXERCISE:
-        ${Array.from(exerciseTrackingModes, ([name, mode]) =>
-            `- ${name}: ${(PROGRESSIVE_METRICS_BY_TRACKING_MODE[mode] || []).join(', ') || 'none'}`
+        VALID PROGRESSIVE METRICS BY EXERCISE AND EQUIPMENT:
+        ${Array.from(allowedExerciseEquipmentPairs, ([pairKey, target]) => {
+            const mode = exerciseTrackingModes.get(pairKey)
+            return `- ${target.exercise} (${target.selectedEquipment}): ${(PROGRESSIVE_METRICS_BY_TRACKING_MODE[mode] || []).join(', ') || 'none'}`
+        }
         ).join('\n')}
 
         VALID VOLUME FILTER TAGS:
@@ -250,10 +295,10 @@ const genQuests = async (user, duration) => {
 
         GENERAL RULES:
         - Quests must be CHALLENGING but achievable within the ${duration} window
-        - Exercise names MUST be chosen from the VALID EXERCISE NAMES list above
+        - Strength and progressive quests MUST use an exact exercise/equipment pair from the VALID EXERCISE AND EQUIPMENT PAIRS list above
         - Muscle groups MUST be chosen from the VALID MUSCLE GROUPS list above
-        - Each strength/progressive quest must target a DIFFERENT exercise
-        - Do not reuse exercises already in active quests
+        - Each strength/progressive quest must target a DIFFERENT exercise/equipment pair
+        - Do not reuse an exercise/equipment pair already in active or recent quests
         - NEVER use "Unknown Exercise" or invent exercise names
 
         Return ONLY a valid JSON object in this exact shape, no extra text:
@@ -311,7 +356,8 @@ const genQuests = async (user, duration) => {
             validMuscleGroups,
             exerciseTrackingModes,
             validVolumeExerciseNames,
-            validVolumeMuscleGroups
+            validVolumeMuscleGroups,
+            allowedExerciseEquipmentPairs
         )
     )
     if (invalidIndex !== -1) {
@@ -322,9 +368,9 @@ const genQuests = async (user, duration) => {
     }
     const targetedExercises = parsed.quests
         .filter(quest => quest.questType === 'strength' || quest.questType === 'progressive')
-        .map(quest => quest.completion.exercise.trim().toLowerCase())
+        .map(quest => normalizeTargetKey(quest.completion.exercise, quest.completion.selectedEquipment))
     if (new Set(targetedExercises).size !== targetedExercises.length) {
-        throw new Error('Strength and progressive quests must target different exercises')
+        throw new Error('Strength and progressive quests must target different exercise/equipment pairs')
     }
 
     const questData = parsed.quests.map(q => ({
@@ -335,7 +381,7 @@ const genQuests = async (user, duration) => {
         description: q.description,
         expiry: getExpiryDate(expiryDays),
         reward: QUEST_CONFIG[duration].reward,
-        completion: normalizeQuestCompletion(q.questType, q.completion),
+        completion: normalizeQuestCompletion(q.questType, q.completion, allowedExerciseEquipmentPairs),
         progressLog: []
     }))
 
@@ -343,13 +389,24 @@ const genQuests = async (user, duration) => {
     return savedQuests
 }
 
-const normalizeQuestCompletion = (questType, completion) => {
+const normalizeQuestCompletion = (questType, completion, exerciseEquipmentPairs) => {
+    const targetKey = completion.exercise && completion.selectedEquipment
+        ? `${completion.exercise.trim().toLowerCase()}||${completion.selectedEquipment.trim().toLowerCase()}`
+        : null
+    const target = targetKey ? exerciseEquipmentPairs.get(targetKey) : null
+
     switch (questType) {
         case 'strength':
+        case 'progressive':
+            if (!target) {
+                throw new Error('Quest target must match an exercise/equipment pair from workout history')
+            }
             return {
-                exercise: completion.exercise,
-                weight: completion.weight,
-                reps: completion.reps
+                exercise: target.exercise,
+                selectedEquipment: target.selectedEquipment,
+                ...(questType === 'strength'
+                    ? { weight: completion.weight, reps: completion.reps }
+                    : { metric: completion.metric, baseline: completion.baseline })
             }
         case 'consistency':
             return {
@@ -362,12 +419,6 @@ const normalizeQuestCompletion = (questType, completion) => {
                 targetVolume: completion.targetVolume,
                 currentVolume: 0,
                 filterTag: completion.filterTag ?? null
-            }
-        case 'progressive':
-            return {
-                exercise: completion.exercise,
-                metric: completion.metric,
-                baseline: completion.baseline
             }
         default:
             throw new Error(`Unsupported quest type: ${questType}`)
@@ -382,7 +433,8 @@ const validateQuestCompletion = (
     validMuscleGroups,
     exerciseTrackingModes,
     validVolumeExerciseNames,
-    validVolumeMuscleGroups
+    validVolumeMuscleGroups,
+    exerciseEquipmentPairs
 ) => {
     if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return false
 
@@ -408,12 +460,21 @@ const validateQuestCompletion = (
         tag === null ||
         (typeof tag === 'string' &&
             (validExerciseNames.has(tag) || validMuscleGroups.has(tag)))
+    const isValidTarget = completion => {
+        if (typeof completion.exercise !== 'string' || typeof completion.selectedEquipment !== 'string') {
+            return false
+        }
+        return exerciseEquipmentPairs.has(
+            `${completion.exercise.trim().toLowerCase()}||${completion.selectedEquipment.trim().toLowerCase()}`
+        )
+    }
+    const targetPairKey = completion =>
+        `${completion.exercise.trim().toLowerCase()}||${completion.selectedEquipment.trim().toLowerCase()}`
 
     switch (assignedType) {
         case 'strength':
-            return typeof completion.exercise === 'string' &&
-                exerciseTrackingModes.get(completion.exercise) === 'weight_reps' &&
-                validExerciseNames.has(completion.exercise) &&
+            return isValidTarget(completion) &&
+                exerciseTrackingModes.get(targetPairKey(completion)) === 'weight_reps' &&
                 isPositiveNumber(completion.weight) &&
                 Number.isInteger(completion.reps) &&
                 completion.reps >= 1 &&
@@ -439,9 +500,8 @@ const validateQuestCompletion = (
                     validVolumeExerciseNames.has(completion.filterTag) ||
                     validVolumeMuscleGroups.has(completion.filterTag))
         case 'progressive':
-            return typeof completion.exercise === 'string' &&
-                validExerciseNames.has(completion.exercise) &&
-                (PROGRESSIVE_METRICS_BY_TRACKING_MODE[exerciseTrackingModes.get(completion.exercise)] || [])
+            return isValidTarget(completion) &&
+                (PROGRESSIVE_METRICS_BY_TRACKING_MODE[exerciseTrackingModes.get(targetPairKey(completion))] || [])
                     .includes(completion.metric) &&
                 Number.isFinite(completion.baseline) &&
                 completion.baseline >= 0
