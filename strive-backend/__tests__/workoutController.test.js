@@ -10,6 +10,7 @@ jest.mock('express-async-handler', () => {
 jest.mock('../models/workoutModel.js')
 jest.mock('../models/userModel.js')
 jest.mock('../models/exerciseModel.js')
+jest.mock('../models/leaderboardEntryModel.js')
 
 jest.mock('../utils/formatUser.js')
 
@@ -25,12 +26,14 @@ jest.mock('../utils/workoutServices.js', () => ({
     updateUserPointsAndMomentum: jest.fn(),
     checkAndIncreaseStreak: jest.fn(),
     getWorkoutsThisWeek: jest.fn(),
-    calculateLevel: jest.fn()
+    calculateLevel: jest.fn(),
+    resetWorkoutData: jest.fn()
 }))
 
 const Workout = require('../models/workoutModel.js')
 const User = require('../models/userModel.js')
 const Exercise = require('../models/exerciseModel.js')
+const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 
 const formatUser = require('../utils/formatUser.js')
 
@@ -40,7 +43,8 @@ const {
     updateUserPointsAndMomentum,
     checkAndIncreaseStreak,
     getWorkoutsThisWeek,
-    calculateLevel
+    calculateLevel,
+    resetWorkoutData
 } = require('../utils/workoutServices.js')
 const {
     getWorkouts,
@@ -340,7 +344,7 @@ describe('workoutController', () => {
             expect(getWorkoutsThisWeek).toHaveBeenCalledWith('123', expect.any(Date))
             expect(checkAndIncreaseStreak).toHaveBeenCalledWith('123', 2)
     
-            // One combined call replaces addPointsToUser + updateUserMomentum
+            // Workout points and momentum are updated together.
             expect(updateUserPointsAndMomentum).toHaveBeenCalledWith('123', 25, {
                 workoutCompleted: true,
                 personalBests: 1,
@@ -747,28 +751,19 @@ describe('workoutController', () => {
     // Delete All Workouts
     describe('deleteAllWorkouts', () => {
         test('deletes all workouts for the authenticated user', async () => {
-            req.params.id = '123'
-            req.user = {
-                _id: '123'
-            }
+            req.user = { id: '123' }
 
             const user = {
-                _id: '123'
+                _id: '123',
             }
 
             User.findById.mockResolvedValue(user)
-            Workout.deleteMany.mockResolvedValue({
-                acknowledged: true,
-                deletedCount: 3
-            })
+            resetWorkoutData.mockResolvedValue(user)
 
             await deleteAllWorkouts(req, res)
 
             expect(User.findById).toHaveBeenCalledWith('123')
-
-            expect(Workout.deleteMany).toHaveBeenCalledWith({
-                user: '123'
-            })
+            expect(resetWorkoutData).toHaveBeenCalledWith(user)
 
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith({
@@ -777,10 +772,7 @@ describe('workoutController', () => {
         })
 
         test('returns 404 when user does not exist', async () => {
-            req.params.id = '123'
-            req.user = {
-                _id: '123'
-            }
+            req.user = { id: '123' }
 
             User.findById.mockResolvedValue(null)
 
@@ -791,28 +783,7 @@ describe('workoutController', () => {
             expect(User.findById).toHaveBeenCalledWith('123')
             expect(res.status).toHaveBeenCalledWith(404)
 
-            expect(Workout.deleteMany).not.toHaveBeenCalled()
-            expect(res.json).not.toHaveBeenCalled()
-        })
-
-        test('rejects user from deleting another users workouts', async () => {
-            req.params.id = '123'
-            req.user = {
-                _id: '456'
-            }
-
-            User.findById.mockResolvedValue({
-                _id: '123'
-            })
-
-            await expect(deleteAllWorkouts(req, res))
-                .rejects
-                .toThrow('User not authorized to reset this account')
-
-            expect(User.findById).toHaveBeenCalledWith('123')
-            expect(res.status).toHaveBeenCalledWith(401)
-
-            expect(Workout.deleteMany).not.toHaveBeenCalled()
+            expect(resetWorkoutData).not.toHaveBeenCalled()
             expect(res.json).not.toHaveBeenCalled()
         })
     })

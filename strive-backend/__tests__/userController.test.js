@@ -22,10 +22,11 @@ jest.mock('../models/questModel.js')
 jest.mock('../utils/formatUser.js')
 
 jest.mock('../utils/workoutServices.js', () => ({
-    addPointsToUser: jest.fn(),
     updateUserMomentum: jest.fn(),
     checkAndBreakStreak: jest.fn(),
-    checkAndIncreaseStreak: jest.fn()
+    checkAndIncreaseStreak: jest.fn(),
+    getWorkoutsThisWeek: jest.fn(),
+    resetWorkoutData: jest.fn()
 }))
 
 jest.mock('../utils/dateFormat.js', () => ({
@@ -49,10 +50,11 @@ const Quest = require('../models/questModel.js')
 const formatUser = require('../utils/formatUser.js')
 
 const {
-    addPointsToUser,
     updateUserMomentum,
     checkAndBreakStreak,
-    checkAndIncreaseStreak
+    checkAndIncreaseStreak,
+    getWorkoutsThisWeek,
+    resetWorkoutData
 } = require('../utils/workoutServices.js')
 
 const {
@@ -63,7 +65,6 @@ const {
     deleteUser,
     resetUser,
     updateUnitPreference,
-    addPoints,
     updateProfile,
     checkIfStreakBroken,
     checkIfStreakIncreased,
@@ -580,16 +581,20 @@ describe('userController', () => {
                 isAdmin: false
             }
 
-            Workout.deleteMany.mockResolvedValue({})
+            const user = { _id: '123' }
+            User.findById.mockResolvedValue(user)
+            resetWorkoutData.mockResolvedValue(user)
 
             await resetUser(req, res)
 
-            expect(Workout.deleteMany).toHaveBeenCalledWith({ 
-                user: '123'
-            })
+            expect(User.findById).toHaveBeenCalledWith('123')
+            expect(resetWorkoutData).toHaveBeenCalledWith(user)
 
             expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith({ message: 'All user workout data has been reset successfully' })
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'All user workout data has been reset successfully',
+                user: { id: '123' }
+            })
         })
 
         test('allows admin to reset another user', async () => {
@@ -599,13 +604,14 @@ describe('userController', () => {
                 isAdmin: true
             }
 
-            Workout.deleteMany.mockResolvedValue({})
+            const user = { _id: '123' }
+            User.findById.mockResolvedValue(user)
+            resetWorkoutData.mockResolvedValue(user)
 
             await resetUser(req, res)
 
-            expect(Workout.deleteMany).toHaveBeenCalledWith({
-                user: '123'
-            })
+            expect(User.findById).toHaveBeenCalledWith('123')
+            expect(resetWorkoutData).toHaveBeenCalledWith(user)
 
             expect(res.status).toHaveBeenCalledWith(200)
         })
@@ -669,33 +675,6 @@ describe('userController', () => {
                 .toThrow('User not found')
 
             expect(res.status).toHaveBeenCalledWith(404)
-        })
-    })
-
-    // Add Points
-    describe('addPoints', () => {
-        test('adds points to user', async () => {
-            req.params.id = '123'
-            req.body = {
-                amount: 50
-            }
-
-            const user = {
-                _id: '123',
-                points: 150
-            }
-
-            addPointsToUser.mockResolvedValue(user)
-
-            await addPoints(req, res)
-
-            expect(addPointsToUser).toHaveBeenCalledWith(
-                '123',
-                50
-            )
-
-            expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalled()
         })
     })
 
@@ -875,6 +854,7 @@ describe('userController', () => {
     describe('checkIfStreakBroken', () => {
         test('checks and breaks streak successfully', async () => {
             req.params.id = '123'
+            req.user = { id: '123' }
 
             const user = {
                 _id: '123',
@@ -892,12 +872,25 @@ describe('userController', () => {
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalled()
         })
+
+        test('rejects checking another user\'s streak', async () => {
+            req.params.id = '456'
+            req.user = { id: '123' }
+
+            await expect(checkIfStreakBroken(req, res))
+                .rejects
+                .toThrow('Not authorised to access this user')
+
+            expect(res.status).toHaveBeenCalledWith(403)
+            expect(checkAndBreakStreak).not.toHaveBeenCalled()
+        })
     })
 
     // Check if Streak is increased
     describe('checkIfStreakIncreased', () => {
         test('checks and increases streak successfully', async () => {
             req.params.id = '123'
+            req.user = { id: '123' }
 
             const user = {
                 _id: '123',
@@ -905,13 +898,28 @@ describe('userController', () => {
             }
 
             checkAndIncreaseStreak.mockResolvedValue(user)
+            getWorkoutsThisWeek.mockResolvedValue(1)
 
             await checkIfStreakIncreased(req, res)
 
-            expect(checkAndIncreaseStreak).toHaveBeenCalledWith('123')
+            expect(getWorkoutsThisWeek).toHaveBeenCalledWith('123', expect.any(Date))
+            expect(checkAndIncreaseStreak).toHaveBeenCalledWith('123', 1)
 
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalled()
+        })
+
+        test('rejects checking another user\'s streak', async () => {
+            req.params.id = '456'
+            req.user = { id: '123' }
+
+            await expect(checkIfStreakIncreased(req, res))
+                .rejects
+                .toThrow('Not authorised to access this user')
+
+            expect(res.status).toHaveBeenCalledWith(403)
+            expect(getWorkoutsThisWeek).not.toHaveBeenCalled()
+            expect(checkAndIncreaseStreak).not.toHaveBeenCalled()
         })
     })
 
