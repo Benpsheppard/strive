@@ -23,6 +23,18 @@ const QUEST_CONFIG = {
     monthly: { count: 1, expiryDays: 30, reward: 1000}
 }
 
+const PROGRESSIVE_METRICS_BY_TRACKING_MODE = {
+    weight_reps: ['max_weight', 'max_reps', 'session_volume'],
+    bodyweight_reps: ['max_reps'],
+    assisted_reps: ['max_reps'],
+    reps: ['max_reps'],
+    duration: ['total_duration'],
+    distance: ['total_distance'],
+    distance_duration: ['total_distance', 'total_duration'],
+    distance_weight: ['total_distance'],
+    other: []
+}
+
 const QUEST_TYPE_PROMPTS = {
     strength: {
         description: `A single-session strength goal. The user must hit a specific weight x reps in one workout.`,
@@ -31,7 +43,7 @@ const QUEST_TYPE_PROMPTS = {
             "weight": number,
             "reps": number (1-12)
         }`,
-        extraRules: `Follow the progressive overload rules strictly. Pick an exercise from their history.`
+        extraRules: `Follow the progressive overload rules strictly. Pick a weight_reps exercise from their history.`
     },
     consistency: {
         description: `A consistency goal. The user must complete a certain number of workouts within the quest window, optionally filtered to a muscle group or exercise.`,
@@ -115,6 +127,9 @@ const genQuests = async (user, duration) => {
     // Build a set of valid exercise names and muscle groups for validation
     const validExerciseNames = new Set()
     const validMuscleGroups = new Set()
+    const exerciseTrackingModes = new Map()
+    const validVolumeExerciseNames = new Set()
+    const validVolumeMuscleGroups = new Set()
     recentWorkouts.forEach(w => {
         w.exercises.forEach(ex => {
             const exerciseData = ex.exercise
@@ -123,6 +138,16 @@ const genQuests = async (user, duration) => {
             }
 
             validExerciseNames.add(exerciseData.name)
+            exerciseTrackingModes.set(exerciseData.name, exerciseData.trackingMode)
+            if (exerciseData.trackingMode === 'weight_reps') {
+                validVolumeExerciseNames.add(exerciseData.name)
+                if (exerciseData.muscleGroup) {
+                    validVolumeMuscleGroups.add(exerciseData.muscleGroup)
+                }
+                if (exerciseData.subMuscleGroup) {
+                    validVolumeMuscleGroups.add(exerciseData.subMuscleGroup)
+                }
+            }
             if (exerciseData.muscleGroup) {
                 validMuscleGroups.add(exerciseData.muscleGroup)
             }
@@ -206,6 +231,14 @@ const genQuests = async (user, duration) => {
         VALID MUSCLE GROUPS (use these EXACTLY if needed):
         ${Array.from(finalMuscleGroups).map(m => `- ${m}`).join('\n')}
 
+        VALID PROGRESSIVE METRICS BY EXERCISE:
+        ${Array.from(exerciseTrackingModes, ([name, mode]) =>
+            `- ${name}: ${(PROGRESSIVE_METRICS_BY_TRACKING_MODE[mode] || []).join(', ') || 'none'}`
+        ).join('\n')}
+
+        VALID VOLUME FILTER TAGS:
+        ${Array.from(new Set([...validVolumeExerciseNames, ...validVolumeMuscleGroups])).map(tag => `- ${tag}`).join('\n') || '- none; use null'}
+
         USER WORKOUT HISTORY:
         ${JSON.stringify(summary)}
 
@@ -257,20 +290,41 @@ const genQuests = async (user, duration) => {
         .replace(/```\s*/gi, '')
         .trim()
 
-    const parsed = JSON.parse(text)
+    let parsed
+    try {
+        parsed = JSON.parse(text)
+    } catch {
+        throw new Error('AI response was not valid JSON')
+    }
 
-    if (!Array.isArray(parsed.quests) || parsed.quests.length !== count) {
+    if (!parsed || !Array.isArray(parsed.quests) || parsed.quests.length !== count) {
         throw new Error('AI response has wrong quest count')
     }
 
     // Validate all quests before saving
-    const invalidQuests = parsed.quests.filter(q => !validateQuestCompletion(q, validExerciseNames, validMuscleGroups))
-    if (invalidQuests.length > 0) {
-        throw new Error(
-            `Invalid quest completion data: ${invalidQuests.map(q => 
-                `"${q.title}" (${q.questType} - ${q.duration}): ${JSON.stringify(q.completion)}`
-            ).join('; ')}`
+    const invalidIndex = parsed.quests.findIndex((quest, index) =>
+        !validateQuestCompletion(
+            quest,
+            assignedTypes[index],
+            duration,
+            validExerciseNames,
+            validMuscleGroups,
+            exerciseTrackingModes,
+            validVolumeExerciseNames,
+            validVolumeMuscleGroups
         )
+    )
+    if (invalidIndex !== -1) {
+        const invalidQuest = parsed.quests[invalidIndex]
+        throw new Error(
+            `Invalid quest response at position ${invalidIndex + 1}: ${JSON.stringify(invalidQuest)}`
+        )
+    }
+    const targetedExercises = parsed.quests
+        .filter(quest => quest.questType === 'strength' || quest.questType === 'progressive')
+        .map(quest => quest.completion.exercise.trim().toLowerCase())
+    if (new Set(targetedExercises).size !== targetedExercises.length) {
+        throw new Error('Strength and progressive quests must target different exercises')
     }
 
     const questData = parsed.quests.map(q => ({
@@ -281,7 +335,7 @@ const genQuests = async (user, duration) => {
         description: q.description,
         expiry: getExpiryDate(expiryDays),
         reward: QUEST_CONFIG[duration].reward,
-        completion: q.completion,
+        completion: normalizeQuestCompletion(q.questType, q.completion),
         progressLog: []
     }))
 
@@ -289,32 +343,111 @@ const genQuests = async (user, duration) => {
     return savedQuests
 }
 
-const validateQuestCompletion = (quest, validExerciseNames, validMuscleGroups) => {
-    const { questType, completion } = quest
-
-    // Strength & Progressive quests must have a valid exercise
-    if (questType === 'strength' || questType === 'progressive') {
-        if (!completion.exercise || typeof completion.exercise !== 'string') {
-            return false
-        }
-        if (!validExerciseNames.has(completion.exercise)) {
-            return false
-        }
-    }
-
-    // Consistency & Volume quests may have a filterTag that must be valid
-    if (questType === 'consistency' || questType === 'volume') {
-        if (completion.filterTag) {
-            const tag = completion.filterTag
-            const isValidExercise = validExerciseNames.has(tag)
-            const isValidMuscleGroup = validMuscleGroups.has(tag)
-            if (!isValidExercise && !isValidMuscleGroup) {
-                return false
+const normalizeQuestCompletion = (questType, completion) => {
+    switch (questType) {
+        case 'strength':
+            return {
+                exercise: completion.exercise,
+                weight: completion.weight,
+                reps: completion.reps
             }
-        }
+        case 'consistency':
+            return {
+                targetCount: completion.targetCount,
+                currentCount: 0,
+                filterTag: completion.filterTag ?? null
+            }
+        case 'volume':
+            return {
+                targetVolume: completion.targetVolume,
+                currentVolume: 0,
+                filterTag: completion.filterTag ?? null
+            }
+        case 'progressive':
+            return {
+                exercise: completion.exercise,
+                metric: completion.metric,
+                baseline: completion.baseline
+            }
+        default:
+            throw new Error(`Unsupported quest type: ${questType}`)
+    }
+}
+
+const validateQuestCompletion = (
+    quest,
+    assignedType,
+    duration,
+    validExerciseNames,
+    validMuscleGroups,
+    exerciseTrackingModes,
+    validVolumeExerciseNames,
+    validVolumeMuscleGroups
+) => {
+    if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return false
+
+    const { title, description, questType, completion } = quest
+    if (
+        questType !== assignedType ||
+        quest.duration !== duration ||
+        typeof title !== 'string' ||
+        !title.trim() ||
+        title.trim().split(/\s+/).length < 1 ||
+        title.trim().split(/\s+/).length > 6 ||
+        typeof description !== 'string' ||
+        !description.trim() ||
+        !completion ||
+        typeof completion !== 'object' ||
+        Array.isArray(completion)
+    ) {
+        return false
     }
 
-    return true
+    const isPositiveNumber = value => Number.isFinite(value) && value > 0
+    const isValidFilterTag = tag =>
+        tag === null ||
+        (typeof tag === 'string' &&
+            (validExerciseNames.has(tag) || validMuscleGroups.has(tag)))
+
+    switch (assignedType) {
+        case 'strength':
+            return typeof completion.exercise === 'string' &&
+                exerciseTrackingModes.get(completion.exercise) === 'weight_reps' &&
+                validExerciseNames.has(completion.exercise) &&
+                isPositiveNumber(completion.weight) &&
+                Number.isInteger(completion.reps) &&
+                completion.reps >= 1 &&
+                completion.reps <= 12
+        case 'consistency': {
+            const bounds = {
+                daily: [1, 1],
+                weekly: [2, 4],
+                monthly: [8, 12]
+            }[duration]
+            return Boolean(bounds) &&
+                Number.isInteger(completion.targetCount) &&
+                completion.targetCount >= bounds[0] &&
+                completion.targetCount <= bounds[1] &&
+                (completion.currentCount === undefined || completion.currentCount === 0) &&
+                isValidFilterTag(completion.filterTag ?? null)
+        }
+        case 'volume':
+            return isPositiveNumber(completion.targetVolume) &&
+                (completion.currentVolume === undefined || completion.currentVolume === 0) &&
+                (completion.filterTag === undefined ||
+                    completion.filterTag === null ||
+                    validVolumeExerciseNames.has(completion.filterTag) ||
+                    validVolumeMuscleGroups.has(completion.filterTag))
+        case 'progressive':
+            return typeof completion.exercise === 'string' &&
+                validExerciseNames.has(completion.exercise) &&
+                (PROGRESSIVE_METRICS_BY_TRACKING_MODE[exerciseTrackingModes.get(completion.exercise)] || [])
+                    .includes(completion.metric) &&
+                Number.isFinite(completion.baseline) &&
+                completion.baseline >= 0
+        default:
+            return false
+    }
 }
 
 /**
