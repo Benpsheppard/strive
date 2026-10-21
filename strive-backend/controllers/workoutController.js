@@ -64,6 +64,7 @@ const setWorkout = asyncHandler(async (req, res) => {
     console.time("Populate Exercises from Workout")
     const populatedWorkout = await workout.populate('exercises.exercise')
     const populatedExercises = populatedWorkout.exercises.map(ex => ({
+        exerciseId: ex.exercise._id,
         name: ex.exercise.name,
         muscleGroup: ex.exercise.muscleGroup,
         subMuscleGroup: ex.exercise.subMuscleGroup,

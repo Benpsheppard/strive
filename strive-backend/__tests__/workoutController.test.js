@@ -316,6 +316,7 @@ describe('workoutController', () => {
             expect(calculateWorkoutSummary).toHaveBeenCalledWith(
                 req.user,
                 populatedExercises.map(ex => ({
+                    exerciseId: ex.exercise._id,
                     name: ex.exercise.name,
                     muscleGroup: ex.exercise.muscleGroup,
                     subMuscleGroup: ex.exercise.subMuscleGroup,

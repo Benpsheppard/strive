@@ -99,10 +99,13 @@ const calculateVolumePoints = async (workoutHistory, totalWeight) => {
     }
 }
 
+// Get the exercise id as a string, whether the exercise is populated (lean history) or a raw ObjectId
+const getExerciseId = (exerciseRef) => (exerciseRef?._id ?? exerciseRef)?.toString()
+
 const calculateStrengthPoints = async (workoutHistory, exercises) => {
-    const exerciseIds = exercises.map(e => e.exerciseId)
+    const exerciseIds = exercises.map(e => e.exerciseId.toString())
     const recentWorkouts = workoutHistory
-        .filter(w => w.exercises.some(ex => exerciseIds.includes(ex.exerciseId)))
+        .filter(w => w.exercises.some(ex => exerciseIds.includes(getExerciseId(ex.exercise))))
         .slice(0, 15)
 
     if (recentWorkouts.length < 5) {
@@ -113,7 +116,7 @@ const calculateStrengthPoints = async (workoutHistory, exercises) => {
     let matchedExerciseCount = 0
 
     exercises.forEach(exercise => {
-        const currentMax = Math.max(...exercise.sets.map(s => Number(s.weight) || 0))
+        const currentMax = getMaxWeight(exercise.sets)
         if (currentMax === 0) {
             return
         }
@@ -122,10 +125,10 @@ const calculateStrengthPoints = async (workoutHistory, exercises) => {
         let exerciseHistoryCount = 0
 
         recentWorkouts.forEach(recentWorkout => {
-            const match = recentWorkout.exercises.find(e => e.exerciseId === exercise.exerciseId)
+            const match = recentWorkout.exercises.find(e => getExerciseId(e.exercise) === exercise.exerciseId.toString())
 
             if (match) {
-                const recentMax = Math.max(...match.sets.map(s => Number(s.weight) || 0))
+                const recentMax = getMaxWeight(match.sets)
 
                 if (recentMax > 0) {
                     exerciseHistoryTotal += recentMax
