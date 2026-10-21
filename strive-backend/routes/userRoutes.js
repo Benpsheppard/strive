@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit')
 const { 
     registerUser, loginUser, getMe, 
     deleteUser, updateUnitPreference, 
-    resetUser, addPoints, migrateUser, 
+    resetUser, migrateUser,
     updateProfile, checkIfStreakBroken,
     checkIfStreakIncreased, updateMomentum
 } = require('../controllers/userController.js')
@@ -33,9 +33,8 @@ userRouter.put('/momentum', protect, updateMomentum)
 
 userRouter.delete('/:id', protect, validateObjectId('id'), deleteUser)
 userRouter.delete('/:id/reset', protect, validateObjectId('id'), resetUser)
-userRouter.post('/:id/points', protect, validateObjectId('id'), addPoints)
-userRouter.put('/:id/streak-broken', protect, checkIfStreakBroken)
-userRouter.put('/:id/streak-increased', protect, checkIfStreakIncreased)
+userRouter.put('/:id/streak-broken', protect, validateObjectId('id'), checkIfStreakBroken)
+userRouter.put('/:id/streak-increased', protect, validateObjectId('id'), checkIfStreakIncreased)
 
 // Export router
 module.exports = { userRouter }
