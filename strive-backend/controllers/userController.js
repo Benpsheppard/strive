@@ -13,7 +13,7 @@ const {
     getWeeksBetween, isoWeekToDate 
 } = require('../utils/dateFormat.js')
 const formatUser = require('../utils/formatUser.js')
-const { addPointsToUser, updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak } = require('../utils/workoutServices.js')
+const { updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak, getWorkoutsThisWeek, resetWorkoutData } = require('../utils/workoutServices.js')
 
 // Model Imports
 const User = require('../models/userModel.js')    
@@ -256,10 +256,18 @@ const resetUser = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to reset this user')
     }
 
-    // Delete all workouts that belong to this user
-    await Workout.deleteMany({ user: userId })
+    const user = await User.findById(userId)
+    if (!user) {
+        res.status(404)
+        throw new Error('User not found')
+    }
 
-    res.status(200).json({ message: 'All user workout data has been reset successfully' })
+    await resetWorkoutData(user)
+
+    res.status(200).json({
+        message: 'All user workout data has been reset successfully',
+        user: formatUser(user)
+    })
 })
 
 /**
@@ -279,18 +287,6 @@ const updateUnitPreference = asyncHandler(async (req, res) => {
     const updatedUser = await user.save()
 
     res.status(200).json(formatUser(updatedUser))
-})
-
-/**
- *   @desc    Add strive points to user
- *   @route   POST /api/users/:id/points
- *   @access  Private
- */
-const addPoints = asyncHandler(async (req, res) => {
-    const { amount } = req.body    // Amount of SP to be added
-    const user = await addPointsToUser(req.params.id, amount)
-
-    res.status(200).json(formatUser(user))
 })
 
 /**
@@ -343,7 +339,8 @@ const updateProfile = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const checkIfStreakBroken = asyncHandler(async (req, res) => {
-    const user = await checkAndBreakStreak(req.params.id)
+    const userId = getAuthenticatedUserId(req, res)
+    const user = await checkAndBreakStreak(userId)
 
     res.status(200).json(formatUser(user))
 })
@@ -354,9 +351,26 @@ const checkIfStreakBroken = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const checkIfStreakIncreased = asyncHandler(async (req, res) => {
-    const user = await checkAndIncreaseStreak(req.params.id)
+    const userId = getAuthenticatedUserId(req, res)
+    const workoutsThisWeek = await getWorkoutsThisWeek(userId, new Date())
+    const user = await checkAndIncreaseStreak(userId, workoutsThisWeek)
     res.status(200).json(formatUser(user))
 })
+
+const getAuthenticatedUserId = (req, res) => {
+    const authenticatedUserId = req.user?.id?.toString()
+    if (!authenticatedUserId) {
+        res.status(401)
+        throw new Error('Not authorised')
+    }
+
+    if (req.params.id !== authenticatedUserId) {
+        res.status(403)
+        throw new Error('Not authorised to access this user')
+    }
+
+    return authenticatedUserId
+}
 
 /**
  * @desc    Update user's momentum value
@@ -384,7 +398,6 @@ module.exports = {
     deleteUser, 
     resetUser, 
     updateUnitPreference, 
-    addPoints,
     updateProfile,
     checkIfStreakBroken,
     checkIfStreakIncreased,
