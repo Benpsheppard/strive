@@ -1,5 +1,8 @@
 // pbDetection.js
 
+const buildPBKey = (name, equipment) =>
+    `${name.trim().toLowerCase()}||${(equipment || 'Unspecified').trim().toLowerCase()}`
+
 export const calculatePersonalBests = (workouts) => {
     const exercisePBs = {}
 
@@ -17,11 +20,11 @@ export const calculatePersonalBests = (workouts) => {
             const trackingMode = exerciseData.trackingMode
             const equipment = ex.selectedEquipment || 'Unspecified'
 
-            if (trackingMode !== 'weight_reps') {
+            if (trackingMode !== 'weight_reps' || typeof name !== 'string' || !name.trim()) {
                 return
             }
 
-            const key = `${name}||${equipment}`
+            const key = buildPBKey(name, equipment)
 
             ex.sets.forEach((set) => {
                 const weight = Number(set.weight) || 0
@@ -49,12 +52,16 @@ export const detectNewPBs = (newWorkout, existingWorkouts) => {
 		}
 
         const name = exerciseData.name
+        const equipment = ex.selectedEquipment || 'Unspecified'
+        if (typeof name !== 'string' || !name.trim()) {
+            return
+        }
         const maxWeight = Math.max(0, ...ex.sets.map(s => Number(s.weight) || 0))
         if (maxWeight === 0) {
 			return
 		}
 
-        const existingPB = existingPBs[name]
+        const existingPB = existingPBs[buildPBKey(name, equipment)]
         if (!existingPB || maxWeight > existingPB.weight) {
             newPBs.push({
                 exerciseName: name,
