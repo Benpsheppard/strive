@@ -123,19 +123,6 @@ const updateUnitPreference = async (useImperial, token) => {
     return response.data
 }
 
-// Add Strive Points (SP)
-const addPoints = async (userId, amount, token) => {
-	const config = {
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
-	}
-
-	const response = await axios.post(API_URL + `${userId}/points`, { amount }, config)
-
-	return response.data
-}
-
 // Update user profile
 const updateProfile = async (profileData, token) => {
 	const config = {
@@ -202,7 +189,6 @@ const authService = {
     deleteUser,
     resetUser,
     updateUnitPreference,
-    addPoints,
 	updateProfile,
     checkIfStreakBroken,
     checkIfStreakIncreased,

@@ -104,19 +104,6 @@ export const updateUnitPreference = createAsyncThunk('auth/updatePreference', as
     }
 })
 
-// Add Strive Points
-export const addPoints = createAsyncThunk('auth/addPoints', async ({ userId, amount }, thunkAPI) => {
-    try {
-        const token = thunkAPI.getState().auth.user.token
-        return await authService.addPoints(userId, amount, token)
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message) 
-            || error.message || error.toString()
-        return thunkAPI.rejectWithValue(message)
-    }
-})
-
 // Update users profile
 export const updateProfile = createAsyncThunk('auth/updateProfile', async (profileData, thunkAPI) => {
     try {
@@ -275,6 +262,13 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isSuccess = true
                 state.message = action.payload?.message
+                if (state.user && action.payload?.user) {
+                    state.user = {
+                        ...state.user,
+                        ...action.payload.user
+                    }
+                    localStorage.setItem('Strive:user', JSON.stringify(state.user))
+                }
             })
             .addCase(resetUser.rejected, (state, action) => {
                 state.isLoading = false
@@ -296,25 +290,6 @@ export const authSlice = createSlice({
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateUnitPreference.rejected, (state, action) => {
-                state.isLoading = false
-                state.isError = true
-                state.message = action.payload
-            })
-
-        // Add Strive Points
-            .addCase(addPoints.pending, (state) => {
-                state.isLoading = true
-            })
-            .addCase(addPoints.fulfilled, (state, action) => {
-                state.isLoading = false
-                state.isSuccess = true
-                if (state.user) {
-                    state.user.strivepoints = action.payload.strivepoints
-                    state.user.level = action.payload.level
-                    localStorage.setItem('Strive:user', JSON.stringify(state.user))
-                }
-            })
-            .addCase(addPoints.rejected, (state, action) => {
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload
