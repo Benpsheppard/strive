@@ -53,7 +53,7 @@ const addExercise = async (workoutId, exercise, token) => {
 		}
 	}
 
-	const response = await axios.put(API_URL + workoutId + '/exercises', exercise, config)
+	const response = await axios.post(API_URL + workoutId + '/exercises', exercise, config)
 	
 	return response.data
 }
