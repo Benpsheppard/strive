@@ -98,7 +98,7 @@ const setWorkout = asyncHandler(async (req, res) => {
 
     // Update leaderboards
     console.time("Update Leaderboard Entry")
-    await updateLeaderboardEntry(req.user, workout)
+    await updateLeaderboardEntry(req.user.id, workout)
     console.timeEnd("Update Leaderboard Entry")
 
     // Store old values for gamification
@@ -215,7 +215,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
-    const pointsToDeduct = workout.summary.totalStrivePoints.total
+    const pointsToDeduct = Number(workout.summary?.totalStrivePoints?.total) || 0
 
     const newSP = Math.max(0, user.strivepoints - pointsToDeduct)
 
@@ -230,6 +230,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
         }
     )
     await workout.deleteOne()
+    await updateLeaderboardEntry(req.user.id, workout)
 
     const updatedUser = await User.findById(req.user.id)
     res.status(200).json({
