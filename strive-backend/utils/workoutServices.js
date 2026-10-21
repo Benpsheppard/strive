@@ -115,7 +115,7 @@ const checkAndBreakStreak = async (userId) => {
 
     const { start, end } = getPreviousWeekRange(now)
 
-    const completedWorkouts = await workoutModel.countDocuments({
+    const completedWorkouts = await Workout.countDocuments({
         user: user._id,
         createdAt: {
             $gte: start,
