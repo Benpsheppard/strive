@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-	--font-heading: 'Barlow Condensed', sans-serif;
+	--font-heading: 'Barlow Condensed', 'DM Sans', sans-serif;
 }
 
 * {
