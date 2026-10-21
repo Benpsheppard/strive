@@ -39,7 +39,7 @@ const SetItem = ({ set, setNumber, trackingMode, useImperial = false }) => {
                         Set {setNumber}
                     </p>
                     <p className="text-[#EF233C] font-semibold">
-                        {formatWeight(set.weight, useImperial)}
+                        {formatWeight(set.assistance, useImperial)}
                         <span className="text-[#2B2D42]"> x {' '}</span>
                         <span className="text-[#EDF2F4]">{set.reps} reps</span>
                     </p>

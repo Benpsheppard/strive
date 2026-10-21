@@ -52,7 +52,7 @@ const StatRow = ({ label, value, current, previous }) => {
         if (change > 0) {
             return `+${change}%`
         } else if (change < 0) {
-            return `-${change}%`
+            return `${change}%`
         } else {
             return `0%`
         }

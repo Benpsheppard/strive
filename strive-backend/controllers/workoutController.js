@@ -102,7 +102,7 @@ const setWorkout = asyncHandler(async (req, res) => {
 
     // Store old values for gamification
     const oldStreak = req.user.streak.current
-    const oldShield = req.user.streak.oldShield
+    const oldShield = req.user.streak.shield
     const oldMomentum = req.user.momentum.current
     const oldLevel = req.user.level
 

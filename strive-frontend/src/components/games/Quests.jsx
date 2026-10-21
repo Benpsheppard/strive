@@ -21,7 +21,7 @@ const Quests = () => {
     const { daily, weekly, monthly } = quests || {}
 
     useEffect(() => {
-        if (!user?.isQuest && workouts.length >= 3) {
+        if (!user?.isGuest && workouts.length >= 3) {
             dispatch(getQuests())
         }
 

@@ -101,7 +101,7 @@ const resetUser = async (userId, token) => {
         }
     }
 
-    const response = await axios.delete(API_URL + userId + 'reset', config)
+    const response = await axios.delete(API_URL + userId + '/reset', config)
 
     return response.data
 }

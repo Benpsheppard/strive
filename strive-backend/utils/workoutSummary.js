@@ -10,21 +10,13 @@ const REP_BUFFER = 2
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-// Get the best "weight" from a set of sets (for weight-based exercises)
-const getMaxWeight = (sets) =>
-    Math.max(0, ...sets.map(s => Number(s.weight) || 0))
+const getMaxWeight = (sets) => Math.max(0, ...sets.map(s => Number(s.weight) || 0))
 
-// Get total volume (weight × reps) from a set of sets
-const getVolume = (sets) =>
-    sets.reduce((sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0)
+const getVolume = (sets) => sets.reduce((sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0)
 
-// Get total distance from a set of sets
-const getTotalDistance = (sets) =>
-    sets.reduce((sum, s) => sum + (Number(s.distance) || 0), 0)
+const getTotalDistance = (sets) => sets.reduce((sum, s) => sum + (Number(s.distance) || 0), 0)
 
-// Get total duration from a set of sets
-const getTotalDuration = (sets) =>
-    sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
+const getTotalDuration = (sets) => sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
 
 const getReward = (score) => {
     const clamped = Math.max(0.7, Math.min(score, 1.3))
