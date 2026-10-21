@@ -186,17 +186,6 @@ describe('questControllerV2', () => {
                     }
                 },
                 {
-                    title: 'Squat Strength',
-                    questType: 'strength',
-                    duration: 'daily',
-                    description: 'Improve your squat.',
-                    completion: {
-                        exercise: 'Squat',
-                        weight: 85,
-                        reps: 6
-                    }
-                },
-                {
                     title: 'Bench Press Consistency',
                     questType: 'consistency',
                     duration: 'daily',
@@ -205,6 +194,17 @@ describe('questControllerV2', () => {
                         targetCount: 1,
                         currentCount: 0,
                         filterTag: 'Bench Press'
+                    }
+                },
+                {
+                    title: 'Squat Strength',
+                    questType: 'strength',
+                    duration: 'daily',
+                    description: 'Improve your squat.',
+                    completion: {
+                        exercise: 'Squat',
+                        weight: 85,
+                        reps: 6
                     }
                 }
             ]
@@ -239,6 +239,12 @@ describe('questControllerV2', () => {
             expect(mockCreate).toHaveBeenCalledTimes(1)
 
             expect(Quest.insertMany).toHaveBeenCalledTimes(1)
+            const insertedQuests = Quest.insertMany.mock.calls[0][0]
+            expect(insertedQuests[1].completion).toEqual({
+                targetCount: 1,
+                currentCount: 0,
+                filterTag: 'Bench Press'
+            })
 
             expect(res.status).toHaveBeenCalledWith(200)
 
@@ -326,7 +332,7 @@ describe('questControllerV2', () => {
 
             await expect(
                 generateQuests(req, res)
-            ).rejects.toThrow('Invalid quest completion data')
+            ).rejects.toThrow('Invalid quest response')
 
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })
@@ -365,6 +371,64 @@ describe('questControllerV2', () => {
             await expect(
                 generateQuests(req, res)
             ).rejects.toThrow('AI response has wrong quest count')
+
+            expect(Quest.insertMany).not.toHaveBeenCalled()
+        })
+
+        test('rejects quests that do not match assigned types or completion constraints', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce([])
+
+            mockAIResponse([
+                {
+                    title: 'Bench Press',
+                    questType: 'strength',
+                    duration: 'daily',
+                    description: 'Bench press quest.',
+                    completion: { exercise: 'Bench Press', weight: '65', reps: 8 }
+                },
+                {
+                    title: 'Squat Goal',
+                    questType: 'strength',
+                    duration: 'daily',
+                    description: 'A second strength quest instead of consistency.',
+                    completion: { exercise: 'Squat', weight: 85, reps: 6 }
+                },
+                {
+                    title: 'Squat Strength',
+                    questType: 'strength',
+                    duration: 'daily',
+                    description: 'Improve your squat.',
+                    completion: { exercise: 'Squat', weight: 85, reps: 6 }
+                }
+            ])
+
+            const req = createReq()
+            const res = createRes()
+
+            await expect(generateQuests(req, res))
+                .rejects
+                .toThrow('Invalid quest response')
+
+            expect(Quest.insertMany).not.toHaveBeenCalled()
+        })
+
+        test('rejects malformed JSON from the AI before saving quests', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce([])
+            mockCreate.mockResolvedValue({
+                content: [{ text: 'not valid json' }]
+            })
+
+            await expect(generateQuests(createReq(), createRes()))
+                .rejects
+                .toThrow('AI response was not valid JSON')
 
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })

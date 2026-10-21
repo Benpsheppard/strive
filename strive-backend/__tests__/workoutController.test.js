@@ -339,7 +339,7 @@ describe('workoutController', () => {
                 $max: { lastWorkout: expect.any(Date) }
             })
     
-            expect(updateLeaderboardEntry).toHaveBeenCalledWith(req.user, workout)
+            expect(updateLeaderboardEntry).toHaveBeenCalledWith(req.user.id, workout)
     
             expect(getWorkoutsThisWeek).toHaveBeenCalledWith('123', expect.any(Date))
             expect(checkAndIncreaseStreak).toHaveBeenCalledWith('123', 2)
@@ -619,6 +619,7 @@ describe('workoutController', () => {
             )
         
             expect(workout.deleteOne).toHaveBeenCalled()
+            expect(updateLeaderboardEntry).toHaveBeenCalledWith('123', workout)
         
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith({
