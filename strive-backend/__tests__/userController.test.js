@@ -18,6 +18,7 @@ jest.mock('validator')
 jest.mock('../models/userModel.js')
 jest.mock('../models/workoutModel.js')
 jest.mock('../models/questModel.js')
+jest.mock('../models/leaderboardEntryModel.js')
 
 jest.mock('../utils/formatUser.js')
 
@@ -46,6 +47,7 @@ jest.mock('../utils/momentum.js', () => ({
 const User = require('../models/userModel.js')
 const Workout = require('../models/workoutModel.js')
 const Quest = require('../models/questModel.js')
+const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 
 const formatUser = require('../utils/formatUser.js')
 
@@ -519,6 +521,7 @@ describe('userController', () => {
             User.findById.mockResolvedValue(user)
             Workout.deleteMany.mockResolvedValue({})
             Quest.deleteMany.mockResolvedValue({})
+            LeaderboardEntry.deleteMany.mockResolvedValue({})
 
             await deleteUser(req, res)
 
@@ -527,6 +530,10 @@ describe('userController', () => {
             })
 
             expect(Quest.deleteMany).toHaveBeenCalledWith({
+                user: '123'
+            })
+
+            expect(LeaderboardEntry.deleteMany).toHaveBeenCalledWith({
                 user: '123'
             })
 
@@ -597,25 +604,6 @@ describe('userController', () => {
             })
         })
 
-        test('allows admin to reset another user', async () => {
-            req.params.id = '123'
-            req.user = {
-                id: '456',
-                isAdmin: true
-            }
-
-            const user = { _id: '123' }
-            User.findById.mockResolvedValue(user)
-            resetWorkoutData.mockResolvedValue(user)
-
-            await resetUser(req, res)
-
-            expect(User.findById).toHaveBeenCalledWith('123')
-            expect(resetWorkoutData).toHaveBeenCalledWith(user)
-
-            expect(res.status).toHaveBeenCalledWith(200)
-        })
-
         test('rejects unauthorised reset', async () => {
             req.params.id = '123'
             req.user = {
@@ -627,7 +615,7 @@ describe('userController', () => {
                 .rejects
                 .toThrow('Not authorized to reset this user')
 
-            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.status).toHaveBeenCalledWith(403)
             expect(Workout.deleteMany).not.toHaveBeenCalled()
         })
     })
@@ -943,12 +931,8 @@ describe('userController', () => {
 
             await updateMomentum(req, res)
 
-            expect(updateUserMomentum).toHaveBeenCalledWith(
-                '123',
-                {
-                    momentum: 75
-                }
-            )
+            // Client-supplied body must never be passed through
+            expect(updateUserMomentum).toHaveBeenCalledWith('123', {})
 
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalled()

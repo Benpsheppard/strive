@@ -516,6 +516,45 @@ describe('questControllerV2', () => {
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })
 
+        test('does not hide other Anthropic 400 errors as credit exhaustion', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find.mockResolvedValueOnce([]).mockResolvedValueOnce([])
+
+            const error = new Error('model: not found')
+            error.status = 400
+            error.error = { error: { type: 'invalid_request_error', message: 'model: not found' } }
+            mockCreate.mockRejectedValue(error)
+
+            const res = createRes()
+
+            await expect(generateQuests(createReq({ params: { duration: 'daily' } }), res))
+                .rejects.toThrow('model: not found')
+            expect(res.status).not.toHaveBeenCalledWith(502)
+        })
+
+        test('refuses to generate when unexpired quests already exist for the duration', async () => {
+            User.findById.mockResolvedValue(user)
+            Quest.countDocuments.mockResolvedValue(3)
+
+            const res = createRes()
+
+            await expect(generateQuests(createReq({ params: { duration: 'daily' } }), res))
+                .rejects.toThrow('You already have daily quests')
+            expect(res.status).toHaveBeenCalledWith(409)
+            expect(mockCreate).not.toHaveBeenCalled()
+        })
+
+        test('rejects an invalid duration', async () => {
+            User.findById.mockResolvedValue(user)
+
+            const res = createRes()
+
+            await expect(generateQuests(createReq({ params: { duration: 'yearly' } }), res))
+                .rejects.toThrow('Invalid quest duration: yearly')
+            expect(res.status).toHaveBeenCalledWith(400)
+        })
+
         test('handles Anthropic credit exhaustion', async () => {
             User.findById.mockResolvedValue(user)
 
@@ -530,7 +569,8 @@ describe('questControllerV2', () => {
             error.status = 400
             error.error = {
                 error: {
-                    type: 'invalid_request_error'
+                    type: 'invalid_request_error',
+                    message: 'Your credit balance is too low to access the Anthropic API.'
                 }
             }
 
