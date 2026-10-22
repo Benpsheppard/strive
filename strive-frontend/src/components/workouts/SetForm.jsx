@@ -12,37 +12,12 @@ const SetForm = ({ currentExercise, currentSet, handleSetChange}) => {
                     <input type="number" name="reps" value={currentSet.reps} onChange={handleSetChange} placeholder="Reps *" className={inputClass} min="0" />
                 </div>
             )
-        case 'bodyweight_reps':
-            return (
-                <div className="flex gap-2">
-                    <input type="number" name="reps" value={currentSet.reps} onChange={handleSetChange} placeholder="Reps *" className={inputClass} min="0" />
-                    <input type="number" name="addedWeight" value={currentSet.addedWeight} onChange={handleSetChange} placeholder="Added weight" className={inputClass} min="0" />
-                </div>
-            )
-        case 'assisted_reps':
-            return (
-                <div className="flex gap-2">
-                    <input type="number" name="reps" value={currentSet.reps} onChange={handleSetChange} placeholder="Reps *" className={inputClass} min="0" />
-                    <input type="number" name="assistance" value={currentSet.assistance} onChange={handleSetChange} placeholder="Assistance" className={inputClass} min="0" />
-                </div>
-            )
-        case 'duration':
-            return (
-                <input type="number" name="duration" value={currentSet.duration} onChange={handleSetChange} placeholder="Duration (secs) *" className={inputClass} min="0" />
-            )
-        case 'distance_duration':
-            return (
-                <div className="flex gap-2">
-                    <input type="number" name="distance" value={currentSet.distance} onChange={handleSetChange} placeholder="Distance *" className={inputClass} min="0" />
-                    <input type="number" name="duration" value={currentSet.duration} onChange={handleSetChange} placeholder="Duration (mins) *" className={inputClass} min="0" />
-                </div>
-            )
-        case 'reps':
-            return (
-                <input type="number" name="reps" value={currentSet.reps} onChange={handleSetChange} placeholder="Reps *" className={inputClass} min="0" />
-            )
         default:
-            return null
+            return (
+                <p role="alert" className="text-sm text-[#EF233C]">
+                    trackingMode no longer supported
+                </p>
+            )
     }
 }
 

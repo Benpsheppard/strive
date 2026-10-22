@@ -16,57 +16,26 @@ import SetList from './SetList.jsx'
 import { EMPTY_EXERCISE, EMPTY_SET } from '../../utils/constants.js'
 
 const validateSet = (trackingMode, currentSet) => {
-    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-    switch (trackingMode) {
-        case 'weight_reps':
-            if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'bodyweight_reps':
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'assisted_reps':
-            if (!assistance || assistance <= 0) { toast.error('Please enter assistance weight.'); return false }
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        case 'duration':
-            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-            return true
-        case 'distance_duration':
-            if (!distance || distance <= 0) { toast.error('Please enter distance.'); return false }
-            if (!duration || duration <= 0) { toast.error('Please enter duration.'); return false }
-            return true
-        case 'reps':
-            if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-            return true
-        default:
-            return true
+    if (trackingMode !== 'weight_reps') {
+        return false
     }
+
+    const { weight, reps } = currentSet
+    if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
+    if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
+    return true
 }
 
 const buildSet = (trackingMode, currentSet) => {
-    const { weight, reps, duration, distance, addedWeight, assistance } = currentSet
-
-    switch (trackingMode) {
-        case 'weight_reps':
-            return { weight: Number(weight), reps: Number(reps) }
-        case 'bodyweight_reps':
-            return { reps: Number(reps), addedWeight: addedWeight ? Number(addedWeight) : undefined }
-        case 'assisted_reps':
-            return { reps: Number(reps), assistance: Number(assistance) }
-        case 'duration':
-            return { duration: Number(duration) }
-        case 'distance_duration':
-            return { distance: Number(distance), duration: Number(duration) }
-        case 'reps':
-            return { reps: Number(reps) }
-        default:
-            return {}
+    if (trackingMode !== 'weight_reps') {
+        return null
     }
+
+    const { weight, reps } = currentSet
+    return { weight: Number(weight), reps: Number(reps) }
 }
 
-const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, exercises, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
+const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
     const [searchResults, setSearchResults] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
@@ -126,6 +95,10 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
             toast.error('Please select an exercise first.')
             return
         }
+        if (currentExercise.trackingMode !== 'weight_reps') {
+            toast.error('Tracking mode no longer supported.')
+            return
+        }
         if (!validateSet(currentExercise.trackingMode, currentSet)) {
             return
         }
@@ -145,6 +118,10 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
     const addExercise = () => {
         if (!currentExercise.exerciseId) {
             toast.error('Please select an exercise from the list.')
+            return
+        }
+        if (currentExercise.trackingMode !== 'weight_reps') {
+            toast.error('Tracking mode no longer supported.')
             return
         }
         if (!currentExercise.selectedEquipment || currentExercise.selectedEquipment === 'not-selected') {
@@ -222,76 +199,84 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
 
             {currentExercise.exerciseId && (
                 <>
-                    {/* Select Equipment Used */}
-                    <select value={currentExercise.selectedEquipment} onChange={(e) => setCurrentExercise((prev) => ({ ...prev, selectedEquipment: e.target.value }))} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" >
-                        <option value={'not-selected'}>Not Selected</option>
-                        {currentExercise.equipment.map((eq) => (
-                            <option key={eq} value={eq}>{eq}</option>
-                        ))}
-                    </select>
+                    {currentExercise.trackingMode !== 'weight_reps' ? (
+                        <p role="alert" className="text-sm text-[#EF233C]">
+                            Tracking mode no longer supported
+                        </p>
+                    ) : (
+                        <>
+                            {/* Select Equipment Used */}
+                            <select value={currentExercise.selectedEquipment} onChange={(e) => setCurrentExercise((prev) => ({ ...prev, selectedEquipment: e.target.value }))} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" >
+                                <option value={'not-selected'}>Not Selected</option>
+                                {currentExercise.equipment.map((eq) => (
+                                    <option key={eq} value={eq}>{eq}</option>
+                                ))}
+                            </select>
 
-                    {/* Selected Exercise PB */}
-                    {currentPB && (
-                        <div className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4]">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm">
-                                    Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight)}</span>
-                                </span>
-                                <span className="text-xs text-[#EDF2F4]/60">
-                                    {new Date(currentPB.date).toLocaleDateString()}
-                                </span>
+                            {/* Selected Exercise PB */}
+                            {currentPB && (
+                                <div className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4]">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm">
+                                            Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight)}</span>
+                                        </span>
+                                        <span className="text-xs text-[#EDF2F4]/60">
+                                            {new Date(currentPB.date).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs mt-1 text-[#EF233C]">
+                                        {(() => {
+                                            const currentMax = currentExercise.sets.length > 0
+                                                ? Math.max(...currentExercise.sets.map(s => s.weight || 0))
+                                                : null
+
+                                            if (currentMax === null) {
+                                                return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? 5 : 2.5))}!`
+                                            } else if (currentMax > currentPB.weight) {
+                                                return `New PB incoming! You're already lifting heavier than your best!`
+                                            } else if (currentMax === currentPB.weight) {
+                                                return `Matching your PB! Try one more rep or add ${useImperial ? '5 lbs' : '2.5 kg'} next set.`
+                                            } else {
+                                                return `${formatWeight(currentPB.weight - currentMax)} off your PB — push for it!`
+                                            }
+                                        })()}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Set Input */}
+                            <div className="space-y-2">
+                                <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} />
+                                <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+                                    Add Set to Exercise
+                                </button>
                             </div>
-                            <p className="text-xs mt-1 text-[#EF233C]">
-                                {(() => {
-                                    const currentMax = currentExercise.sets.length > 0
-                                        ? Math.max(...currentExercise.sets.map(s => s.weight || 0))
-                                        : null
 
-                                    if (currentMax === null) {
-                                        return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? 5 : 2.5))}!`
-                                    } else if (currentMax > currentPB.weight) {
-                                        return `New PB incoming! You're already lifting heavier than your best!`
-                                    } else if (currentMax === currentPB.weight) {
-                                        return `Matching your PB! Try one more rep or add ${useImperial ? '5 lbs' : '2.5 kg'} next set.`
-                                    } else {
-                                        return `${formatWeight(currentPB.weight - currentMax)} off your PB — push for it!`
-                                    }
-                                })()}
-                            </p>
-                        </div>
-                    )}
+                            {/* Undo + Set List */}
+                            <div className="flex flex-col items-center">
+                                {setHistory.length > 0 && (
+                                    <button type="button" onClick={undoLastSet} className="flex flex-row items-center gap-2 text-[#EDF2F4]/40 hover:text-[#EF233C] text-sm transition mb-2">
+                                        <FaUndoAlt /> Undo last set
+                                    </button>
+                                )}
+                                <SetList
+                                    sets={currentExercise.sets}
+                                    trackingMode={currentExercise.trackingMode}
+                                    useImperial={useImperial}
+                                    onSetsUpdate={() => {
+                                        const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
+                                        setCurrentExercise(updatedExercise)
+                                    }}
+                                />
+                            </div>
 
-                    {/* Set Input */}
-                    <div className="space-y-2">
-                        <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} />
-                        <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                            Add Set to Exercise
-                        </button>
-                    </div>
-
-                    {/* Undo + Set List */}
-                    <div className="flex flex-col items-center">
-                        {setHistory.length > 0 && (
-                            <button type="button" onClick={undoLastSet} className="flex flex-row items-center gap-2 text-[#EDF2F4]/40 hover:text-[#EF233C] text-sm transition mb-2">
-                                <FaUndoAlt /> Undo last set
-                            </button>
-                        )}
-                        <SetList
-                            sets={currentExercise.sets}
-                            trackingMode={currentExercise.trackingMode}
-                            useImperial={useImperial}
-                            onSetsUpdate={() => {
-                                const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-                                setCurrentExercise(updatedExercise)
-                            }}
-                        />
-                    </div>
-
-                    {/* Add Exercise Button */}
-                    {currentExercise.sets.length > 0 && (
-                        <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                            Finish Exercise
-                        </button>
+                            {/* Add Exercise Button */}
+                            {currentExercise.sets.length > 0 && (
+                                <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
+                                    Finish Exercise
+                                </button>
+                            )}
+                        </>
                     )}
                 </>
             )}

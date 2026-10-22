@@ -22,36 +22,11 @@ const ExerciseList = ({ exercises, useImperial }) => {
         } 
     }
 
-    const renderSet = (set, idx, trackingMode) => {
-        let summary = ''
-
-        switch (trackingMode) {
-            case 'weight_reps':
-                summary = `${formatWeight(set.weight, useImperial)} × ${set.reps} reps`
-                break
-            case 'bodyweight_reps':
-                summary = `${set.reps} reps${set.addedWeight ? ` + ${formatWeight(set.addedWeight, useImperial)}` : ''}`
-                break
-            case 'assisted_reps':
-                summary = `${set.reps} reps (${formatWeight(set.assistance, useImperial)} assistance)`
-                break
-            case 'duration':
-                summary = `${set.duration}s`
-                break
-            case 'distance_duration':
-                summary = `${set.distance}km in ${set.duration} mins`
-                break
-            case 'reps':
-                summary = `${set.reps} reps`
-                break
-            default:
-                summary = JSON.stringify(set)
-        }
-
+    const renderSet = (set, idx) => {
         return (
             <li key={idx} className="text-[#2B2D42] bg-[#EDF2F4]/30 rounded-xl flex justify-between p-2">
                 <span>Set {idx + 1}</span>
-                <span>{summary}</span>
+                <span>{formatWeight(set.weight, useImperial)} × {set.reps} reps</span>
             </li>
         )
     }
@@ -70,38 +45,36 @@ const ExerciseList = ({ exercises, useImperial }) => {
                             {ex.muscleGroup} {ex.selectedEquipment && `— ${ex.selectedEquipment}`}
                         </p>
 
-                        {ex.sets && ex.sets.length > 0 && (
-                            <div className="space-y-2">
-                                {ex.sets.map((s, idx) => renderSet(s, idx, ex.trackingMode))}
-                            </div>
-                        )}
+                        {ex.trackingMode === 'weight_reps' ? (
+                            <>
+                                {ex.sets && ex.sets.length > 0 && (
+                                    <div className="space-y-2">
+                                        {ex.sets.map((set, idx) => renderSet(set, idx))}
+                                    </div>
+                                )}
 
-                        <div className="grid grid-cols-3 gap-2 mt-2 text-center"> 
-                            <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="font-bold text-[#EF233C]">
-                                    {totalSets}
-                                </p>
-                                <p className="text-xs text-[#EDF2F4]/70">
-                                    Sets 
-                                </p>
-                            </div>
-                            <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="font-bold text-[#EF233C]">
-                                    {totalReps}
-                                </p>
-                                <p className="text-xs text-[#EDF2F4]/70">
-                                    Reps
-                                </p>
-                            </div> 
-                            <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                <p className="font-bold text-[#EF233C]">
-                                    {formatWeight(totalWeight, useImperial)} 
-                                </p> 
-                                <p className="text-xs text-[#EDF2F4]/70">
-                                    Volume
-                                </p>
-                            </div> 
-                        </div>
+                                <div className="grid grid-cols-3 gap-2 mt-2 text-center">
+                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
+                                        <p className="font-bold text-[#EF233C]">{totalSets}</p>
+                                        <p className="text-xs text-[#EDF2F4]/70">Sets</p>
+                                    </div>
+                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
+                                        <p className="font-bold text-[#EF233C]">{totalReps}</p>
+                                        <p className="text-xs text-[#EDF2F4]/70">Reps</p>
+                                    </div>
+                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
+                                        <p className="font-bold text-[#EF233C]">
+                                            {formatWeight(totalWeight, useImperial)}
+                                        </p>
+                                        <p className="text-xs text-[#EDF2F4]/70">Volume</p>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <p role="alert" className="text-sm text-[#EF233C]">
+                                Tracking mode is not supported
+                            </p>
+                        )}
                     </div>
                 )})}
         </div>
