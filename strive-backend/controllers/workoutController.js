@@ -6,6 +6,7 @@ const asyncHandler = require('express-async-handler')
 const formatUser = require('../utils/formatUser.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
+const { validateWorkoutInput, sanitiseSets } = require('../utils/validateWorkoutInput.js')
 const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')
 
 // Model Imports
@@ -35,10 +36,11 @@ const setWorkout = asyncHandler(async (req, res) => {
     console.log("===== NEW WORKOUT =====")
     console.time("Total Workout Submission")
 
-    // Check if workout includes a title
-    if(!req.body.title){
+    // Validate and sanitise client input (only known fields are kept)
+    const { error, value: input } = validateWorkoutInput(req.body)
+    if (error) {
         res.status(400)
-        throw new Error('Please add a title field')
+        throw new Error(error)
     }
 
     // Check if user is guest account
@@ -52,9 +54,9 @@ const setWorkout = asyncHandler(async (req, res) => {
     console.time("Create Workout")
     const workout = new Workout({
         user: req.user.id,
-        title: req.body.title,
-        duration: req.body.duration,
-        exercises: req.body.exercises,
+        title: input.title,
+        duration: input.duration,
+        exercises: input.exercises,
         createdAt: new Date(),
         updatedAt: new Date()
     })
@@ -63,6 +65,18 @@ const setWorkout = asyncHandler(async (req, res) => {
     // Populate variables for calculations
     console.time("Populate Exercises from Workout")
     const populatedWorkout = await workout.populate('exercises.exercise')
+
+    // Every exercise must exist and the chosen equipment must be valid for it
+    for (const ex of populatedWorkout.exercises) {
+        if (!ex.exercise) {
+            res.status(400)
+            throw new Error('Exercise not found')
+        }
+        if (!ex.exercise.equipment?.includes(ex.selectedEquipment)) {
+            res.status(400)
+            throw new Error(`Invalid equipment for ${ex.exercise.name}`)
+        }
+    }
     const populatedExercises = populatedWorkout.exercises.map(ex => ({
         exerciseId: ex.exercise._id,
         name: ex.exercise.name,
@@ -144,40 +158,6 @@ const setWorkout = asyncHandler(async (req, res) => {
             momentumGained: updatedUser.momentum.current - oldMomentum,
         }
     })
-})
-
-/**
- *  @desc   Update a workout with id
- *  @route  PUT /api/workouts/:id
- *  @access Private
- */
-const updateWorkout = asyncHandler(async (req, res) => {
-    // Find workout with given id
-    const workout = await Workout.findById(req.params.id)
-
-    // Check if workout with given id exists
-    if (!workout){
-        res.status(404)
-        throw new Error(`Workout with the id: ${req.params.id} was not found`)
-    }
-
-    // Check user exists
-    if (!req.user) {
-        res.status(404)
-        throw new Error('User not found')
-    }
-
-    // Check that logged in user matches workout user/owner 
-    if (workout.user.toString() !== req.user.id){
-        res.status(401)
-        throw new Error('User not authorised')
-    }
-    
-    // Update workout with given id with new data
-    const updatedWorkout = await Workout.findByIdAndUpdate(req.params.id, req.body, {returnDocument: 'after'})
-
-    // Output updated workout
-    res.status(200).json(updatedWorkout)
 })
 
 /**
@@ -329,11 +309,17 @@ const addExercise = asyncHandler(async (req, res) => {
         throw new Error('Invalid equipment for this exercise')
     }
 
-    // Build new exercise
+    // Build new exercise (sets are sanitised to known, bounded numeric fields)
+    const sets = sanitiseSets(req.body.sets || [])
+    if (!sets) {
+        res.status(400)
+        throw new Error('Sets contain invalid values')
+    }
+
     const newExercise = {
         exercise: exercise._id,
         selectedEquipment: req.body.selectedEquipment,
-        sets: req.body.sets || []
+        sets
     }
 
     workout.exercises.push(newExercise)
@@ -375,9 +361,14 @@ const updateExercise = asyncHandler(async (req, res) => {
     exercise.musclegroup = req.body.musclegroup || exercise.musclegroup
     exercise.description = req.body.description || exercise.description
 
-    // Update sets
+    // Update sets (sanitised to known, bounded numeric fields)
     if (req.body.sets) {
-        exercise.sets = req.body.sets 
+        const sets = sanitiseSets(req.body.sets)
+        if (!sets) {
+            res.status(400)
+            throw new Error('Sets contain invalid values')
+        }
+        exercise.sets = sets
     }
 
     const updatedWorkout = await workout.save()
@@ -417,7 +408,6 @@ const deleteExercise = asyncHandler(async (req, res) => {
 module.exports = { 
     getWorkouts, 
     setWorkout, 
-    updateWorkout, 
     deleteWorkout,
     deleteAllWorkouts, 
     addExercise, 
