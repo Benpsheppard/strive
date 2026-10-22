@@ -323,7 +323,9 @@ const genQuests = async (user, duration) => {
             messages: [{ role: 'user', content: prompt }]
         })
     } catch (error) {
-        if (error.status === 400 && error.error?.error?.type === 'invalid_request_error') {
+        // Only treat billing problems as "credits exhausted"; other 400s are real bugs and must surface
+        const apiMessage = String(error.error?.error?.message || error.message || '')
+        if (error.status === 400 && error.error?.error?.type === 'invalid_request_error' && /credit balance/i.test(apiMessage)) {
             throw new Error('ANTHROPIC_CREDIT_EXHAUSTED')
         }
 
@@ -425,17 +427,7 @@ const normalizeQuestCompletion = (questType, completion, exerciseEquipmentPairs)
     }
 }
 
-const validateQuestCompletion = (
-    quest,
-    assignedType,
-    duration,
-    validExerciseNames,
-    validMuscleGroups,
-    exerciseTrackingModes,
-    validVolumeExerciseNames,
-    validVolumeMuscleGroups,
-    exerciseEquipmentPairs
-) => {
+const validateQuestCompletion = (quest, assignedType, duration, validExerciseNames, validMuscleGroups, exerciseTrackingModes, validVolumeExerciseNames, validVolumeMuscleGroups, exerciseEquipmentPairs) => {
     if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return false
 
     const { title, description, questType, completion } = quest
@@ -522,6 +514,24 @@ const generateQuests = asyncHandler(async (req, res) => {
     if (!user) {
         res.status(404)
         throw new Error('User not found')
+    }
+
+    if (!QUEST_CONFIG[duration]) {
+        res.status(400)
+        throw new Error(`Invalid quest duration: ${duration}`)
+    }
+
+    // Quests are rewarded with SP and cost an AI call each, so only allow a new
+    // set once the current one for this duration has expired
+    const existing = await Quest.countDocuments({
+        user: user._id,
+        duration,
+        status: { $in: ['active', 'completed'] },
+        expiry: { $gte: new Date() }
+    })
+    if (existing > 0) {
+        res.status(409)
+        throw new Error(`You already have ${duration} quests`)
     }
 
     try {
