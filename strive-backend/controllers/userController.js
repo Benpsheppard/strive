@@ -7,11 +7,6 @@ const bcrypt = require('bcryptjs')
 const validator = require('validator')    
 
 // Function Imports
-const { 
-    getStartOfWeek, getEndOfWeek, getPreviousWeekRange, 
-    getISOWeekString, getPreviousISOWeekString, 
-    getWeeksBetween, isoWeekToDate 
-} = require('../utils/dateFormat.js')
 const formatUser = require('../utils/formatUser.js')
 const { updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak, getWorkoutsThisWeek, resetWorkoutData } = require('../utils/workoutServices.js')
 
@@ -19,7 +14,14 @@ const { updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak, getWork
 const User = require('../models/userModel.js')    
 const Workout = require('../models/workoutModel.js') 
 const Quest = require('../models/questModel.js')
-const { calculateMomentum } = require('../utils/momentum.js')
+const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
+
+const USERNAME_REGEX = /^[A-Za-z0-9_.-]{3,30}$/
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+// Case-insensitive exact match so 'Ben' and 'ben' can't both be registered
+const usernameQuery = (username) => ({ username: new RegExp(`^${escapeRegex(username)}$`, 'i') })
 
 /**
  *   @desc    Register user
@@ -34,6 +36,20 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!username || !email || !password) {
         res.status(400)
         throw new Error('Please add all fields')
+    }
+
+    // Only plain strings are accepted (blocks NoSQL operator objects like { $ne: null })
+    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+        res.status(400)
+        throw new Error('Invalid input')
+    }
+
+    username = username.trim()
+
+    // Check username format
+    if (!USERNAME_REGEX.test(username)) {
+        res.status(400)
+        throw new Error('Username must be 3-30 characters and only contain letters, numbers, ., _ or -')
     }
 
     // Check email is in email format
@@ -53,7 +69,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Look if email and username exists already
     const emailExists = await User.findOne({ email })
-    const usernameExists = await User.findOne({ username })
+    const usernameExists = await User.findOne(usernameQuery(username))
 
     // Check if email already exists
     if (emailExists){
@@ -77,7 +93,7 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         password: hashPassword,
         useImperial: false,
-        isGuest: req.body.isGuest || false
+        isGuest: req.body.isGuest === true
     })
     
     // Verify user creation
@@ -102,6 +118,12 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!identifier || !password) {
         res.status(400)
         throw new Error('Please provide username/email and password')
+    }
+
+    // Only plain strings are accepted (blocks NoSQL operator objects like { $ne: null })
+    if (typeof identifier !== 'string' || typeof password !== 'string') {
+        res.status(400)
+        throw new Error('Invalid input')
     }
 
     // Determine if identifier is email
@@ -150,6 +172,20 @@ const migrateUser = asyncHandler(async (req, res) => {
         throw new Error('Please add all fields')
     }
 
+    // Only plain strings are accepted (blocks NoSQL operator objects like { $ne: null })
+    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+        res.status(400)
+        throw new Error('Invalid input')
+    }
+
+    username = username.trim()
+
+    // Check username format
+    if (!USERNAME_REGEX.test(username)) {
+        res.status(400)
+        throw new Error('Username must be 3-30 characters and only contain letters, numbers, ., _ or -')
+    }
+
     // Check email is in email format
     if (!validator.isEmail(email)) {
         res.status(400)
@@ -167,7 +203,7 @@ const migrateUser = asyncHandler(async (req, res) => {
 
     // Look if email and username exists already
     const emailExists = await User.findOne({ email })
-    const usernameExists = await User.findOne({ username })
+    const usernameExists = await User.findOne(usernameQuery(username))
 
     // Check if email already exists
     if (emailExists && emailExists._id.toString() !== user._id.toString()){
@@ -233,6 +269,9 @@ const deleteUser = asyncHandler(async (req, res) => {
     // Delete all quests associated with the user
     await Quest.deleteMany({ user: req.params.id })
 
+    // Delete all leaderboard entries associated with the user
+    await LeaderboardEntry.deleteMany({ user: req.params.id })
+
     // Delete user
     await user.deleteOne()
 
@@ -251,8 +290,8 @@ const resetUser = asyncHandler(async (req, res) => {
     const userId = req.params.id
 
     // Make sure user is authorized
-    if (req.user.id !== userId && !req.user.isAdmin) {
-        res.status(401)
+    if (req.user.id !== userId) {
+        res.status(403)
         throw new Error('Not authorized to reset this user')
     }
 
@@ -373,12 +412,14 @@ const getAuthenticatedUserId = (req, res) => {
 }
 
 /**
- * @desc    Update user's momentum value
+ * @desc    Recalculate user's momentum decay (gains are only awarded server-side)
  * @route   PUT /api/users/momentum
  * @access  Private
  */
 const updateMomentum = asyncHandler(async (req, res) => {
-    const user = await updateUserMomentum(req.user.id, req.body)
+    // The client may only trigger decay recalculation. Momentum gains are awarded
+    // server-side when a workout is submitted, so request data is never trusted here.
+    const user = await updateUserMomentum(req.user.id, {})
     res.status(200).json(formatUser(user))
 })
 
