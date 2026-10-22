@@ -1,5 +1,6 @@
 # Tests
 name: Tests
+run-name: Tests (${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at }})
 
 on:
   push:
