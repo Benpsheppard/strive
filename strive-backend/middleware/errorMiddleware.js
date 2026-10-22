@@ -9,8 +9,13 @@ const errorHandler = (err, req, res, next) => {
 
     res.status(statusCode)
 
+    // Don't leak internal error details for server errors outside development
+    const message = statusCode >= 500 && !isDevelopment
+        ? 'Internal server error'
+        : err.message
+
     res.json({
-        message: err.message,
+        message,
         stack: isDevelopment ? err.stack : null
     })
 }
