@@ -11,7 +11,7 @@ const protect = asyncHandler(async (req, res, next) => {
     let token
 
     // Check if route has auth and that auth is bearer token
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
         // Get token from header
         token = req.headers.authorization.split(" ")[1]
     }
@@ -26,12 +26,18 @@ const protect = asyncHandler(async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         req.user = await User.findById(decoded.id).select('-password')
-        next()
     } catch (error) {
-        console.log(error)
         res.status(401)
         throw new Error('Not Authorised')
     }
+
+    // Token is valid but the account no longer exists (e.g. deleted)
+    if (!req.user) {
+        res.status(401)
+        throw new Error('Not Authorised - User no longer exists')
+    }
+
+    next()
 })
 
 // Export protect function
