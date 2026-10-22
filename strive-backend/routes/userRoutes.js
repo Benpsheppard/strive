@@ -16,14 +16,25 @@ const { validateObjectId } = require('../middleware/validateObjectId.js')
 // Initialise router
 const userRouter = express.Router()
 
+// Limits are per client IP (the server trusts the first proxy hop, see server.js)
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 3,
-    message: 'Too many login attempts, please try again later'
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many login attempts, please try again later' }
+})
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many accounts created, please try again later' }
 })
 
 // User routes
-userRouter.post('/', rateLimit({ max: 3 }), registerUser)
+userRouter.post('/', registerLimiter, registerUser)
 userRouter.post('/login', loginLimiter, loginUser)
 userRouter.put('/migrate', protect, migrateUser)
 userRouter.get('/me', protect, getMe)
