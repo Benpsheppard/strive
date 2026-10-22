@@ -4,7 +4,7 @@
 // Imports
 const express = require('express')
 const { 
-    getWorkouts, setWorkout, updateWorkout, deleteWorkout,
+    getWorkouts, setWorkout, deleteWorkout,
     addExercise, updateExercise, deleteExercise,
     deleteAllWorkouts
  } = require('../controllers/workoutController.js')    
@@ -23,7 +23,6 @@ workoutRouter.route('/')
     .post(setWorkout)
     .delete(deleteAllWorkouts)
 workoutRouter.route('/:id')
-    .put(validateObjectId('id'), updateWorkout)
     .delete(validateObjectId('id'), deleteWorkout)
 
 // Workout-Exercise routes
