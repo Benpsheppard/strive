@@ -3,7 +3,7 @@
 // Imports
 require('dotenv').config()
 const express = require('express')                                                       
-const colors = require('colors')                                   
+const rateLimit = require('express-rate-limit')
 const path = require('path')                                          
 const helmet = require('helmet')  
 const cors = require('cors')
@@ -44,6 +44,15 @@ if (process.env.NODE_ENV === 'production' && !/^https?:\/\/.+/.test(process.env.
 	process.exit(1)
 }
 
+if (process.env.JWT_SECRET.length < 32) {
+	const message = 'JWT_SECRET should be at least 32 characters long'
+	if (process.env.NODE_ENV === 'production') {
+		console.error(message)
+		process.exit(1)
+	}
+	console.warn(`Warning: ${message}`)
+}
+
 // Variables
 const port = process.env.PORT || 5050
 
@@ -52,6 +61,10 @@ connectDB()
 
 // Initialise app
 const app = express()
+
+// Trust the first proxy hop (Render) so rate limiting sees the real client IP
+// and not the proxy's address, which would make every user share one limit
+app.set('trust proxy', 1)
 
 // Middleware
 app.use(express.json()) 
@@ -100,6 +113,15 @@ if (process.env.NODE_ENV === 'production') {
 		optionsSuccessStatus: 200
     }))
 }
+
+// General rate limit for all API routes
+app.use('/api', rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 500,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: { message: 'Too many requests, please try again later' }
+}))
 
 // Routes
 app.use('/api/workouts', workoutRouter)
