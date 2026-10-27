@@ -33,9 +33,6 @@ const getWorkouts = asyncHandler(async (req, res) => {
  *  @access Private
  */
 const setWorkout = asyncHandler(async (req, res) => {
-    console.log("===== NEW WORKOUT =====")
-    console.time("Total Workout Submission")
-
     // Validate and sanitise client input (only known fields are kept)
     const { error, value: input } = validateWorkoutInput(req.body)
     if (error) {
@@ -51,7 +48,6 @@ const setWorkout = asyncHandler(async (req, res) => {
     }
 
     // Create new workout
-    console.time("Create Workout")
     const workout = new Workout({
         user: req.user.id,
         title: input.title,
@@ -60,10 +56,8 @@ const setWorkout = asyncHandler(async (req, res) => {
         createdAt: new Date(),
         updatedAt: new Date()
     })
-    console.timeEnd("Create Workout")
 
     // Populate variables for calculations
-    console.time("Populate Exercises from Workout")
     const populatedWorkout = await workout.populate('exercises.exercise')
 
     // Every exercise must exist and the chosen equipment must be valid for it
@@ -86,34 +80,23 @@ const setWorkout = asyncHandler(async (req, res) => {
         selectedEquipment: ex.selectedEquipment,
         sets: ex.sets
     }))
-    console.timeEnd("Populate Exercises from Workout")
 
     // Calculate workout summary
-    console.time("Calculate Workout Summary")
     const summary = await calculateWorkoutSummary(req.user, populatedExercises, workout)
-    console.timeEnd("Calculate Workout Summary")
-
     workout.summary = summary
-    console.time("Save Workout")
     await workout.save()
-    console.timeEnd("Save Workout")
 
     // Update user object with new workout
     const workoutDate = new Date() 
-
-    console.time("Find User and Update")
     await User.findByIdAndUpdate(req.user.id,
         { 
             $push: { workouts: workout._id },
             $max: { lastWorkout: workoutDate }
         }
     )
-    console.timeEnd("Find User and Update")
 
     // Update leaderboards
-    console.time("Update Leaderboard Entry")
     await updateLeaderboardEntry(req.user.id, workout)
-    console.timeEnd("Update Leaderboard Entry")
 
     // Store old values for gamification
     const oldStreak = req.user.streak.current
@@ -122,16 +105,10 @@ const setWorkout = asyncHandler(async (req, res) => {
     const oldLevel = req.user.level
 
     // Check if user's streak has increased
-    console.time("Get Workouts from This Week")
     const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
-    console.timeEnd("Get Workouts from This Week")
-
-    console.time("Check and Increase Streak")
     await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
-    console.timeEnd("Check and Increase Streak")
 
     // Update user's points and momentum
-    console.time("Update user points and momentum")
     const points = summary.totalStrivePoints?.total > 0
             ? summary.totalStrivePoints.total
             : 0
@@ -141,9 +118,6 @@ const setWorkout = asyncHandler(async (req, res) => {
         personalBests: summary.personalBests?.length || 0,
         quests: summary.questsCompleted
     })
-    console.timeEnd("Update user points and momentum")
-
-    console.timeEnd("Total Workout Submission")
 
     // Output created workout + user + gamification flags
     res.status(201).json({
