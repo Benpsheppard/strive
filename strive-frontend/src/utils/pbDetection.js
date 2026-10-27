@@ -1,6 +1,6 @@
 // pbDetection.js
 
-const buildPBKey = (name, equipment) =>
+export const buildPBKey =(name, equipment) =>
     `${name.trim().toLowerCase()}||${(equipment || 'Unspecified').trim().toLowerCase()}`
 
 export const calculatePersonalBests = (workouts) => {

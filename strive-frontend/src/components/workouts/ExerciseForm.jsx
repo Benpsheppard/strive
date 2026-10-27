@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { FaUndoAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { showChangeExerciseAlert } from '../../alerts/workout.js'
-import { calculatePersonalBests } from '../../utils/pbDetection.js'
+import { calculatePersonalBests, buildPBKey } from '../../utils/pbDetection.js'
 import { formatWeight } from '../../utils/formatValues.js'
 
 // Component Imports
@@ -46,7 +46,7 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
         currentExercise.exerciseName &&
         currentExercise.selectedEquipment &&
         currentExercise.selectedEquipment !== 'not-selected'
-            ? personalBests[`${currentExercise.exerciseName}||${currentExercise.selectedEquipment}`]
+            ? personalBests[buildPBKey(currentExercise.exerciseName, currentExercise.selectedEquipment)]
             : null
     
     const handleSearchChange = (e) => {

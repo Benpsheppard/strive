@@ -1,7 +1,7 @@
 // RollingStats.jsx
 
 // Imports
-import { calculatePersonalBests } from '../../utils/pbDetection.js'
+import { calculatePersonalBests, buildPBKey } from '../../utils/pbDetection.js'
 
 const RollingStats = ({ workouts, exercises }) => {
     const personalBests = calculatePersonalBests(workouts)
@@ -11,7 +11,7 @@ const RollingStats = ({ workouts, exercises }) => {
     const workoutStats = exercises.reduce((stats, exercise) => {
         const muscleGroup = exercise.muscleGroup || 'Other'
 
-        const key = `${exercise.exerciseName}||${exercise.selectedEquipment}`
+        const key = buildPBKey(exercise.exerciseName || '', exercise.selectedEquipment)
         const currentPB = personalBests[key]
 
         const hasNewPB = exercise.sets?.some((set) => {
