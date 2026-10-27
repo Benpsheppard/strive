@@ -1,7 +1,7 @@
 // useWorkoutSubmit.js
 
 // Imports
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
@@ -27,7 +27,7 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
         const workoutData = { title, exercises, duration: durationMinutes }
 
         try {
-            const { workout, user, gamification } = await dispatch(createWorkout(workoutData)).unwrap()
+            const { workout, gamification } = await dispatch(createWorkout(workoutData)).unwrap()
 
             dispatch(setLastWorkoutStats({
                 workout,
