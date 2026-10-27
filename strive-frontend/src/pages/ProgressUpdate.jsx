@@ -20,7 +20,6 @@ const ProgressUpdate = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const workout = lastWorkoutStats?.workout
     const levelUp = lastWorkoutStats?.levelUp
     const momentumGained = lastWorkoutStats?.momentumGained 
 
