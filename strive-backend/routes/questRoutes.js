@@ -2,7 +2,7 @@
 
 // Imports
 const express = require('express')
-const { getQuests, generateQuests, checkQuestCompletion } = require('../controllers/questControllerV2.js')
+const { getQuests, generateQuests } = require('../controllers/questController.js')
 const rateLimit = require('express-rate-limit')
 const { protect } = require('../middleware/authMiddleware.js')
 

@@ -2,6 +2,7 @@
 
 // Imports
 const mongoose = require('mongoose')
+const { QUEST_CONFIG } = require('../utils/quests/config')
 
 const questCompletionSchema = new mongoose.Schema({
     selectedEquipment: {
@@ -34,8 +35,7 @@ const questSchema = mongoose.Schema({
     reward: {
         type: Number,
         default: function() {
-            const scale = { daily: 100, weekly: 500, monthly: 1000 }
-            return scale[this.duration] || 10
+            return QUEST_CONFIG[this.duration]?.reward || 10
         },
     },
     // Description
@@ -90,9 +90,9 @@ const questSchema = mongoose.Schema({
     timestamps: true
 })
 
+// Looked up on every workout (active quests) and every quest fetch (non-expired quests)
+questSchema.index({ user: 1, status: 1, expiry: 1 })
+
 module.exports = mongoose.model('Quest', questSchema)
 
-// Strength - exercise, selectedEquipment, weight, reps
-// Consistency - targetCount, currentCount, filterTag
-// Volume - targetVolume, currentVolume, filterTag
-// Progressive - exercise, selectedEquipment, metric, baseline
+// Type-specific completion fields are documented in utils/quests/types/

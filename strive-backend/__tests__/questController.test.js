@@ -1,4 +1,4 @@
-// questControllerV2.test.js
+// questController.test.js
 
 // --------------------------------------------------
 // Mock Anthropic
@@ -29,7 +29,7 @@ const Workout = require('../models/workoutModel')
 const {
     getQuests,
     generateQuests
-} = require('../controllers/questControllerV2')
+} = require('../controllers/questController')
 
 // --------------------------------------------------
 // Helpers
@@ -60,14 +60,18 @@ const mockWorkoutQuery = (workouts = []) => {
     })
 }
 
+const toolResponse = (quests) => ({
+    content: [
+        {
+            type: 'tool_use',
+            name: 'submit_quests',
+            input: { quests }
+        }
+    ]
+})
+
 const mockAIResponse = (quests) => {
-    mockCreate.mockResolvedValue({
-        content: [
-            {
-                text: JSON.stringify({ quests })
-            }
-        ]
-    })
+    mockCreate.mockResolvedValue(toolResponse(quests))
 }
 
 // --------------------------------------------------
@@ -136,7 +140,7 @@ const workouts = [
 // Tests
 // --------------------------------------------------
 
-describe('questControllerV2', () => {
+describe('questController', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
@@ -499,20 +503,75 @@ describe('questControllerV2', () => {
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })
 
-        test('rejects malformed JSON from the AI before saving quests', async () => {
+        test('rejects a response with no tool call before saving quests', async () => {
             User.findById.mockResolvedValue(user)
             mockWorkoutQuery(workouts)
             Quest.find
                 .mockResolvedValueOnce([])
                 .mockResolvedValueOnce([])
             mockCreate.mockResolvedValue({
-                content: [{ text: 'not valid json' }]
+                content: [{ type: 'text', text: 'not a tool call' }]
             })
 
             await expect(generateQuests(createReq(), createRes()))
                 .rejects
-                .toThrow('AI response was not valid JSON')
+                .toThrow('AI response has wrong quest count')
 
+            expect(Quest.insertMany).not.toHaveBeenCalled()
+        })
+
+        test('forces the quest tool and retries once when the quests are invalid', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce([])
+
+            const quest = (title, completion, questType = 'strength') => ({
+                title,
+                questType,
+                duration: 'daily',
+                description: 'A quest.',
+                completion
+            })
+            const goodQuests = [
+                quest('Bench Press', { exercise: 'Bench Press', selectedEquipment: 'Barbell', weight: 65, reps: 8 }),
+                quest('Daily Habit', { targetCount: 1, currentCount: 0, filterTag: null }, 'consistency'),
+                quest('Squat Strength', { exercise: 'Squat', selectedEquipment: 'Barbell', weight: 85, reps: 6 })
+            ]
+            const badQuests = [
+                quest('Bad Quest', { exercise: 'Bench Press', selectedEquipment: 'Cable Machine', weight: 65, reps: 8 }),
+                goodQuests[1],
+                goodQuests[2]
+            ]
+
+            mockCreate
+                .mockResolvedValueOnce(toolResponse(badQuests))
+                .mockResolvedValueOnce(toolResponse(goodQuests))
+            Quest.insertMany.mockImplementation(async docs => docs)
+
+            const res = createRes()
+            await generateQuests(createReq(), res)
+
+            expect(mockCreate).toHaveBeenCalledTimes(2)
+            expect(mockCreate.mock.calls[0][0].tool_choice).toEqual({ type: 'tool', name: 'submit_quests' })
+            expect(Quest.insertMany).toHaveBeenCalledTimes(1)
+            expect(res.status).toHaveBeenCalledWith(200)
+        })
+
+        test('gives up after the retry if the quests are still invalid', async () => {
+            User.findById.mockResolvedValue(user)
+            mockWorkoutQuery(workouts)
+            Quest.find
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce([])
+            mockAIResponse([])
+
+            await expect(generateQuests(createReq(), createRes()))
+                .rejects
+                .toThrow('AI response has wrong quest count')
+
+            expect(mockCreate).toHaveBeenCalledTimes(2)
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })
 
@@ -621,13 +680,6 @@ describe('questControllerV2', () => {
                 modifiedCount: 0
             })
 
-            // All three counts are greater than zero.
-            // Therefore getQuests does not call genQuests.
-            Quest.countDocuments
-                .mockResolvedValueOnce(3)
-                .mockResolvedValueOnce(2)
-                .mockResolvedValueOnce(1)
-
             const quests = [
                 {
                     _id: 'quest1',
@@ -659,7 +711,9 @@ describe('questControllerV2', () => {
 
             expect(Quest.updateMany).toHaveBeenCalledTimes(1)
 
-            expect(Quest.countDocuments).toHaveBeenCalledTimes(3)
+            // One query for all durations, and every duration is covered
+            expect(Quest.find).toHaveBeenCalledTimes(1)
+            expect(Quest.countDocuments).not.toHaveBeenCalled()
 
             // No AI call needed.
             expect(mockCreate).not.toHaveBeenCalled()
@@ -682,17 +736,10 @@ describe('questControllerV2', () => {
                 modifiedCount: 2
             })
 
-            Quest.countDocuments
-                .mockResolvedValueOnce(1)
-                .mockResolvedValueOnce(1)
-                .mockResolvedValueOnce(1)
-
             const quests = [
-                {
-                    _id: 'quest1',
-                    duration: 'daily',
-                    status: 'active'
-                }
+                { _id: 'quest1', duration: 'daily', status: 'active' },
+                { _id: 'quest2', duration: 'weekly', status: 'active' },
+                { _id: 'quest3', duration: 'monthly', status: 'active' }
             ]
 
             Quest.find.mockReturnValue({
@@ -728,11 +775,6 @@ describe('questControllerV2', () => {
             Quest.updateMany.mockResolvedValue({
                 modifiedCount: 0
             })
-
-            Quest.countDocuments
-                .mockResolvedValueOnce(1)
-                .mockResolvedValueOnce(1)
-                .mockResolvedValueOnce(1)
 
             const dailyQuest = {
                 _id: 'daily1',

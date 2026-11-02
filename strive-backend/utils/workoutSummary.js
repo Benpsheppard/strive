@@ -2,35 +2,13 @@
 
 // Imports
 const Workout = require('../models/workoutModel')
-const Quest = require('../models/questModel')
 const { getStartOfWeek, getEndOfWeek } = require('./dateFormat')
 const { getWorkoutsThisWeek } = require('./workoutServices')
-
-const REP_BUFFER = 2
+const { detectQuestCompletion } = require('./quests/progress')
+const { buildExerciseKey } = require('./exerciseKey')
+const { getMaxWeight, getMaxReps, getMaxDuration, getTotalDistance } = require('./workoutMetrics')
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-const getMaxWeight = (sets) => Math.max(0, ...sets.map(s => Number(s.weight) || 0))
-
-const getVolume = (sets) => sets.reduce((sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0)
-
-const getTotalDistance = (sets) => sets.reduce((sum, s) => sum + (Number(s.distance) || 0), 0)
-
-const getTotalDuration = (sets) => sets.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
-
-const matchesQuestExercise = (candidate, exercise, selectedEquipment) => {
-    if (candidate.name.toLowerCase().trim() !== exercise.toLowerCase().trim()) {
-        return false
-    }
-
-    if (selectedEquipment == null || selectedEquipment === '') {
-        return true
-    }
-
-    return typeof selectedEquipment === 'string' &&
-        typeof candidate.selectedEquipment === 'string' &&
-        candidate.selectedEquipment.toLowerCase().trim() === selectedEquipment.toLowerCase().trim()
-}
 
 const getReward = (score) => {
     const clamped = Math.max(0.7, Math.min(score, 1.3))
@@ -290,9 +268,9 @@ const getPBMetric = (trackingMode, sets) => {
         case 'bodyweight_reps':
         case 'assisted_reps':
         case 'reps':
-            return { metric: 'max_reps', value: Math.max(0, ...sets.map(s => Number(s.reps) || 0)) }
+            return { metric: 'max_reps', value: getMaxReps(sets) }
         case 'duration':
-            return { metric: 'best_duration', value: Math.max(0, ...sets.map(s => Number(s.duration) || 0)) }
+            return { metric: 'best_duration', value: getMaxDuration(sets) }
         case 'distance_duration':
             return { metric: 'total_distance', value: getTotalDistance(sets) }
         default:
@@ -300,10 +278,7 @@ const getPBMetric = (trackingMode, sets) => {
     }
 }
 
-const buildPBKey = (name, equipment) => {
-    const normalizedEquipment = (equipment || 'unspecified').trim().toLowerCase()
-    return `${name}||${normalizedEquipment}`
-}
+const buildPBKey = (name, equipment) => buildExerciseKey(name, equipment || 'unspecified')
 
 // const getExistingPBs = async (userId, workout) => {
 //     const existingWorkouts = await Workout.find({ 
@@ -394,171 +369,6 @@ const detectPersonalBests = (exercises, existingPBs) => {
     return newPBs
 }
 
-// ─── Quest Checkers ──────────────────────────────────────────────────────────
-const questCheckers = {
-    strength: (quest, exercises) => {
-        const { exercise, selectedEquipment, weight, reps } = quest.completion
-
-        const match = exercises.find(e => matchesQuestExercise(e, exercise, selectedEquipment))
-
-        if (!match) {
-            return false
-        }
-
-        return match.sets.some(s =>
-            (Number(s.weight) || 0) >= weight &&
-            (Number(s.reps) || 0) >= reps - REP_BUFFER
-        )
-    },
-
-    consistency: async (quest, exercises, workout) => {
-        const { filterTag, targetCount } = quest.completion
-
-        if (filterTag) {
-            const tag = filterTag.toLowerCase().trim()
-            const matches = exercises.some(e =>
-                e.muscleGroup?.toLowerCase() === tag ||
-                e.subMuscleGroup?.toLowerCase() === tag ||
-                e.name.toLowerCase().trim() === tag
-            )
-            if (!matches) {
-                return false
-            }
-        }
-
-        const alreadyCounted = quest.progressLog.some(p =>
-            p.workoutId.toString() === workout._id.toString()
-        )
-
-        if (alreadyCounted) {
-            return { completed: false }
-        }
-
-        const currentCount = quest.progressLog.length + 1
-
-        return {
-            completed: currentCount >= targetCount,
-            progress: {
-                logEntry: { workoutId: workout._id, loggedAt: new Date() },
-                completion: { currentCount }
-            }
-        }
-    },
-
-    volume: async (quest, exercises, workout) => {
-        const { filterTag, targetVolume } = quest.completion
-
-        let sessionVolume = 0
-        for (const ex of exercises) {
-            const tag = filterTag?.toLowerCase().trim()
-            const nameMatches = !tag || ex.name.toLowerCase().trim() === tag
-            const groupMatches = !tag || ex.muscleGroup?.toLowerCase() === tag || ex.subMuscleGroup?.toLowerCase() === tag
-
-            if (!tag || nameMatches || groupMatches) {
-                sessionVolume += getVolume(ex.sets)
-            }
-        }
-
-        if (sessionVolume === 0) {
-            return { completed: false }
-        }
-
-        const alreadyCounted = quest.progressLog.some(p =>
-            p.workoutId.toString() === workout._id.toString()
-        )
-
-        if (alreadyCounted) {
-            return { completed: false }
-        }
-
-        const currentVolume = quest.progressLog.reduce((sum, p) => sum + (p.value || 0), sessionVolume)
-
-        return {
-            completed: currentVolume >= targetVolume,
-            progress: {
-                logEntry: { workoutId: workout._id, loggedAt: new Date(), value: sessionVolume },
-                completion: { currentVolume }
-            }
-        }
-    },
-
-    progressive: (quest, exercises) => {
-        const { exercise, selectedEquipment, metric, baseline } = quest.completion
-
-        const match = exercises.find(e => matchesQuestExercise(e, exercise, selectedEquipment))
-        if (!match) return false
-
-        switch (metric) {
-            case 'max_weight':
-                return getMaxWeight(match.sets) > baseline
-            case 'max_reps':
-                return Math.max(0, ...match.sets.map(s => Number(s.reps) || 0)) > baseline
-            case 'session_volume':
-                return getVolume(match.sets) > baseline
-            case 'total_distance':
-                return getTotalDistance(match.sets) > baseline
-            case 'total_duration':
-                return getTotalDuration(match.sets) > baseline
-            default:
-                return false
-        }
-    }
-}
-
-// ─── Quest Completion ────────────────────────────────────────────────────────
-// Read-only: works out which quests this workout completes and what progress to
-// save for each. Nothing is written until applyQuestResults is called.
-const detectQuestCompletion = async (userId, exercises, workout) => {
-    const activeQuests = await Quest.find({ user: userId, status: 'active' })
-    const questsCompleted = []
-    const questUpdates = []
-    let totalQuestSP = 0
-
-    for (const quest of activeQuests) {
-        const checker = questCheckers[quest.questType ?? 'strength']
-        if (!checker) continue
-
-        // Checkers return either a boolean or { completed, progress }
-        const outcome = await checker(quest, exercises, workout)
-        const { completed, progress } = typeof outcome === 'object' ? outcome : { completed: outcome }
-
-        if (progress || completed) {
-            questUpdates.push({ quest, progress, completed })
-        }
-
-        if (completed) {
-            questsCompleted.push({
-                questId: quest._id,
-                title: quest.title,
-                reward: quest.reward,
-                duration: quest.duration
-            })
-
-            totalQuestSP += quest.reward
-        }
-    }
-
-    return { questsCompleted, totalQuestSP, questUpdates }
-}
-
-// Save the quest progress / completions found by detectQuestCompletion
-const applyQuestResults = async (questUpdates = []) => {
-    for (const { quest, progress, completed } of questUpdates) {
-        if (progress) {
-            quest.progressLog.push(progress.logEntry)
-            for (const [field, value] of Object.entries(progress.completion)) {
-                quest.set(`completion.${field}`, value)
-            }
-        }
-
-        if (completed) {
-            quest.status = 'completed'
-        }
-
-        await quest.save()
-    }
-}
-
 // ─── Main Summary ────────────────────────────────────────────────────────────
 const calculateWorkoutSummary = async (user, exercises, workout) => {
     let totalWeight = 0
@@ -620,4 +430,4 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
     }
 }
 
-module.exports = { calculateWorkoutSummary, applyQuestResults }
+module.exports = { calculateWorkoutSummary }

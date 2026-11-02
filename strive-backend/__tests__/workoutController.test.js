@@ -15,7 +15,10 @@ jest.mock('../models/leaderboardEntryModel.js')
 jest.mock('../utils/formatUser.js')
 
 jest.mock('../utils/workoutSummary.js', () => ({
-    calculateWorkoutSummary: jest.fn(),
+    calculateWorkoutSummary: jest.fn()
+}))
+
+jest.mock('../utils/quests/progress.js', () => ({
     applyQuestResults: jest.fn()
 }))
 
@@ -38,7 +41,8 @@ const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 
 const formatUser = require('../utils/formatUser.js')
 
-const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary.js')
+const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
+const { applyQuestResults } = require('../utils/quests/progress.js')
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const {
     updateUserPointsAndMomentum,

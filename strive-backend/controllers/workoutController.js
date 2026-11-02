@@ -4,7 +4,8 @@
 // Imports
 const asyncHandler = require('express-async-handler') 
 const formatUser = require('../utils/formatUser.js')
-const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary.js') 
+const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
+const { applyQuestResults } = require('../utils/quests/progress.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const { validateWorkoutInput, sanitiseSets } = require('../utils/validateWorkoutInput.js')
 const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')

@@ -14,7 +14,8 @@ jest.mock('../utils/dateFormat', () => ({
 
 const Workout = require('../models/workoutModel')
 const Quest = require('../models/questModel')
-const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary')
+const { calculateWorkoutSummary } = require('../utils/workoutSummary')
+const { applyQuestResults } = require('../utils/quests/progress')
 
 const makeWorkoutHistoryQuery = () => {
     const query = {
@@ -145,5 +146,20 @@ describe('equipment-specific quest completion', () => {
         expect(quest.completion.currentCount).toBe(1)
         expect(quest.status).toBe('completed')
         expect(quest.save).toHaveBeenCalledTimes(1)
+    })
+
+    test('only looks at quests that have not expired', async () => {
+        await makeSummary(makeQuest('strength', {
+            exercise: 'Bench Press',
+            selectedEquipment: 'Smith Machine',
+            weight: 70,
+            reps: 8
+        }))
+
+        expect(Quest.find).toHaveBeenCalledWith({
+            user: 'user-1',
+            status: 'active',
+            expiry: { $gt: expect.any(Date) }
+        })
     })
 })
