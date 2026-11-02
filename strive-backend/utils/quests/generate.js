@@ -217,7 +217,7 @@ const buildPrompt = ({ user, duration, assignedTypes, context, targets }) => {
         - Do not reuse an exercise/equipment pair already in active or recent quests
         - NEVER use "Unknown Exercise" or invent exercise names
 
-        Submit the quests with the ${QUEST_TOOL.name} tool. Each quest has:
+        Call the ${QUEST_TOOL.name} tool to submit the quests. Do not reply with plain text. Each quest has:
         - title: string (1-6 words, creative)
         - questType: string (the assigned type)
         - duration: "${duration}"
@@ -227,8 +227,9 @@ const buildPrompt = ({ user, duration, assignedTypes, context, targets }) => {
 }
 
 // ─── AI request ──────────────────────────────────────────────────────────────
-// The model is forced to answer through this tool, so the quests arrive as structured
-// data instead of free text that has to be cleaned up and parsed
+// The model is asked to answer through this tool, so the quests arrive as structured
+// data instead of free text that has to be cleaned up and parsed. This model doesn't
+// allow tool use to be forced, so the prompt tells it to call the tool.
 const QUEST_TOOL = {
     name: 'submit_quests',
     description: 'Submit the generated quests',
@@ -260,10 +261,10 @@ const requestQuests = async (prompt) => {
     try {
         response = await anthropic.messages.create({
             model: 'claude-sonnet-5-5',
-            max_tokens: 1024,
+            max_tokens: 2048,
             temperature: 1.0,
+            thinking: { type: 'between_tools' },
             tools: [QUEST_TOOL],
-            tool_choice: { type: 'tool', name: QUEST_TOOL.name },
             messages: [{ role: 'user', content: prompt }]
         })
     } catch (error) {

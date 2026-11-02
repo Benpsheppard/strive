@@ -520,7 +520,7 @@ describe('questController', () => {
             expect(Quest.insertMany).not.toHaveBeenCalled()
         })
 
-        test('forces the quest tool and retries once when the quests are invalid', async () => {
+        test('offers the quest tool and retries once when the quests are invalid', async () => {
             User.findById.mockResolvedValue(user)
             mockWorkoutQuery(workouts)
             Quest.find
@@ -554,7 +554,7 @@ describe('questController', () => {
             await generateQuests(createReq(), res)
 
             expect(mockCreate).toHaveBeenCalledTimes(2)
-            expect(mockCreate.mock.calls[0][0].tool_choice).toEqual({ type: 'tool', name: 'submit_quests' })
+            expect(mockCreate.mock.calls[0][0].tools[0].name).toBe('submit_quests')
             expect(Quest.insertMany).toHaveBeenCalledTimes(1)
             expect(res.status).toHaveBeenCalledWith(200)
         })
