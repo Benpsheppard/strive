@@ -14,7 +14,7 @@ jest.mock('../utils/dateFormat', () => ({
 
 const Workout = require('../models/workoutModel')
 const Quest = require('../models/questModel')
-const { calculateWorkoutSummary } = require('../utils/workoutSummary')
+const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary')
 
 const makeWorkoutHistoryQuery = () => {
     const query = {
@@ -78,7 +78,8 @@ describe('equipment-specific quest completion', () => {
             reps: 8
         })
 
-        const summary = await makeSummary(quest)
+        const { summary, questUpdates } = await makeSummary(quest)
+        await applyQuestResults(questUpdates)
 
         expect(summary.questsCompleted).toEqual([])
         expect(quest.save).not.toHaveBeenCalled()
@@ -92,7 +93,13 @@ describe('equipment-specific quest completion', () => {
             reps: 8
         })
 
-        const summary = await makeSummary(quest)
+        const { summary, questUpdates } = await makeSummary(quest)
+
+        // Calculating the summary must not write anything
+        expect(quest.status).toBe('active')
+        expect(quest.save).not.toHaveBeenCalled()
+
+        await applyQuestResults(questUpdates)
 
         expect(summary.questsCompleted).toHaveLength(1)
         expect(quest.status).toBe('completed')
@@ -107,9 +114,35 @@ describe('equipment-specific quest completion', () => {
             baseline: 60
         })
 
-        const summary = await makeSummary(quest)
+        const { summary, questUpdates } = await makeSummary(quest)
+
+        // Calculating the summary must not write anything
+        expect(quest.status).toBe('active')
+        expect(quest.save).not.toHaveBeenCalled()
+
+        await applyQuestResults(questUpdates)
 
         expect(summary.questsCompleted).toHaveLength(1)
+        expect(quest.status).toBe('completed')
+        expect(quest.save).toHaveBeenCalledTimes(1)
+    })
+
+    test('consistency quest progress is only saved by applyQuestResults', async () => {
+        const quest = makeQuest('consistency', { targetCount: 1, currentCount: 0 })
+        quest.set = jest.fn((path, value) => {
+            quest.completion[path.split('.')[1]] = value
+        })
+
+        const { summary, questUpdates } = await makeSummary(quest)
+
+        expect(summary.questsCompleted).toHaveLength(1)
+        expect(quest.progressLog).toEqual([])
+        expect(quest.save).not.toHaveBeenCalled()
+
+        await applyQuestResults(questUpdates)
+
+        expect(quest.progressLog).toHaveLength(1)
+        expect(quest.completion.currentCount).toBe(1)
         expect(quest.status).toBe('completed')
         expect(quest.save).toHaveBeenCalledTimes(1)
     })

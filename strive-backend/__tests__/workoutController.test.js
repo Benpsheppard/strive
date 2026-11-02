@@ -15,7 +15,8 @@ jest.mock('../models/leaderboardEntryModel.js')
 jest.mock('../utils/formatUser.js')
 
 jest.mock('../utils/workoutSummary.js', () => ({
-    calculateWorkoutSummary: jest.fn()
+    calculateWorkoutSummary: jest.fn(),
+    applyQuestResults: jest.fn()
 }))
 
 jest.mock('../utils/leaderboard.js', () => ({
@@ -37,7 +38,7 @@ const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 
 const formatUser = require('../utils/formatUser.js')
 
-const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
+const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary.js')
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const {
     updateUserPointsAndMomentum,
@@ -164,6 +165,7 @@ describe('workoutController', () => {
         const createWorkout = () => ({
             _id: 'workout123',
             user: '123',
+            createdAt: new Date(),
             title: 'Chest Workout',
             duration: 45,
             exercises: [],
@@ -180,7 +182,7 @@ describe('workoutController', () => {
             workout.save.mockResolvedValue(workout)
     
             Workout.mockImplementation(() => workout)
-            calculateWorkoutSummary.mockResolvedValue(summary)
+            calculateWorkoutSummary.mockResolvedValue({ summary, questUpdates: [] })
             User.findByIdAndUpdate.mockResolvedValue({})
     
             return { workout, populatedWorkout }
@@ -333,6 +335,9 @@ describe('workoutController', () => {
     
             expect(workout.summary).toEqual(summary)
             expect(workout.save).toHaveBeenCalled()
+            expect(applyQuestResults).toHaveBeenCalledWith([])
+            expect(applyQuestResults.mock.invocationCallOrder[0])
+                .toBeGreaterThan(workout.save.mock.invocationCallOrder[0])
     
             expect(User.findByIdAndUpdate).toHaveBeenCalledWith('123', {
                 $push: { workouts: 'workout123' },

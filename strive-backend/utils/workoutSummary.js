@@ -259,7 +259,8 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
 
     const personalBestsReward = personalBests.length * 500
 
-    const workoutsThisWeek = await getWorkoutsThisWeek(user, workout.createdAt)
+    // The workout isn't saved yet, so add it to the count already in the database
+    const workoutsThisWeek = await getWorkoutsThisWeek(user._id, workout.createdAt) + 1
 
     const target = user.target
     const targetReached = workoutsThisWeek === target
@@ -428,16 +429,20 @@ const questCheckers = {
         const alreadyCounted = quest.progressLog.some(p =>
             p.workoutId.toString() === workout._id.toString()
         )
-        
+
         if (alreadyCounted) {
-            return false
+            return { completed: false }
         }
 
-        quest.progressLog.push({ workoutId: workout._id, loggedAt: new Date() })
-        quest.set('completion.currentCount', quest.progressLog.length)
-        await quest.save()
+        const currentCount = quest.progressLog.length + 1
 
-        return quest.completion.currentCount >= targetCount
+        return {
+            completed: currentCount >= targetCount,
+            progress: {
+                logEntry: { workoutId: workout._id, loggedAt: new Date() },
+                completion: { currentCount }
+            }
+        }
     },
 
     volume: async (quest, exercises, workout) => {
@@ -455,7 +460,7 @@ const questCheckers = {
         }
 
         if (sessionVolume === 0) {
-            return false
+            return { completed: false }
         }
 
         const alreadyCounted = quest.progressLog.some(p =>
@@ -463,15 +468,18 @@ const questCheckers = {
         )
 
         if (alreadyCounted) {
-            return false
+            return { completed: false }
         }
 
-        quest.progressLog.push({ workoutId: workout._id, loggedAt: new Date(), value: sessionVolume })
-        const newVolume = quest.progressLog.reduce((sum, p) => sum + (p.value || 0), 0)
-        quest.set('completion.currentVolume', newVolume)
-        await quest.save()
+        const currentVolume = quest.progressLog.reduce((sum, p) => sum + (p.value || 0), sessionVolume)
 
-        return quest.completion.currentVolume >= targetVolume
+        return {
+            completed: currentVolume >= targetVolume,
+            progress: {
+                logEntry: { workoutId: workout._id, loggedAt: new Date(), value: sessionVolume },
+                completion: { currentVolume }
+            }
+        }
     },
 
     progressive: (quest, exercises) => {
@@ -498,20 +506,27 @@ const questCheckers = {
 }
 
 // ─── Quest Completion ────────────────────────────────────────────────────────
+// Read-only: works out which quests this workout completes and what progress to
+// save for each. Nothing is written until applyQuestResults is called.
 const detectQuestCompletion = async (userId, exercises, workout) => {
     const activeQuests = await Quest.find({ user: userId, status: 'active' })
     const questsCompleted = []
+    const questUpdates = []
     let totalQuestSP = 0
 
     for (const quest of activeQuests) {
         const checker = questCheckers[quest.questType ?? 'strength']
         if (!checker) continue
 
-        const completed = await checker(quest, exercises, workout)
+        // Checkers return either a boolean or { completed, progress }
+        const outcome = await checker(quest, exercises, workout)
+        const { completed, progress } = typeof outcome === 'object' ? outcome : { completed: outcome }
+
+        if (progress || completed) {
+            questUpdates.push({ quest, progress, completed })
+        }
+
         if (completed) {
-            quest.status = 'completed'
-            await quest.save()
-            
             questsCompleted.push({
                 questId: quest._id,
                 title: quest.title,
@@ -523,7 +538,25 @@ const detectQuestCompletion = async (userId, exercises, workout) => {
         }
     }
 
-    return { questsCompleted, totalQuestSP }
+    return { questsCompleted, totalQuestSP, questUpdates }
+}
+
+// Save the quest progress / completions found by detectQuestCompletion
+const applyQuestResults = async (questUpdates = []) => {
+    for (const { quest, progress, completed } of questUpdates) {
+        if (progress) {
+            quest.progressLog.push(progress.logEntry)
+            for (const [field, value] of Object.entries(progress.completion)) {
+                quest.set(`completion.${field}`, value)
+            }
+        }
+
+        if (completed) {
+            quest.status = 'completed'
+        }
+
+        await quest.save()
+    }
 }
 
 // ─── Main Summary ────────────────────────────────────────────────────────────
@@ -565,23 +598,26 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const existingPBs = getExistingPBs(workoutHistory)
 
-    const { questsCompleted, totalQuestSP } = await detectQuestCompletion(user._id, exercises, workout)
+    const { questsCompleted, totalQuestSP, questUpdates } = await detectQuestCompletion(user._id, exercises, workout)
 
     const personalBests = detectPersonalBests(exercises, existingPBs)
 
     const totalStrivePoints = await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, totalWeight, totalQuestSP)
 
     return {
-        totalWeight,
-        totalReps,
-        totalSets,
-        totalExercises,
-        totalDistance,
-        totalDuration,
-        totalStrivePoints,
-        questsCompleted,
-        personalBests
+        summary: {
+            totalWeight,
+            totalReps,
+            totalSets,
+            totalExercises,
+            totalDistance,
+            totalDuration,
+            totalStrivePoints,
+            questsCompleted,
+            personalBests
+        },
+        questUpdates
     }
 }
 
-module.exports = { calculateWorkoutSummary }
+module.exports = { calculateWorkoutSummary, applyQuestResults }

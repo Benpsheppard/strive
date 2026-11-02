@@ -4,7 +4,7 @@
 // Imports
 const asyncHandler = require('express-async-handler') 
 const formatUser = require('../utils/formatUser.js')
-const { calculateWorkoutSummary } = require('../utils/workoutSummary.js') 
+const { calculateWorkoutSummary, applyQuestResults } = require('../utils/workoutSummary.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const { validateWorkoutInput, sanitiseSets } = require('../utils/validateWorkoutInput.js')
 const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')
@@ -13,6 +13,40 @@ const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek
 const Workout = require('../models/workoutModel.js')    
 const User = require('../models/userModel.js')
 const Exercise = require('../models/exerciseModel.js')
+
+// Every exercise must exist and the chosen equipment must be valid for it
+const buildExerciseSnapshots = (populatedWorkout, res) => {
+    for (const ex of populatedWorkout.exercises) {
+        if (!ex.exercise) {
+            res.status(400)
+            throw new Error('Exercise not found')
+        }
+        if (!ex.exercise.equipment?.includes(ex.selectedEquipment)) {
+            res.status(400)
+            throw new Error(`Invalid equipment for ${ex.exercise.name}`)
+        }
+    }
+
+    return populatedWorkout.exercises.map(ex => ({
+        exerciseId: ex.exercise._id,
+        name: ex.exercise.name,
+        muscleGroup: ex.exercise.muscleGroup,
+        subMuscleGroup: ex.exercise.subMuscleGroup,
+        trackingMode: ex.exercise.trackingMode,
+        selectedEquipment: ex.selectedEquipment,
+        sets: ex.sets
+    }))
+}
+
+// Compare the user's state before and after a workout
+const buildGamificationFlags = (before, updatedUser) => ({
+    levelUp: updatedUser.level > before.level ? updatedUser.level : null,
+    streakIncreased: updatedUser.streak.current > before.streak,
+    shieldEarned: !before.shield && updatedUser.streak.shield,
+    shieldUsed: before.shield && !updatedUser.streak.shield && updatedUser.streak.current === before.streak,
+    streakBroken: updatedUser.streak.current === 0 && before.streak > 0,
+    momentumGained: updatedUser.momentum.current - before.momentum,
+})
 
 /**
  *  @desc   Get workouts for the authenticated user
@@ -57,52 +91,34 @@ const setWorkout = asyncHandler(async (req, res) => {
         updatedAt: new Date()
     })
 
-    // Populate variables for calculations
+    // Resolve exercises for calculations (validates exercise + equipment)
     const populatedWorkout = await workout.populate('exercises.exercise')
+    const populatedExercises = buildExerciseSnapshots(populatedWorkout, res)
 
-    // Every exercise must exist and the chosen equipment must be valid for it
-    for (const ex of populatedWorkout.exercises) {
-        if (!ex.exercise) {
-            res.status(400)
-            throw new Error('Exercise not found')
-        }
-        if (!ex.exercise.equipment?.includes(ex.selectedEquipment)) {
-            res.status(400)
-            throw new Error(`Invalid equipment for ${ex.exercise.name}`)
-        }
+    // Store old values for gamification
+    const before = {
+        streak: req.user.streak.current,
+        shield: req.user.streak.shield,
+        momentum: req.user.momentum.current,
+        level: req.user.level
     }
-    const populatedExercises = populatedWorkout.exercises.map(ex => ({
-        exerciseId: ex.exercise._id,
-        name: ex.exercise.name,
-        muscleGroup: ex.exercise.muscleGroup,
-        subMuscleGroup: ex.exercise.subMuscleGroup,
-        trackingMode: ex.exercise.trackingMode,
-        selectedEquipment: ex.selectedEquipment,
-        sets: ex.sets
-    }))
 
-    // Calculate workout summary
-    const summary = await calculateWorkoutSummary(req.user, populatedExercises, workout)
+    // Calculate workout summary (no database writes)
+    const { summary, questUpdates } = await calculateWorkoutSummary(req.user, populatedExercises, workout)
     workout.summary = summary
     await workout.save()
 
+    // Save quest progress / completions earned by this workout
+    await applyQuestResults(questUpdates)
+
     // Update user object with new workout
-    const workoutDate = new Date() 
+    const workoutDate = workout.createdAt
     await User.findByIdAndUpdate(req.user.id,
-        { 
+        {
             $push: { workouts: workout._id },
             $max: { lastWorkout: workoutDate }
         }
     )
-
-    // Update leaderboards
-    await updateLeaderboardEntry(req.user.id, workout)
-
-    // Store old values for gamification
-    const oldStreak = req.user.streak.current
-    const oldShield = req.user.streak.shield
-    const oldMomentum = req.user.momentum.current
-    const oldLevel = req.user.level
 
     // Check if user's streak has increased
     const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
@@ -119,18 +135,14 @@ const setWorkout = asyncHandler(async (req, res) => {
         quests: summary.questsCompleted
     })
 
+    // Update leaderboards
+    await updateLeaderboardEntry(req.user.id, workout)
+
     // Output created workout + user + gamification flags
     res.status(201).json({
         workout,
         user: formatUser(updatedUser),
-        gamification: {
-            levelUp: updatedUser.level > oldLevel ? updatedUser.level : null,
-            streakIncreased: updatedUser.streak.current > oldStreak,
-            shieldEarned: !oldShield && updatedUser.streak.shield,
-            shieldUsed: oldShield && !updatedUser.streak.shield && updatedUser.streak.current === oldStreak,
-            streakBroken: updatedUser.streak.current === 0 && oldStreak > 0,
-            momentumGained: updatedUser.momentum.current - oldMomentum,
-        }
+        gamification: buildGamificationFlags(before, updatedUser)
     })
 })
 
