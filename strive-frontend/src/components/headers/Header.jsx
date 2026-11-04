@@ -76,7 +76,7 @@ const Header = () => {
                                 to={to}
                                 end={end}
                                 className={({ isActive }) => cx(
-                                    'flex min-h-[4.25rem] flex-col items-center justify-center gap-1 py-2 text-sm font-semibold transition-colors',
+                                    'flex min-h-[6rem] flex-col items-center justify-center gap-1 py-2 text-sm font-semibold transition-colors',
                                     isActive ? 'text-accent-fg' : 'text-muted hover:text-fg'
                                 )}
                             >
