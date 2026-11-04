@@ -23,7 +23,7 @@ const StreakCard = ({ user }) => (
 
         <p className="text-sm text-muted">
             Best streak: <span className="font-semibold text-fg">{user.streak.best}</span>{' · '}
-            <Link to="/how-it-works#streaks" className="text-accent-fg hover:underline">How streaks work</Link>
+            <Link to="/how-it-works#streaks" className="text-accent-fg underline">How streaks work</Link>
         </p>
     </Card>
 )

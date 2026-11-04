@@ -75,9 +75,9 @@ const MonthCalendar = ({ workouts }) => {
                             aria-label={`${date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}${trained ? `, trained: ${titles.join(', ')}` : ''}`}
                             className={cx(
                                 'flex min-h-10 flex-col items-center justify-center rounded-xl p-1 text-center',
-                                trained ? 'bg-accent text-white' : 'bg-bg/60 text-fg',
+                                trained ? 'bg-accent text-white' : isFuture ? 'bg-bg/60 text-muted' : 'bg-bg/60 text-fg',
                                 isToday && 'ring-2 ring-fg',
-                                isFuture && 'text-muted opacity-60'
+                                isFuture && 'text-muted'
                             )}
                         >
                             <span className="text-sm font-bold">{date.getDate()}</span>

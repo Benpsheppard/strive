@@ -24,7 +24,7 @@ const MomentumCard = ({ user }) => {
             <p className="font-display text-3xl font-bold text-accent-fg">{label}</p>
             <p className="text-sm text-muted">
                 Your Strive Points are multiplied by <span className="font-semibold text-fg">×{multiplier}</span>.{' '}
-                <Link to="/how-it-works#momentum" className="text-accent-fg hover:underline">How momentum works</Link>
+                <Link to="/how-it-works#momentum" className="text-accent-fg underline">How momentum works</Link>
             </p>
             <ProgressBar numerator={current} denominator={100} label="Momentum" />
         </Card>

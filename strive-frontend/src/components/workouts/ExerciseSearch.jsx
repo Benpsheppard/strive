@@ -130,64 +130,59 @@ const ExerciseSearch = ({ allExercises, workouts, onSelect, onCreate }) => {
             />
 
             {listVisible && (
-                <ul
-                    id={listId}
-                    role="listbox"
-                    aria-label="Exercises"
-                    className="absolute z-40 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-line bg-surface-2 shadow-card"
-                >
-                    {showingRecent && results.length > 0 && (
-                        <li role="presentation" className="px-4 pb-1 pt-2 text-xs uppercase tracking-wide text-muted">Recent</li>
-                    )}
+                <div className="absolute z-40 mt-1 w-full overflow-hidden rounded-xl border border-line bg-surface-2 shadow-card">
+                    <div className="max-h-72 overflow-y-auto">
+                        {showingRecent && results.length > 0 && (
+                            <p className="px-4 pb-1 pt-2 text-xs uppercase tracking-wide text-muted">Recent</p>
+                        )}
 
-                    {results.map((exercise, index) => {
-                        const supported = isSupportedMode(exercise.trackingMode)
-                        return (
-                            <li
-                                key={exercise._id}
-                                id={`${listId}-${index}`}
-                                role="option"
-                                aria-selected={index === activeIndex}
-                                aria-disabled={!supported}
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => supported && choose(exercise)}
-                                onMouseEnter={() => setActiveIndex(index)}
-                                className={cx(
-                                    'px-4 py-2.5',
-                                    supported ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
-                                    index === activeIndex && 'bg-line/60'
-                                )}
-                            >
-                                <div className="font-semibold text-fg">
-                                    {exercise.name}
-                                    {exercise.isCustom && <span className="ml-2 rounded bg-bg px-1.5 py-0.5 text-xs font-normal text-muted">Custom</span>}
-                                </div>
-                                <div className="text-xs text-muted">
-                                    {exercise.muscleGroup}{exercise.subMuscleGroup && exercise.subMuscleGroup !== 'Other' ? ` · ${exercise.subMuscleGroup}` : ''}
-                                </div>
-                            </li>
-                        )
-                    })}
+                        {results.length === 0 && hasQuery && (
+                            <p className="px-4 py-3 text-sm text-muted">No exercises match “{query.trim()}”.</p>
+                        )}
 
-                    {results.length === 0 && hasQuery && (
-                        <li role="presentation" className="px-4 py-3 text-sm text-muted">
-                            No exercises match “{query.trim()}”.
-                        </li>
-                    )}
+                        <ul id={listId} role="listbox" aria-label="Exercises">
+                            {results.map((exercise, index) => {
+                                const supported = isSupportedMode(exercise.trackingMode)
+                                return (
+                                    <li
+                                        key={exercise._id}
+                                        id={`${listId}-${index}`}
+                                        role="option"
+                                        aria-selected={index === activeIndex}
+                                        aria-disabled={!supported}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={() => supported && choose(exercise)}
+                                        onMouseEnter={() => setActiveIndex(index)}
+                                        className={cx(
+                                            'px-4 py-2.5',
+                                            supported ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
+                                            index === activeIndex && 'bg-bg/70'
+                                        )}
+                                    >
+                                        <div className="font-semibold text-fg">
+                                            {exercise.name}
+                                            {exercise.isCustom && <span className="ml-2 rounded bg-bg px-1.5 py-0.5 text-xs font-normal text-muted">Custom</span>}
+                                        </div>
+                                        <div className="text-xs text-muted">
+                                            {exercise.muscleGroup}{exercise.subMuscleGroup && exercise.subMuscleGroup !== 'Other' ? ` · ${exercise.subMuscleGroup}` : ''}
+                                        </div>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>
 
                     {onCreate && (
-                        <li role="presentation" className="border-t border-line">
-                            <button
-                                type="button"
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => { setOpen(false); onCreate(query.trim()) }}
-                                className="flex w-full items-center gap-2 px-4 py-3 text-left text-accent-fg hover:bg-line/60"
-                            >
-                                <FaPlus aria-hidden="true" /> Create custom exercise{hasQuery ? ` “${query.trim()}”` : ''}
-                            </button>
-                        </li>
+                        <button
+                            type="button"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => { setOpen(false); onCreate(query.trim()) }}
+                            className="flex w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-accent-fg hover:bg-bg/70"
+                        >
+                            <FaPlus aria-hidden="true" /> Create custom exercise{hasQuery ? ` “${query.trim()}”` : ''}
+                        </button>
                     )}
-                </ul>
+                </div>
             )}
         </div>
     )
