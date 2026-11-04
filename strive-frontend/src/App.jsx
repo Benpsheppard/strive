@@ -10,10 +10,6 @@ import Spinner from './components/spinners/Spinner.jsx'
 import { getMe } from './features/auth/authSlice.js'
 
 // Lazy load pages for performance optimization
-// const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
-// const Contact = lazy(() => import('./pages/Contact.jsx'))
-// const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'))
-// const Help = lazy(() => import('./pages/Help.jsx'))
 
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
@@ -61,10 +57,6 @@ const App = () => {
 							<Route path='/profile' element={<Profile />} />
 							<Route path='/migrate' element={<GuestMigration />} />
 
-							{/* <Route path='/' element={<Dashboard />} /> */}
-							{/* <Route path='/contact' element={<Contact />} /> */}
-							{/* <Route path='/privacy-policy' element={<PrivacyPolicy />} /> */}
-							{/* <Route path='/help' element={<Help />} /> */}
 						</Routes>
 					</Suspense>
 				</div>

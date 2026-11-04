@@ -1,7 +1,7 @@
 // Quests.jsx
 
 // Imports
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 // Function Imports
