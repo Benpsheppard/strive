@@ -1,39 +1,33 @@
 // Games.jsx
 
 // Imports
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
-import { getLeaderboard } from '../features/leaderboard/leaderboardSlice.js'
-
-// Utils Imports
-import { formatNumber } from '../utils/formatValues.js'
 
 // Component Imports
 import Header from '../components/headers/Header.jsx'
 import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
-import StreakCard from '../components/games/StreakCard.jsx'
 import GamesSummary from '../components/games/GamesSummary.jsx'
 import Leaderboard from '../components/games/Leaderboard.jsx'
+import StreakCard from '../components/games/StreakCard.jsx'
 import MomentumCard from '../components/games/MomentumCard.jsx'
 import BonusCard from '../components/games/BonusCard.jsx'
 
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading } = useSelector((state) => state.workout)
-    const { leaderboard } = useSelector((state) => state.leaderboard)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
     useEffect(() => {
         dispatch(getWorkouts())
-        dispatch(getLeaderboard())
     }, [dispatch])
 
     useEffect(() => {
@@ -98,18 +92,16 @@ const Games = () => {
                     </div>
 
                     {/* Streak and Momentum Card */}
-                    <div className='fade-in-card grid grid-cols-1 md:grid-cols-2 gap-5' style={{ animationDelay: '0.4s' }}>
-                        {/* <StreakCard user={user} workouts={workouts} /> */}
+                    <div className='fade-in-card grid grid-cols-1 md:grid-cols-3 gap-5' style={{ animationDelay: '0.4s' }}>
+                        <StreakCard user={user} workouts={workouts} />
                         <BonusCard user={user} workouts={workouts} />
                         <MomentumCard user={user} />
                     </div>
 
                     {/* SP Leaderboard */}
-                    {leaderboard.length > 0 && (
-                        <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
-                            <Leaderboard />
-                        </div>
-                    )}
+                    <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
+                        <Leaderboard />
+                    </div>
 
                     {/* Quest lists */}
                     <div className='fade-in-card space-y-6' style={{ animationDelay: '0.8s' }}>

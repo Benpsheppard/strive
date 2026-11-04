@@ -14,6 +14,10 @@ const User = require('../models/userModel')
 // running one instead of creating duplicate quests. This is per server process.
 const inFlightGenerations = new Map()
 
+// Remember recent failures so a broken generation isn't retried on every page load
+const FAILURE_COOLDOWN_MS = 5 * 60 * 1000
+const recentFailures = new Map()
+
 const generateOnce = (user, duration) => {
     const key = `${user._id}:${duration}`
 
@@ -109,16 +113,25 @@ const getQuests = asyncHandler(async (req, res) => {
         !quests.some(q => q.duration === duration)
     )
 
-    if (missingDurations.length > 0) {
-        await Promise.all(missingDurations.map(async duration => {
-            try {
-                await generateOnce(user, duration)
-            } catch (error) {
-                if (error.message !== 'ANTHROPIC_CREDIT_EXHAUSTED') {
-                    throw error
+    // Skip durations that failed recently so page loads don't re-trigger model calls
+    const retryable = missingDurations.filter(duration => {
+        const failedAt = recentFailures.get(`${userId}:${duration}`)
+        return !failedAt || Date.now() - failedAt > FAILURE_COOLDOWN_MS
+    })
+
+    if (retryable.length > 0) {
+        const results = await Promise.allSettled(retryable.map(duration => generateOnce(user, duration)))
+
+        results.forEach((result, i) => {
+            if (result.status === 'rejected') {
+                recentFailures.set(`${userId}:${retryable[i]}`, Date.now())
+                if (result.reason?.message !== 'ANTHROPIC_CREDIT_EXHAUSTED') {
+                    console.error(`Quest generation failed (${retryable[i]}):`, result.reason?.message)
                 }
+            } else {
+                recentFailures.delete(`${userId}:${retryable[i]}`)
             }
-        }))
+        })
 
         quests = await findCurrentQuests()
     }

@@ -16,6 +16,8 @@ import { formatDistance, formatDuration, formatNumber, formatWeight, formatWorko
 const WorkoutItem = ({ workout }) => {
     const FIELD_STYLING = "bg-[#EDF2F4]/30 bg-opacity-20 rounded-lg p-2 text-center hover:scale-102"
     const { user } = useSelector((state) => state.auth)
+    // Older workouts may be missing parts of the summary
+    const summary = { totalWeight: 0, totalReps: 0, totalSets: 0, totalDistance: 0, totalDuration: 0, ...workout.summary }
 
     const dispatch = useDispatch()
 
@@ -81,17 +83,17 @@ const WorkoutItem = ({ workout }) => {
                     <div className="grid grid-cols-3 gap-2">
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Weight</p>
-                            <p className="font-semibold text-[#EF233C]">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatWeight(summary.totalWeight, user.useImperial)}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Reps</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalReps)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalReps)}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Sets</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalSets)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalSets)}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
@@ -101,27 +103,27 @@ const WorkoutItem = ({ workout }) => {
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Distance</p>
-                            <p className="font-semibold text-[#EF233C]">{formatDistance(workout.summary.totalDistance, user.useImperial)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatDistance(summary.totalDistance, user.useImperial)}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Cardio</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalDuration)}m</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalDuration)}m</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">SP</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.totalStrivePoints.total)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalStrivePoints?.total)}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.questsCompleted.length)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber((summary.questsCompleted?.length || 0))}</p>
                         </div>
 
                         <div className={FIELD_STYLING}>
                             <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(workout.summary.personalBests.length)}</p>
+                            <p className="font-semibold text-[#EF233C]">{formatNumber((summary.personalBests?.length || 0))}</p>
                         </div>
                     </div>
 

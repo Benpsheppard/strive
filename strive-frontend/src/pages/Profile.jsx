@@ -15,7 +15,6 @@ import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import Toggle from '../components/profile/Toggle.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
-import StreakCard from '../components/games/StreakCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
 
 // Alert Imports
@@ -59,7 +58,7 @@ const Profile = () => {
 
     useEffect(() => {
         if (isError) {
-            console.log(message)
+            console.error(message)
         }
 
         if (!user){

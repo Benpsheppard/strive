@@ -6,7 +6,7 @@ import { FaUndoAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { showChangeExerciseAlert } from '../../alerts/workout.js'
 import { calculatePersonalBests, buildPBKey } from '../../utils/pbDetection.js'
-import { formatWeight } from '../../utils/formatValues.js'
+import { formatWeight, parseWeight, lbsToKg } from '../../utils/formatValues.js'
 
 // Component Imports
 import SetForm from "./SetForm"
@@ -26,13 +26,13 @@ const validateSet = (trackingMode, currentSet) => {
     return true
 }
 
-const buildSet = (trackingMode, currentSet) => {
+const buildSet = (trackingMode, currentSet, useImperial) => {
     if (trackingMode !== 'weight_reps') {
         return null
     }
 
     const { weight, reps } = currentSet
-    return { weight: Number(weight), reps: Number(reps) }
+    return { weight: parseWeight(weight, useImperial), reps: Number(reps) }
 }
 
 const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
@@ -103,7 +103,7 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
             return
         }
 
-        const newSet = buildSet(currentExercise.trackingMode, currentSet)
+        const newSet = buildSet(currentExercise.trackingMode, currentSet, useImperial)
 
         setSetHistory(prev => [...prev, currentExercise.sets || []])
         setCurrentExercise(prev => ({ ...prev, sets: [...(prev.sets || []), newSet] }))
@@ -218,7 +218,7 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
                                 <div className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4]">
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm">
-                                            Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight)}</span>
+                                            Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight, useImperial)}</span>
                                         </span>
                                         <span className="text-xs text-[#EDF2F4]/60">
                                             {new Date(currentPB.date).toLocaleDateString()}
@@ -231,13 +231,13 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
                                                 : null
 
                                             if (currentMax === null) {
-                                                return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? 5 : 2.5))}!`
+                                                return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? lbsToKg(5) : 2.5), useImperial)}!`
                                             } else if (currentMax > currentPB.weight) {
                                                 return `New PB incoming! You're already lifting heavier than your best!`
                                             } else if (currentMax === currentPB.weight) {
                                                 return `Matching your PB! Try one more rep or add ${useImperial ? '5 lbs' : '2.5 kg'} next set.`
                                             } else {
-                                                return `${formatWeight(currentPB.weight - currentMax)} off your PB — push for it!`
+                                                return `${formatWeight(currentPB.weight - currentMax, useImperial)} off your PB — push for it!`
                                             }
                                         })()}
                                     </p>
@@ -246,7 +246,7 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
 
                             {/* Set Input */}
                             <div className="space-y-2">
-                                <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} />
+                                <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} useImperial={useImperial} />
                                 <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
                                     Add Set to Exercise
                                 </button>
@@ -263,10 +263,6 @@ const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExerci
                                     sets={currentExercise.sets}
                                     trackingMode={currentExercise.trackingMode}
                                     useImperial={useImperial}
-                                    onSetsUpdate={() => {
-                                        const updatedExercise = JSON.parse(localStorage.getItem('newWorkout_currentExercise'))
-                                        setCurrentExercise(updatedExercise)
-                                    }}
                                 />
                             </div>
 

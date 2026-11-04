@@ -5,7 +5,7 @@
 const express = require('express')
 const { 
     getWorkouts, setWorkout, deleteWorkout,
-    addExercise, updateExercise, deleteExercise,
+    addExercise,
     deleteAllWorkouts
  } = require('../controllers/workoutController.js')    
 const { protect } = require('../middleware/authMiddleware.js')    
@@ -28,9 +28,6 @@ workoutRouter.route('/:id')
 // Workout-Exercise routes
 workoutRouter.route('/:id/exercises')
     .post(validateObjectId('id'), addExercise)
-workoutRouter.route('/:id/exercises/:exerciseId')
-    .put(validateObjectId('id'), validateObjectId('exerciseId'),updateExercise)
-    .delete(validateObjectId('id'), validateObjectId('exerciseId'), deleteExercise)
 
 // Export router
 module.exports = { workoutRouter }

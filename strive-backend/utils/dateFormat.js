@@ -1,6 +1,6 @@
 // dateFormat.js - strive-backend version
 
-export function getWeekNumber(date) {
+function getWeekNumber(date) {
     const d = new Date(date)
     d.setHours(0, 0, 0, 0)
 
@@ -11,7 +11,7 @@ export function getWeekNumber(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-export function getStartOfWeek(date) {
+function getStartOfWeek(date) {
 	const d = new Date(date)
 
 	const day = d.getDay()
@@ -24,7 +24,7 @@ export function getStartOfWeek(date) {
 	return d
 }
 
-export function getEndOfWeek(date) {
+function getEndOfWeek(date) {
 	const start = getStartOfWeek(date)
 
 	const end = new Date(start)
@@ -34,7 +34,7 @@ export function getEndOfWeek(date) {
 	return end
 }
 
-export function getPreviousWeekRange(date) {
+function getPreviousWeekRange(date) {
     const prev = new Date(date)
     prev.setDate(prev.getDate() - 7)
 
@@ -44,7 +44,7 @@ export function getPreviousWeekRange(date) {
     return { start: monday, end: sunday }
 }
 
-export function getISOWeekString(date = new Date()) {
+function getISOWeekString(date = new Date()) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -52,23 +52,25 @@ export function getISOWeekString(date = new Date()) {
     return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
-export function getPreviousISOWeekString(date) {
+function getPreviousISOWeekString(date) {
 	const prev = new Date(date)
 	prev.setDate(prev.getDate() - 7)
 
 	return getISOWeekString(prev)
 }
 
-export function getWeeksBetween(fromWeek, toWeek) {
+function getWeeksBetween(fromWeek, toWeek) {
 	const toDate = isoWeekToDate(toWeek);
 	const fromDate = isoWeekToDate(fromWeek);
 	return Math.floor((toDate - fromDate) / (7 * 24 * 60 * 60 * 1000));
 }
 
-export function isoWeekToDate(weekStr) {
+function isoWeekToDate(weekStr) {
 	const [year, week] = weekStr.split('-W').map(Number);
 	const jan4 = new Date(Date.UTC(year, 0, 4));
 	const startOfWeek1 = new Date(jan4);
 	startOfWeek1.setUTCDate(jan4.getUTCDate() - (jan4.getUTCDay() || 7) + 1);
 	return new Date(startOfWeek1.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
 }
+
+module.exports = { getWeekNumber, getStartOfWeek, getEndOfWeek, getPreviousWeekRange, getISOWeekString, getPreviousISOWeekString, getWeeksBetween, isoWeekToDate }

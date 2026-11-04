@@ -4,6 +4,7 @@
 // Imports
 const asyncHandler = require('express-async-handler') 
 const formatUser = require('../utils/formatUser.js')
+const { isObjectId } = require('../utils/isObjectId.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
 const { applyQuestResults } = require('../utils/quests/progress.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
@@ -201,7 +202,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
 
     const updatedUser = await User.findById(req.user.id)
     res.status(200).json({
-        user: updatedUser,
+        user: formatUser(updatedUser),
         message: 'Workout deleted successfully' 
     })
 })
@@ -245,6 +246,10 @@ const addExercise = asyncHandler(async (req, res) => {
     }
 
     // Validate Exercise
+    if (!isObjectId(req.body.exercise)) {
+        res.status(400)
+        throw new Error('Each exercise must reference a valid exercise id')
+    }
     const exercise = await Exercise.findById(req.body.exercise)
     if (!exercise) {
         res.status(404)
@@ -315,89 +320,11 @@ const addExercise = asyncHandler(async (req, res) => {
     res.status(200).json(updatedWorkout)
 })
 
-/**
- *  @desc    Update an exercise inside a workout
- *  @route   PUT /api/workouts/:id/exercises/:exerciseId
- *  @access  Private
- */
-const updateExercise = asyncHandler(async (req, res) => {
-    const workout = await Workout.findById(req.params.id)
-
-    // Check workout exists
-    if (!workout) {
-        res.status(404)
-        throw new Error('Workout not found')
-    }
-
-    // Check user exists and is allowed to update workout
-    if (!req.user || workout.user.toString() !== req.user.id) {
-        res.status(401)
-        throw new Error('User not authorised')
-    }
-
-    const exercise = workout.exercises.id(req.params.exerciseId)
-
-    // Check exercise exists
-    if (!exercise) {
-        res.status(404)
-        throw new Error('Exercise not found')
-    }
-
-    // Update exercise info
-    exercise.name = req.body.name || exercise.name
-    exercise.musclegroup = req.body.musclegroup || exercise.musclegroup
-    exercise.description = req.body.description || exercise.description
-
-    // Update sets (sanitised to known, bounded numeric fields)
-    if (req.body.sets) {
-        const sets = sanitiseSets(req.body.sets)
-        if (!sets) {
-            res.status(400)
-            throw new Error('Sets contain invalid values')
-        }
-        exercise.sets = sets
-    }
-
-    const updatedWorkout = await workout.save()
-    res.status(200).json(updatedWorkout)
-})
-
-/**
- *  @desc    Delete an exercise from a workout
- *  @route   DELETE /api/workouts/:id/exercises/:exerciseId
- *  @access  Private
- */
-const deleteExercise = asyncHandler(async (req, res) => {
-    const workout = await Workout.findById(req.params.id)
-
-    // Check if workout with given id exists
-    if (!workout) {
-        res.status(404)
-        throw new Error('Workout not found')
-    }
-
-    // Check user exists and is authorised to access workout
-    if (!req.user || workout.user.toString() !== req.user.id) {
-        res.status(401)
-        throw new Error('User not authorised')
-    }
-
-    // Remove exercise
-    workout.exercises = workout.exercises.filter(
-        (ex) => ex._id.toString() !== req.params.exerciseId
-    )
-
-    const updatedWorkout = await workout.save()
-    res.status(200).json(updatedWorkout)
-})
-
 // Export functions
 module.exports = { 
     getWorkouts, 
     setWorkout, 
     deleteWorkout,
     deleteAllWorkouts, 
-    addExercise, 
-    updateExercise, 
-    deleteExercise
+    addExercise
  }

@@ -254,8 +254,9 @@ describe('userController', () => {
 
             await loginUser(req, res)
 
+            // Username lookup is case-insensitive, matching registration
             expect(User.findOne).toHaveBeenCalledWith({
-                username: 'john'
+                username: /^john$/i
             })
             expect(bcrypt.compare).toHaveBeenCalledWith(
                 'Password123!',

@@ -729,6 +729,48 @@ describe('questController', () => {
             })
         })
 
+        test('returns the quests it has when generating the missing ones fails', async () => {
+            User.findById.mockResolvedValue({ _id: 'failing-user', useImperial: false })
+            Quest.updateMany.mockResolvedValue({ modifiedCount: 0 })
+
+            // Only a daily quest exists, and generating weekly/monthly fails (no workouts)
+            const daily = { _id: 'quest1', duration: 'daily', status: 'active' }
+            Quest.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([daily]) })
+            mockWorkoutQuery([])
+
+            const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+            const res = createRes()
+
+            await getQuests(createReq({ user: { id: 'failing-user' } }), res)
+
+            expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith({
+                quests: { daily: [daily], weekly: [], monthly: [] }
+            })
+            expect(mockCreate).not.toHaveBeenCalled()
+
+            consoleError.mockRestore()
+        })
+
+        test('does not retry a failed generation on the next request', async () => {
+            User.findById.mockResolvedValue({ _id: 'cooldown-user', useImperial: false })
+            Quest.updateMany.mockResolvedValue({ modifiedCount: 0 })
+            Quest.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) })
+            mockWorkoutQuery([])
+
+            const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+            const req = createReq({ user: { id: 'cooldown-user' } })
+
+            await getQuests(req, createRes())
+            const attemptsAfterFirst = Workout.find.mock.calls.length
+            expect(attemptsAfterFirst).toBeGreaterThan(0)
+
+            await getQuests(req, createRes())
+            expect(Workout.find.mock.calls.length).toBe(attemptsAfterFirst)
+
+            consoleError.mockRestore()
+        })
+
         test('expires old quests before returning current quests', async () => {
             User.findById.mockResolvedValue(user)
 

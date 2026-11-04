@@ -38,7 +38,7 @@ const PrevWorkouts = () => {
                     .includes(lowerSearch)
                 
                 const exerciseMatch = workout.exercises?.some(ex =>
-                    ex.exercise.name.toLowerCase().includes(lowerSearch)
+                    ex.exercise?.name?.toLowerCase().includes(lowerSearch)
                 )
 
                 return titleMatch || exerciseMatch
@@ -87,7 +87,7 @@ const PrevWorkouts = () => {
 
     useEffect(() => {
         if (isError) {
-            console.log(message)
+            console.error(message)
         }
 
         if (!user){

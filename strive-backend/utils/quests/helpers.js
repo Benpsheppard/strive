@@ -39,7 +39,28 @@ const resolveTarget = (completion, context) => {
     return { exercise: target.exercise, selectedEquipment: target.selectedEquipment }
 }
 
+// Best value of a metric for an exercise/equipment pair across the user's recent workouts.
+// Baselines come from this rather than from the AI, which can misreport them.
+const getHistoricalBest = (context, completion, readMetric) => {
+    let best = 0
+
+    ;(context.recentWorkouts || []).forEach(workout => {
+        workout.exercises.forEach(ex => {
+            const data = ex.exercise
+            if (!data || typeof data !== 'object') return
+
+            const candidate = { name: data.name, selectedEquipment: ex.selectedEquipment }
+            if (!matchesQuestExercise(candidate, completion.exercise, completion.selectedEquipment)) return
+
+            best = Math.max(best, readMetric(ex.sets || []))
+        })
+    })
+
+    return best
+}
+
 module.exports = {
+    getHistoricalBest,
     isPositiveNumber,
     hasTarget,
     targetKey,

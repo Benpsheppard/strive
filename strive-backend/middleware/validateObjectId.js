@@ -1,8 +1,8 @@
 // validateObjectId.js
 // Middleware to validate MongoDB ObjectId parameters
 
-const mongoose = require('mongoose')
 const asyncHandler = require('express-async-handler')
+const { isObjectId } = require('../utils/isObjectId')
 
 /**
  * Validates that a parameter is a valid MongoDB ObjectId
@@ -19,7 +19,7 @@ const validateObjectId = (paramName = 'id') => {
         }
 
         // Check if id is a valid MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!isObjectId(id)) {
             res.status(400)
             throw new Error(`Invalid ${paramName} format`)
         }

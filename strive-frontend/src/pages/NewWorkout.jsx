@@ -108,7 +108,7 @@ const NewWorkout = () => {
     // Initial data fetch
     useEffect(() => {
         if (isError) { 
-            console.log(message)
+            console.error(message)
             return 
         }
         if (!user) { 
@@ -219,6 +219,7 @@ const NewWorkout = () => {
                         <RollingStats 
                             workouts={workouts}
                             exercises={exercises}
+                            useImperial={user.useImperial}
                         />
                     }
 

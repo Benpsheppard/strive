@@ -1,10 +1,14 @@
 // strength.js
 // A single-session strength goal: hit a weight x reps on one exercise
 
-const { isPositiveNumber, isValidTarget, targetKey, matchesQuestExercise, resolveTarget } = require('../helpers')
+const { getMaxWeight } = require('../../workoutMetrics')
+const { isPositiveNumber, isValidTarget, targetKey, matchesQuestExercise, resolveTarget, getHistoricalBest } = require('../helpers')
 
 // Reps a user can fall short by and still count
 const REP_BUFFER = 2
+
+// Most the target weight may exceed the user's best recent weight for the exercise
+const MAX_WEIGHT_INCREASE = 1.25
 
 const prompt = {
     description: `A single-session strength goal. The user must hit a specific weight x reps in one workout.`,
@@ -21,6 +25,7 @@ const validate = (completion, context) =>
     isValidTarget(completion, context) &&
     context.trackingModes.get(targetKey(completion)) === 'weight_reps' &&
     isPositiveNumber(completion.weight) &&
+    completion.weight <= getHistoricalBest(context, completion, getMaxWeight) * MAX_WEIGHT_INCREASE &&
     Number.isInteger(completion.reps) &&
     completion.reps >= 1 &&
     completion.reps <= 12
@@ -41,7 +46,7 @@ const check = (quest, exercises) => {
 
     const completed = match.sets.some(s =>
         (Number(s.weight) || 0) >= weight &&
-        (Number(s.reps) || 0) >= reps - REP_BUFFER
+        (Number(s.reps) || 0) >= Math.max(1, reps - REP_BUFFER)
     )
 
     return { completed }

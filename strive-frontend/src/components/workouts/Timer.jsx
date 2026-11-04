@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react'
 import { FaClock, FaCog } from 'react-icons/fa'
 import { formatElapsed, formatSeconds } from '../../utils/formatValues'
-import { useLocalStorage } from '../../hooks/useLocalStorage.js'
 
 const REST_TIMER_OPTIONS = [
     { label: 'Off', value: 0 },

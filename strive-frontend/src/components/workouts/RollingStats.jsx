@@ -2,8 +2,9 @@
 
 // Imports
 import { calculatePersonalBests, buildPBKey } from '../../utils/pbDetection.js'
+import { formatWeight } from '../../utils/formatValues.js'
 
-const RollingStats = ({ workouts, exercises }) => {
+const RollingStats = ({ workouts, exercises, useImperial }) => {
     const personalBests = calculatePersonalBests(workouts)
 
     let pbCount = 0
@@ -17,8 +18,9 @@ const RollingStats = ({ workouts, exercises }) => {
         const hasNewPB = exercise.sets?.some((set) => {
             const weight = Number(set.weight) || 0
 
+            // First time logging an exercise isn't a PB
             if (!currentPB) {
-                return weight > 0
+                return false
             }
 
             return weight > currentPB.weight
@@ -112,7 +114,7 @@ const RollingStats = ({ workouts, exercises }) => {
                             </span>
 
                             <span className="font-semibold text-[#2B2D42]">
-                                {volume.toLocaleString()} kg
+                                {formatWeight(volume, useImperial)}
                             </span>
                         </div>
                     )
@@ -125,7 +127,7 @@ const RollingStats = ({ workouts, exercises }) => {
                     </span>
 
                     <span className="font-bold text-[#2B2D42]">
-                        {workoutStats.totalWeight.toLocaleString()} kg
+                        {formatWeight(workoutStats.totalWeight, useImperial)}
                     </span>
                 </div>
             </div>

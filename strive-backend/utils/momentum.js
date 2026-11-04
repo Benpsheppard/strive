@@ -23,7 +23,8 @@ const getDaysSince = (date) => {
     }
 
     const now = new Date()
-    const past = date
+    // Copy so the caller's date isn't changed
+    const past = new Date(date)
 
     now.setHours(0, 0, 0, 0)
     past.setHours(0, 0, 0, 0)
@@ -33,7 +34,7 @@ const getDaysSince = (date) => {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
-export const calculateMomentum = (user, data) => {
+const calculateMomentum = (user, data) => {
     let momentum = user.momentum.current
     let earnedMomentum = 0
 
@@ -61,10 +62,12 @@ export const calculateMomentum = (user, data) => {
 
     if (data.quests) {
         data.quests.forEach(q => {
-            earnedMomentum += QUEST_MOMENTUM[q.duration]
+            earnedMomentum += QUEST_MOMENTUM[q.duration] || 0
         })
     }
 
     momentum += Math.min(MAX_DAILY_GAIN, earnedMomentum)
     return Math.max(0, Math.min(100, momentum))
 }
+
+module.exports = { calculateMomentum }

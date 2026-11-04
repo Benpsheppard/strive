@@ -3,11 +3,12 @@
 // Imports
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import workoutsService from './workoutsService'
+import { getErrorMessage } from '../../utils/getErrorMessage.js'
 
 // Initial state
 const initialState = {
 	workouts: [],
-	lastWorkoutStats: [],
+	lastWorkoutStats: null,
 	isError: false,
 	isSuccess: false,
 	isLoading: false,
@@ -20,8 +21,7 @@ export const createWorkout = createAsyncThunk('workouts/create', async (workoutD
 		const token = thunkAPI.getState().auth.user.token
 		return await workoutsService.createWorkout(workoutData, token)
 	} catch (error) {
-		const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+		const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
 	}
 })
@@ -32,8 +32,7 @@ export const getWorkouts = createAsyncThunk('workouts/getAll', async (_, thunkAP
 		const token = thunkAPI.getState().auth.user.token
 		return await workoutsService.getWorkouts(token)
     } catch (error) {
-		const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+		const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
     }
 })
@@ -44,8 +43,7 @@ export const deleteWorkout = createAsyncThunk('workouts/delete', async (id, thun
 		const token = thunkAPI.getState().auth.user.token
 		return await workoutsService.deleteWorkout(id, token)
     } catch (error) {
-		const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+		const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
     }
 })
@@ -56,8 +54,7 @@ export const addExercise = createAsyncThunk('workouts/addExercise', async ({ wor
 		const token = thunkAPI.getState().auth.user.token
 		return await workoutsService.addExercise(workoutId, exercise, token)
     } catch (error) {
-		const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+		const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
     }
 })
@@ -91,7 +88,7 @@ export const workoutsSlice = createSlice({
 			.addCase(createWorkout.fulfilled, (state, action) => {
 				state.isLoading = false
 				state.isSuccess = true
-				state.workouts.push(action.payload)
+				state.workouts.push(action.payload.workout)
 			})
 			.addCase(createWorkout.rejected, (state, action) => {
 				state.isLoading = false

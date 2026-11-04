@@ -34,7 +34,7 @@ const PBChart = ({ workouts, useImperial }) => {
         return data.muscleGroup === selectedMuscleGroup
     })
 
-    const labels = filteredExercises.map(([name]) => name)
+    const labels = filteredExercises.map(([, data]) => `${data.name} (${data.equipment})`)
     const weights = filteredExercises.map(([, data]) =>
         useImperial ? kgToLbs(data.weight) : data.weight
     )

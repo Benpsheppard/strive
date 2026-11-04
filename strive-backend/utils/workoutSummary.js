@@ -79,8 +79,8 @@ const calculateVolumePoints = async (workoutHistory, totalWeight) => {
     // Calculate average
     const averageTotalWeight = runningTotal / 5
 
-    // Calculate score
-    const score = totalWeight / averageTotalWeight
+    // Calculate score (no recent volume to compare against counts as an average session)
+    const score = averageTotalWeight > 0 ? totalWeight / averageTotalWeight : 1
 
     // Calculate reward
     const reward = getReward(score)
@@ -226,7 +226,10 @@ const calculateConsistencyMultiplier = async (workoutHistory) => {
     return Math.round(multiplier * 100) / 100
 }
 
-const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, workout, exercises, personalBests, totalWeight, totalQuestSP) => {
+// First time logging an exercise/equipment pair isn't a PB, it earns a smaller flat reward
+const FIRST_LIFT_REWARD = 50
+
+const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP) => {
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
     const { progressionReward, progressionScore } = calculateProgressionPoints(existingPBs, exercises, personalBests)
     const [{ volumeReward, volumeScore }, { strengthReward, strengthScore }, consistencyMultiplier] = await Promise.all([
@@ -236,6 +239,7 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
     ])
 
     const personalBestsReward = personalBests.length * 500
+    const firstLiftsReward = firstLifts.length * FIRST_LIFT_REWARD
 
     // The workout isn't saved yet, so add it to the count already in the database
     const workoutsThisWeek = await getWorkoutsThisWeek(user._id, workout.createdAt) + 1
@@ -245,7 +249,7 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
     const targetBonus = targetReached ? getWeeklyBonus(target) : 0
 
     const completeReward = Math.ceil((volumeReward + strengthReward + progressionReward) * consistencyMultiplier)
-    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward + targetBonus) * momentumMultiplier)
+    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward + firstLiftsReward + targetBonus) * momentumMultiplier)
     
     return {
         total,
@@ -256,6 +260,7 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
         momentumMultiplier,
         totalQuestSP,
         personalBestsReward,
+        firstLiftsReward,
         bonus: targetBonus
     }
 }
@@ -279,40 +284,6 @@ const getPBMetric = (trackingMode, sets) => {
 }
 
 const buildPBKey = (name, equipment) => buildExerciseKey(name, equipment || 'unspecified')
-
-// const getExistingPBs = async (userId, workout) => {
-//     const existingWorkouts = await Workout.find({ 
-//         user: userId,
-//         _id: { $ne: workout._id }
-//     },
-//     {
-//         'exercises.exercise': 1,
-//         'exercises.selectedEquipment': 1,
-//         'exercises.sets': 1
-//     })
-//     .populate('exercises.exercise', 'name trackingMode')
-//     .lean()
-
-//     const existingPBs = {}
-//     existingWorkouts.forEach(workout => {
-//         workout.exercises.forEach(ex => {
-//             const name = ex.exercise?.name?.trim().toLowerCase()
-//             const trackingMode = ex.exercise?.trackingMode
-//             if (!name || !trackingMode) return
-
-//             const key = buildPBKey(name, ex.selectedEquipment)
-
-//             const pb = getPBMetric(trackingMode, ex.sets)
-//             if (!pb || pb.value === 0) return
-
-//             if (!existingPBs[key] || pb.value > existingPBs[key].value) {
-//                 existingPBs[key] = { metric: pb.metric, value: pb.value, equipment: ex.selectedEquipment }
-//             }
-//         })
-//     })
-
-//     return existingPBs
-// }
 
 const getExistingPBs = (workoutHistory) => {
     const existingPBs = {}
@@ -345,7 +316,12 @@ const getExistingPBs = (workoutHistory) => {
 
 const detectPersonalBests = (exercises, existingPBs) => {
     const newPBs = []
-    
+    const firstLifts = []
+    // Best values so far, including earlier entries in this same workout
+    const bestSoFar = { ...existingPBs }
+    const pbIndexByKey = {}
+    const firstLiftKeys = new Set()
+
     exercises.forEach(exercise => {
         const name = exercise.name.trim().toLowerCase()
         const key = buildPBKey(name, exercise.selectedEquipment)
@@ -353,20 +329,37 @@ const detectPersonalBests = (exercises, existingPBs) => {
         const pb = getPBMetric(exercise.trackingMode, exercise.sets)
         if (!pb || pb.value === 0) return
 
-        const existingPB = existingPBs[key]
+        // Already counted as a first lift in this workout
+        if (firstLiftKeys.has(key)) return
 
-        if (!existingPB || pb.value > existingPB.value) {
-            newPBs.push({
-                exercise: exercise.name,
-                equipment: exercise.selectedEquipment,
-                metric: pb.metric,
-                previousValue: existingPB ? existingPB.value : 0,
-                newValue: pb.value
-            })
+        const existingPB = bestSoFar[key]
+
+        if (!existingPB) {
+            firstLiftKeys.add(key)
+            firstLifts.push({ exercise: exercise.name, equipment: exercise.selectedEquipment })
+            bestSoFar[key] = { metric: pb.metric, value: pb.value }
+            return
+        }
+
+        if (pb.value > existingPB.value) {
+            if (pbIndexByKey[key] !== undefined) {
+                // Same exercise logged twice: keep a single PB with the best value
+                newPBs[pbIndexByKey[key]].newValue = pb.value
+            } else {
+                pbIndexByKey[key] = newPBs.length
+                newPBs.push({
+                    exercise: exercise.name,
+                    equipment: exercise.selectedEquipment,
+                    metric: pb.metric,
+                    previousValue: existingPB.value,
+                    newValue: pb.value
+                })
+            }
+            bestSoFar[key] = { metric: pb.metric, value: pb.value }
         }
     })
 
-    return newPBs
+    return { personalBests: newPBs, firstLifts }
 }
 
 // ─── Main Summary ────────────────────────────────────────────────────────────
@@ -410,9 +403,9 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const { questsCompleted, totalQuestSP, questUpdates } = await detectQuestCompletion(user._id, exercises, workout)
 
-    const personalBests = detectPersonalBests(exercises, existingPBs)
+    const { personalBests, firstLifts } = detectPersonalBests(exercises, existingPBs)
 
-    const totalStrivePoints = await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, totalWeight, totalQuestSP)
+    const totalStrivePoints = await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP)
 
     return {
         summary: {
@@ -424,7 +417,8 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
             totalDuration,
             totalStrivePoints,
             questsCompleted,
-            personalBests
+            personalBests,
+            firstLifts
         },
         questUpdates
     }
