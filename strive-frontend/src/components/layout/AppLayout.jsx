@@ -10,7 +10,7 @@ const AppLayout = ({ children }) => (
             Skip to content
         </a>
         <Header />
-        <main id="main" className="mx-auto w-full max-w-5xl px-4 pb-28 pt-4 md:pb-12">
+        <main id="main" className="mx-auto w-full max-w-5xl px-4 pb-32 pt-4 md:pb-12">
             {children ?? <Outlet />}
         </main>
     </>

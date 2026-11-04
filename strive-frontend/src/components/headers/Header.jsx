@@ -76,11 +76,11 @@ const Header = () => {
                                 to={to}
                                 end={end}
                                 className={({ isActive }) => cx(
-                                    'flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors',
+                                    'flex min-h-[4.25rem] flex-col items-center justify-center gap-1 py-2 text-sm font-semibold transition-colors',
                                     isActive ? 'text-accent-fg' : 'text-muted hover:text-fg'
                                 )}
                             >
-                                <Icon size={20} aria-hidden="true" />
+                                <Icon size={26} aria-hidden="true" />
                                 <span>{label}</span>
                             </NavLink>
                         </li>
