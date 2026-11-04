@@ -40,5 +40,21 @@ const protect = asyncHandler(async (req, res, next) => {
     next()
 })
 
-// Export protect function
-module.exports = { protect }
+// Attaches req.user when a valid token is sent, but never rejects the request
+const optionalProtect = asyncHandler(async (req, res, next) => {
+    const header = req.headers.authorization
+
+    if (header && header.startsWith('Bearer ')) {
+        try {
+            const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET)
+            req.user = await User.findById(decoded.id).select('-password')
+        } catch (error) {
+            req.user = null
+        }
+    }
+
+    next()
+})
+
+// Export protect functions
+module.exports = { protect, optionalProtect }

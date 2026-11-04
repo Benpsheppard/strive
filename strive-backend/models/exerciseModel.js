@@ -2,40 +2,13 @@
 
 const mongoose = require('mongoose')
 
-const muscleGroups = [
-    'Chest', 'Back', 'Shoulders', 
-    'Arms', 'Legs', 'Core', 
-    'Cardio', 'Full body', 'Other'
-]
-const subMuscleGroups = [
-    'Upper chest', 'Mid chest','Lower chest',
-    'Lats', 'Traps', 'Rear delts', 'Upper back', 'Mid back', 'Lower back',
-    'Front delts', 'Side delts',
-    'Biceps', 'Triceps', 'Forearms',
-    'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Abductors',
-    'Abs', 'Lower abs', 'Obliques',
-    'Mobility', 'Cardio', 'Rehab', 'Other'
-]
-const equipment = [
-    'Barbell', 'Dumbbell', 'Machine', 'Smith Machine',
-    'Bodyweight', 'Kettlebell', 'Cable', 
-    'Bike', 'Treadmill', 'Stepper', 'Rowing machine', 
-    'Other'
-]
-const trackingModes = [
-    'weight_reps', 'bodyweight_reps', 
-    'assisted_reps', 'reps', 
-    'duration', 'distance', 'distance_duration', 
-    'distance_weight', 'other'
-]
-
-const generateSlug = (name) => {
-    return name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '')
-}
+const {
+    MUSCLE_GROUPS: muscleGroups,
+    SUB_MUSCLE_GROUPS: subMuscleGroups,
+    EQUIPMENT: equipment,
+    TRACKING_MODES: trackingModes,
+    generateSlug
+} = require('./exerciseOptions')
 
 // Exercise Schema
 const exerciseSchema = mongoose.Schema({
@@ -107,7 +80,9 @@ const exerciseSchema = mongoose.Schema({
 
 exerciseSchema.pre('validate', async function() {
     if (this.isNew || this.isModified('name')) {
-        this.slug = generateSlug(this.name)
+        const baseSlug = generateSlug(this.name)
+        // Custom exercises are scoped to their creator so two users can use the same name
+        this.slug = this.isCustom && this.createdBy ? `${this.createdBy}_${baseSlug}` : baseSlug
     }
 })
 

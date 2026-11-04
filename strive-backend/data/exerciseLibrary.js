@@ -237,4 +237,127 @@ const exercises = [
     }
 ]
 
-module.exports = exercises
+// Compact helper for the entries below
+const e = (name, muscleGroup, subMuscleGroup, equipment, trackingMode = 'weight_reps') =>
+    ({ name, muscleGroup, subMuscleGroup, equipment, trackingMode })
+
+const WR = 'weight_reps'
+const BW = 'bodyweight_reps'
+const AS = 'assisted_reps'
+const DU = 'duration'
+const DD = 'distance_duration'
+
+const moreExercises = [
+    // Chest
+    e('Decline Bench Press', 'Chest', 'Lower chest', ['Barbell', 'Dumbbell', 'Smith Machine'], WR),
+    e('Incline Chest Press', 'Chest', 'Upper chest', ['Machine'], WR),
+    e('Incline Chest Fly', 'Chest', 'Upper chest', ['Dumbbell', 'Cable'], WR),
+    e('Cable Crossover', 'Chest', 'Lower chest', ['Cable'], WR),
+    e('Pec Deck', 'Chest', 'Mid chest', ['Machine'], WR),
+    e('Dips', 'Chest', 'Lower chest', ['Bodyweight'], BW),
+    e('Assisted Dips', 'Chest', 'Lower chest', ['Machine'], AS),
+    e('Pullover', 'Chest', 'Mid chest', ['Dumbbell', 'Cable'], WR),
+    e('Diamond Push Up', 'Chest', 'Mid chest', ['Bodyweight'], BW),
+    e('Decline Push Up', 'Chest', 'Upper chest', ['Bodyweight'], BW),
+    e('Incline Push Up', 'Chest', 'Lower chest', ['Bodyweight'], BW),
+    // Back
+    e('Bent Over Row', 'Back', 'Mid back', ['Barbell', 'Dumbbell', 'Smith Machine'], WR),
+    e('Pendlay Row', 'Back', 'Mid back', ['Barbell'], WR),
+    e('Single-Arm Row', 'Back', 'Lats', ['Dumbbell', 'Cable'], WR),
+    e('Chest Supported Row', 'Back', 'Upper back', ['Machine', 'Dumbbell'], WR),
+    e('Machine Row', 'Back', 'Mid back', ['Machine'], WR),
+    e('Inverted Row', 'Back', 'Mid back', ['Bodyweight'], BW),
+    e('Chin Up', 'Back', 'Lats', ['Bodyweight'], BW),
+    e('Neutral Grip Pull Up', 'Back', 'Lats', ['Bodyweight'], BW),
+    e('Assisted Pull Up', 'Back', 'Lats', ['Machine'], AS),
+    e('Straight Arm Pulldown', 'Back', 'Lats', ['Cable'], WR),
+    e('Face Pull', 'Shoulders', 'Rear delts', ['Cable'], WR),
+    e('Shrug', 'Back', 'Traps', ['Barbell', 'Dumbbell', 'Smith Machine'], WR),
+    e('Back Extension', 'Back', 'Lower back', ['Bodyweight', 'Machine'], 'reps'),
+    e('Rack Pull', 'Back', 'Lower back', ['Barbell'], WR),
+    e('Good Morning', 'Back', 'Lower back', ['Barbell'], WR),
+    // Shoulders
+    e('Arnold Press', 'Shoulders', 'Front delts', ['Dumbbell'], WR),
+    e('Front Raise', 'Shoulders', 'Front delts', ['Dumbbell', 'Cable', 'Barbell'], WR),
+    e('Upright Row', 'Shoulders', 'Side delts', ['Barbell', 'Dumbbell', 'Cable'], WR),
+    e('Push Press', 'Shoulders', 'Front delts', ['Barbell'], WR),
+    e('Landmine Press', 'Shoulders', 'Front delts', ['Barbell'], WR),
+    e('Pike Push Up', 'Shoulders', 'Front delts', ['Bodyweight'], BW),
+    // Biceps
+    e('Preacher Curl', 'Arms', 'Biceps', ['Barbell', 'Dumbbell', 'Machine'], WR),
+    e('Incline Curl', 'Arms', 'Biceps', ['Dumbbell'], WR),
+    e('Concentration Curl', 'Arms', 'Biceps', ['Dumbbell'], WR),
+    e('EZ Bar Curl', 'Arms', 'Biceps', ['Barbell'], WR),
+    e('Spider Curl', 'Arms', 'Biceps', ['Dumbbell', 'Barbell'], WR),
+    e('Zottman Curl', 'Arms', 'Biceps', ['Dumbbell'], WR),
+    e('Reverse Curl', 'Arms', 'Forearms', ['Barbell', 'Dumbbell', 'Cable'], WR),
+    // Triceps and forearms
+    e('Overhead Tricep Extension', 'Arms', 'Triceps', ['Dumbbell', 'Cable'], WR),
+    e('Close Grip Bench Press', 'Arms', 'Triceps', ['Barbell', 'Smith Machine'], WR),
+    e('Tricep Kickback', 'Arms', 'Triceps', ['Dumbbell', 'Cable'], WR),
+    e('Bench Dip', 'Arms', 'Triceps', ['Bodyweight'], BW),
+    e('Machine Tricep Extension', 'Arms', 'Triceps', ['Machine'], WR),
+    e('Reverse Wrist Curl', 'Arms', 'Forearms', ['Dumbbell', 'Barbell'], WR),
+    e('Dead Hang', 'Arms', 'Forearms', ['Bodyweight'], DU),
+    // Legs
+    e('Front Squat', 'Legs', 'Quads', ['Barbell', 'Smith Machine'], WR),
+    e('Goblet Squat', 'Legs', 'Quads', ['Dumbbell', 'Kettlebell'], WR),
+    e('Hack Squat', 'Legs', 'Quads', ['Machine', 'Barbell'], WR),
+    e('Leg Press', 'Legs', 'Quads', ['Machine'], WR),
+    e('Bulgarian Split Squat', 'Legs', 'Quads', ['Dumbbell', 'Barbell', 'Smith Machine'], WR),
+    e('Walking Lunge', 'Legs', 'Quads', ['Dumbbell', 'Barbell'], WR),
+    e('Reverse Lunge', 'Legs', 'Glutes', ['Dumbbell', 'Barbell'], WR),
+    e('Bodyweight Lunge', 'Legs', 'Quads', ['Bodyweight'], BW),
+    e('Step Up', 'Legs', 'Quads', ['Dumbbell', 'Barbell'], WR),
+    e('Hip Thrust', 'Legs', 'Glutes', ['Barbell', 'Machine', 'Smith Machine'], WR),
+    e('Glute Bridge', 'Legs', 'Glutes', ['Bodyweight'], BW),
+    e('Sumo Deadlift', 'Legs', 'Glutes', ['Barbell'], WR),
+    e('Trap Bar Deadlift', 'Legs', 'Quads', ['Barbell'], WR),
+    e('Seated Calf Raise', 'Legs', 'Calves', ['Machine'], WR),
+    e('Lying Leg Curl', 'Legs', 'Hamstrings', ['Machine'], WR),
+    e('Nordic Hamstring Curl', 'Legs', 'Hamstrings', ['Bodyweight'], BW),
+    e('Cable Kickback', 'Legs', 'Glutes', ['Cable'], WR),
+    e('Cable Pull Through', 'Legs', 'Glutes', ['Cable'], WR),
+    e('Wall Sit', 'Legs', 'Quads', ['Bodyweight'], DU),
+    e('Bodyweight Squat', 'Legs', 'Quads', ['Bodyweight'], BW),
+    e('Jump Squat', 'Legs', 'Quads', ['Bodyweight'], BW),
+    // Core
+    e('Hanging Leg Raise', 'Core', 'Lower abs', ['Bodyweight'], BW),
+    e('Hanging Knee Raise', 'Core', 'Lower abs', ['Bodyweight'], BW),
+    e('Cable Crunch', 'Core', 'Abs', ['Cable'], WR),
+    e('Russian Twist', 'Core', 'Obliques', ['Bodyweight'], BW),
+    e('Ab Wheel Rollout', 'Core', 'Abs', ['Other'], BW),
+    e('Sit Up', 'Core', 'Abs', ['Bodyweight'], BW),
+    e('Leg Raise', 'Core', 'Lower abs', ['Bodyweight'], BW),
+    e('Side Plank', 'Core', 'Obliques', ['Bodyweight'], DU),
+    e('Dead Bug', 'Core', 'Abs', ['Bodyweight'], BW),
+    e('Bicycle Crunch', 'Core', 'Obliques', ['Bodyweight'], BW),
+    e('Mountain Climber', 'Core', 'Abs', ['Bodyweight'], DU),
+    e('Pallof Press', 'Core', 'Obliques', ['Cable'], WR),
+    e('Woodchopper', 'Core', 'Obliques', ['Cable'], WR),
+    e('Hollow Hold', 'Core', 'Abs', ['Bodyweight'], DU),
+    e('V Up', 'Core', 'Abs', ['Bodyweight'], BW),
+    // Full body
+    e('Power Clean', 'Full body', 'Other', ['Barbell'], WR),
+    e('Kettlebell Swing', 'Full body', 'Glutes', ['Kettlebell'], WR),
+    e('Thruster', 'Full body', 'Quads', ['Barbell', 'Dumbbell'], WR),
+    e('Turkish Get Up', 'Full body', 'Other', ['Kettlebell'], WR),
+    e('Burpee', 'Full body', 'Cardio', ['Bodyweight'], BW),
+    // Cardio
+    e('Cycling', 'Cardio', 'Cardio', ['Bike'], DD),
+    e('Walking', 'Cardio', 'Cardio', ['Bodyweight', 'Treadmill'], DD),
+    e('Incline Walk', 'Cardio', 'Cardio', ['Treadmill'], DD),
+    e('Rowing', 'Cardio', 'Cardio', ['Rowing machine'], DD),
+    e('Elliptical', 'Cardio', 'Cardio', ['Machine'], DD),
+    e('Swimming', 'Cardio', 'Cardio', ['Other'], DD),
+    e('Sprints', 'Cardio', 'Cardio', ['Bodyweight'], DD),
+    e('Stair Climber', 'Cardio', 'Cardio', ['Stepper'], DU),
+    e('Jump Rope', 'Cardio', 'Cardio', ['Other'], DU),
+    e('Battle Ropes', 'Cardio', 'Cardio', ['Other'], DU),
+    // Mobility
+    e('Yoga', 'Other', 'Mobility', ['Bodyweight'], DU),
+    e('Foam Rolling', 'Other', 'Mobility', ['Other'], DU),
+    e('Mobility Flow', 'Other', 'Mobility', ['Bodyweight'], DU)
+]
+
+module.exports = [...exercises, ...moreExercises]

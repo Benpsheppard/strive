@@ -9,13 +9,7 @@ const mongoose = require('mongoose')
 const Exercise = require('../models/exerciseModel')
 const exercises = require('../data/exerciseLibrary')
 const connectDB = require('../config/db')
-
-// Must match the slug generation in exerciseModel.js
-const generateSlug = (name) => name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+const { generateSlug } = require('../models/exerciseOptions')
 
 const seedDB = async () => {
     if (process.env.NODE_ENV === 'production' && !process.argv.includes('--allow-production')) {

@@ -1,11 +1,14 @@
 // exerciseRoutes
 
 const express = require('express')
-const { getExercises } = require('../controllers/exerciseController')
+const { getExercises, createExercise } = require('../controllers/exerciseController')
+const { protect, optionalProtect } = require('../middleware/authMiddleware')
 
 const exerciseRouter = express.Router()
 
 // Exercise routes
-exerciseRouter.route('/').get(getExercises)
+exerciseRouter.route('/')
+    .get(optionalProtect, getExercises)
+    .post(protect, createExercise)
 
 module.exports = { exerciseRouter }

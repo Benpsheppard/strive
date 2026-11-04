@@ -17,9 +17,14 @@ const User = require('../models/userModel.js')
 const Exercise = require('../models/exerciseModel.js')
 
 // Every exercise must exist and the chosen equipment must be valid for it
-const buildExerciseSnapshots = (populatedWorkout, res) => {
+const buildExerciseSnapshots = (populatedWorkout, res, userId) => {
     for (const ex of populatedWorkout.exercises) {
         if (!ex.exercise) {
+            res.status(400)
+            throw new Error('Exercise not found')
+        }
+        // Custom exercises belong to the user who created them
+        if (ex.exercise.isCustom && String(ex.exercise.createdBy) !== String(userId)) {
             res.status(400)
             throw new Error('Exercise not found')
         }
@@ -95,7 +100,7 @@ const setWorkout = asyncHandler(async (req, res) => {
 
     // Resolve exercises for calculations (validates exercise + equipment)
     const populatedWorkout = await workout.populate('exercises.exercise')
-    const populatedExercises = buildExerciseSnapshots(populatedWorkout, res)
+    const populatedExercises = buildExerciseSnapshots(populatedWorkout, res, req.user.id)
 
     // Store old values for gamification
     const before = {
