@@ -140,6 +140,11 @@ const workoutSchema = mongoose.Schema({
         ref: "User",
         // required: true
     },
+    // Id made by the app when the workout starts, used to make saving safe to retry
+    clientId: {
+        type: String,
+        trim: true
+    },
     // Title
     title: {
         type: String,
@@ -187,5 +192,9 @@ const workoutSchema = mongoose.Schema({
 
 // Index
 workoutSchema.index({ user: 1, createdAt: -1 })
+// One saved workout per client-generated id, so a retried or double-sent save can't create a second
+workoutSchema.index({ user: 1, clientId: 1 }, { unique: true, partialFilterExpression: { clientId: { $type: 'string' } } })
+// Finding the history of the exercises in a workout
+workoutSchema.index({ user: 1, 'exercises.exercise': 1 })
 
 module.exports = mongoose.model('Workout', workoutSchema)

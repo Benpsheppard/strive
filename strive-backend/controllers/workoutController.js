@@ -5,8 +5,10 @@
 const asyncHandler = require('express-async-handler') 
 const formatUser = require('../utils/formatUser.js')
 const { isObjectId } = require('../utils/isObjectId.js')
+const { withLock } = require('../utils/userLock.js')
+const { getDuplicateField } = require('../utils/duplicateKey.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
-const { applyQuestResults } = require('../utils/quests/progress.js') 
+const { applyQuestResults, snapshotQuests, restoreQuests } = require('../utils/quests/progress.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
 const { validateWorkoutInput, sanitiseSets } = require('../utils/validateWorkoutInput.js')
 const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')
@@ -69,7 +71,8 @@ const getWorkouts = asyncHandler(async (req, res) => {
 })
 
 /**
- *  @desc   Create a workout for the authenticated user
+ *  @desc   Create a workout for the authenticated user. Safe to repeat: sending the same
+ *          clientId again returns the workout that was already saved instead of a second one.
  *  @route  POST /api/workouts
  *  @access Private
  */
@@ -81,75 +84,109 @@ const setWorkout = asyncHandler(async (req, res) => {
         throw new Error(error)
     }
 
-    // Guest accounts are limited to 5 workouts (counted in the database, so no big array
-    // has to be loaded on every request)
-    if (req.user.isGuest && (await Workout.countDocuments({ user: req.user.id })) >= 5) {
-        res.status(403)
-        throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
-    }
+    // One save at a time per user, so a double tap or a retry racing the original can't interleave
+    return withLock(String(req.user.id), async () => {
+        // A repeat of a save we already completed: hand back the stored workout
+        const replay = async () => {
+            const existing = await Workout.findOne({ user: req.user.id, clientId: input.clientId })
+            if (!existing) return false
 
-    // Create new workout
-    const workout = new Workout({
-        user: req.user.id,
-        title: input.title,
-        duration: input.duration,
-        exercises: input.exercises,
-        createdAt: new Date(),
-        updatedAt: new Date()
-    })
-
-    // Resolve exercises for calculations (validates exercise + equipment)
-    const populatedWorkout = await workout.populate('exercises.exercise')
-    const populatedExercises = buildExerciseSnapshots(populatedWorkout, res, req.user.id)
-
-    // Store old values for gamification
-    const before = {
-        streak: req.user.streak.current,
-        shield: req.user.streak.shield,
-        momentum: req.user.momentum.current,
-        level: req.user.level
-    }
-
-    // Calculate workout summary (no database writes)
-    const { summary, questUpdates } = await calculateWorkoutSummary(req.user, populatedExercises, workout)
-    workout.summary = summary
-    await workout.save()
-
-    // Save quest progress / completions earned by this workout
-    await applyQuestResults(questUpdates)
-
-    // Update user object with new workout
-    const workoutDate = workout.createdAt
-    await User.findByIdAndUpdate(req.user.id,
-        {
-            $push: { workouts: workout._id },
-            $max: { lastWorkout: workoutDate }
+            const current = await User.findById(req.user.id)
+            res.status(200).json({ workout: existing, user: formatUser(current), gamification: null, duplicate: true })
+            return true
         }
-    )
 
-    // Check if user's streak has increased
-    const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
-    await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
+        if (input.clientId && (await replay())) return
 
-    // Update user's points and momentum
-    const points = summary.totalStrivePoints?.total > 0
-            ? summary.totalStrivePoints.total
-            : 0
+        // Guest accounts are limited to 5 workouts (counted in the database, so no big array
+        // has to be loaded on every request)
+        if (req.user.isGuest && (await Workout.countDocuments({ user: req.user.id })) >= 5) {
+            res.status(403)
+            throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
+        }
 
-    const updatedUser = await updateUserPointsAndMomentum(req.user.id, points, {
-        workoutCompleted: true,
-        personalBests: summary.personalBests?.length || 0,
-        quests: summary.questsCompleted
-    })
+        // Create new workout
+        const workout = new Workout({
+            user: req.user.id,
+            title: input.title,
+            duration: input.duration,
+            exercises: input.exercises,
+            ...(input.clientId ? { clientId: input.clientId } : {}),
+            createdAt: new Date(),
+            updatedAt: new Date()
+        })
 
-    // Update leaderboards
-    if (!req.user.isGuest) await updateLeaderboardEntry(req.user.id, workout)
+        // Resolve exercises for calculations (validates exercise + equipment)
+        const populatedWorkout = await workout.populate('exercises.exercise')
+        const populatedExercises = buildExerciseSnapshots(populatedWorkout, res, req.user.id)
 
-    // Output created workout + user + gamification flags
-    res.status(201).json({
-        workout,
-        user: formatUser(updatedUser),
-        gamification: buildGamificationFlags(before, updatedUser)
+        // Store old values for gamification
+        const before = {
+            streak: req.user.streak.current,
+            shield: req.user.streak.shield,
+            momentum: req.user.momentum.current,
+            level: req.user.level
+        }
+
+        // Calculate workout summary (no database writes)
+        const { summary, questUpdates } = await calculateWorkoutSummary(req.user, populatedExercises, workout)
+        workout.summary = summary
+
+        try {
+            await workout.save()
+        } catch (saveError) {
+            // Two saves with the same clientId got past the check above (e.g. on two servers):
+            // the unique index stopped the second, so answer with the first
+            if (input.clientId && getDuplicateField(saveError) && (await replay())) return
+            throw saveError
+        }
+
+        // From here on, anything that fails undoes what was done, so the user is never left
+        // with a saved workout that never paid out (a retry then starts clean)
+        const questSnapshots = snapshotQuests(questUpdates)
+        let updatedUser
+
+        try {
+            // Save quest progress / completions earned by this workout
+            await applyQuestResults(questUpdates)
+
+            // Record the workout date on the user
+            const workoutDate = workout.createdAt
+            await User.findByIdAndUpdate(req.user.id, { $max: { lastWorkout: workoutDate } })
+
+            // Check if user's streak has increased
+            const workoutsThisWeek = await getWorkoutsThisWeek(req.user.id, workoutDate)
+            await checkAndIncreaseStreak(req.user.id, workoutsThisWeek)
+
+            // Update user's points and momentum
+            const points = summary.totalStrivePoints?.total > 0
+                ? summary.totalStrivePoints.total
+                : 0
+
+            updatedUser = await updateUserPointsAndMomentum(req.user.id, points, {
+                workoutCompleted: true,
+                personalBests: summary.personalBests?.length || 0,
+                quests: summary.questsCompleted
+            })
+        } catch (stepError) {
+            await restoreQuests(questSnapshots, workout._id).catch(e => console.error('Could not restore quests:', e.message))
+            await Workout.deleteOne({ _id: workout._id }).catch(e => console.error('Could not remove the unfinished workout:', e.message))
+            throw stepError
+        }
+
+        // The leaderboard is recalculated from workouts, so if this fails it fixes itself on the
+        // next save. It must not undo or fail an otherwise complete workout.
+        if (!req.user.isGuest) {
+            await updateLeaderboardEntry(req.user.id, workout)
+                .catch(e => console.error('Leaderboard update failed:', e.message))
+        }
+
+        // Output created workout + user + gamification flags
+        res.status(201).json({
+            workout,
+            user: formatUser(updatedUser),
+            gamification: buildGamificationFlags(before, updatedUser)
+        })
     })
 })
 

@@ -237,7 +237,7 @@ const calculateConsistencyMultiplier = async (workoutHistory) => {
 // First time logging an exercise/equipment pair isn't a PB, it earns a smaller flat reward
 const FIRST_LIFT_REWARD = 50
 
-const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP) => {
+const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP, earnedTodayOverride) => {
     const momentumMultiplier = getMomentumMultiplier(user.momentum.current)
     const { progressionReward, progressionScore } = calculateProgressionPoints(existingPBs, exercises, personalBests)
     const [{ volumeReward, volumeScore }, { strengthReward, strengthScore }, consistencyMultiplier] = await Promise.all([
@@ -260,12 +260,7 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
     const uncappedTotal = Math.ceil((completeReward + totalQuestSP + personalBestsReward + firstLiftsReward + targetBonus) * momentumMultiplier)
 
     // Cap what can be earned in one day
-    const dayStart = getStartOfDay(workout.createdAt)
-    const dayEnd = new Date(dayStart)
-    dayEnd.setDate(dayEnd.getDate() + 1)
-    const earnedToday = workoutHistory
-        .filter(w => w.createdAt >= dayStart && w.createdAt < dayEnd)
-        .reduce((sum, w) => sum + (Number(w.summary?.totalStrivePoints?.total) || 0), 0)
+    const earnedToday = earnedTodayOverride ?? 0
     const total = Math.min(uncappedTotal, getRemainingDailySP(earnedToday))
     const dailyCapReached = total < uncappedTotal
 
@@ -382,6 +377,55 @@ const detectPersonalBests = (exercises, existingPBs) => {
     return { personalBests: newPBs, firstLifts }
 }
 
+// ─── History queries ─────────────────────────────────────────────────────────
+// Scoring looks at the last 5 to 15 workouts, so a few more than that is plenty
+const SCORING_HISTORY_LIMIT = 30
+// Safety cap on the all-time history of the exercises in a workout (for personal bests)
+const EXERCISE_HISTORY_LIMIT = 500
+
+const HISTORY_PROJECTION = {
+    createdAt: 1,
+    'summary.totalWeight': 1,
+    'exercises.exercise': 1,
+    'exercises.selectedEquipment': 1,
+    'exercises.sets': 1
+}
+
+const findHistory = (filter, limit) => Workout.find(filter, HISTORY_PROJECTION)
+    .populate('exercises.exercise', 'name trackingMode')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean()
+
+// Combines two newest-first lists without repeats
+const mergeHistory = (...lists) => {
+    const seen = new Set()
+    const merged = []
+
+    lists.flat().forEach(item => {
+        const key = item._id ? String(item._id) : item
+        if (seen.has(key)) return
+        seen.add(key)
+        merged.push(item)
+    })
+
+    return merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+}
+
+// SP the user already earned on the calendar day of this workout (for the daily limit)
+const getEarnedToday = async (userId, workout) => {
+    const dayStart = getStartOfDay(workout.createdAt)
+    const dayEnd = new Date(dayStart)
+    dayEnd.setDate(dayEnd.getDate() + 1)
+
+    const today = await Workout.find(
+        { user: userId, _id: { $ne: workout._id }, createdAt: { $gte: dayStart, $lt: dayEnd } },
+        { 'summary.totalStrivePoints.total': 1 }
+    ).lean()
+
+    return today.reduce((sum, w) => sum + (Number(w.summary?.totalStrivePoints?.total) || 0), 0)
+}
+
 // ─── Main Summary ────────────────────────────────────────────────────────────
 const calculateWorkoutSummary = async (user, exercises, workout) => {
     let totalWeight = 0
@@ -402,25 +446,18 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const totalExercises = exercises.length
 
-    const workoutHistory = await Workout.find(
-        {
-            user: user._id,
-            _id: { $ne: workout._id }
-        },
-        {
-            createdAt: 1,
-            'summary.totalWeight': 1,
-            'summary.totalStrivePoints.total': 1,
-            'exercises.exercise': 1,
-            'exercises.selectedEquipment': 1,
-            'exercises.sets': 1
-        }
-    )
-    .populate('exercises.exercise', 'name trackingMode')
-    .sort({ createdAt: -1 })
-    .lean()
+    // Only the history that scoring actually needs, not everything the user ever logged:
+    // the most recent workouts (volume, consistency), plus every workout containing one of
+    // today's exercises (personal bests and strength compare against those)
+    const otherWorkouts = { user: user._id, _id: { $ne: workout._id } }
+    const [recentHistory, exerciseHistory, earnedToday] = await Promise.all([
+        findHistory({ ...otherWorkouts }, SCORING_HISTORY_LIMIT),
+        findHistory({ ...otherWorkouts, 'exercises.exercise': { $in: exercises.map(e => e.exerciseId) } }, EXERCISE_HISTORY_LIMIT),
+        getEarnedToday(user._id, workout)
+    ])
+    const workoutHistory = mergeHistory(recentHistory, exerciseHistory)
 
-    const existingPBs = getExistingPBs(workoutHistory)
+    const existingPBs = getExistingPBs(exerciseHistory)
 
     const eligible = isWorkoutEligibleForSP(totalSets, workout.duration)
 
@@ -434,7 +471,7 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
         : { personalBests: [], firstLifts: [] }
 
     const totalStrivePoints = eligible
-        ? await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP)
+        ? await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP, earnedToday)
         : { total: 0, totalQuestSP: 0, personalBestsReward: 0, firstLiftsReward: 0, bonus: 0 }
 
     return {

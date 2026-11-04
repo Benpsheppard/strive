@@ -12,10 +12,12 @@ const mockHistory = (history) => {
     const query = {
         populate: jest.fn(),
         sort: jest.fn(),
+        limit: jest.fn(),
         lean: jest.fn().mockResolvedValue(history)
     }
     query.populate.mockReturnValue(query)
     query.sort.mockReturnValue(query)
+    query.limit.mockReturnValue(query)
     Workout.find.mockReturnValue(query)
     Quest.find.mockResolvedValue([])
 }

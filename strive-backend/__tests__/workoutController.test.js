@@ -19,7 +19,9 @@ jest.mock('../utils/workoutSummary.js', () => ({
 }))
 
 jest.mock('../utils/quests/progress.js', () => ({
-    applyQuestResults: jest.fn()
+    applyQuestResults: jest.fn(),
+    snapshotQuests: jest.fn(() => []),
+    restoreQuests: jest.fn().mockResolvedValue(undefined)
 }))
 
 jest.mock('../utils/leaderboard.js', () => ({
@@ -335,7 +337,6 @@ describe('workoutController', () => {
                 .toBeGreaterThan(workout.save.mock.invocationCallOrder[0])
     
             expect(User.findByIdAndUpdate).toHaveBeenCalledWith('123', {
-                $push: { workouts: 'workout123' },
                 $max: { lastWorkout: expect.any(Date) }
             })
     

@@ -67,7 +67,7 @@ const sanitiseDuration = (duration) => {
 
 /**
  * Validates a new workout request body.
- * @returns {{ error: string } | { value: { title, duration, exercises } }}
+ * @returns {{ error: string } | { value: { title, duration, exercises, clientId? } }}
  */
 const validateWorkoutInput = (body = {}) => {
     const title = sanitiseTitle(body.title)
@@ -98,7 +98,16 @@ const validateWorkoutInput = (body = {}) => {
         exercises.push({ exercise: ex.exercise, selectedEquipment: ex.selectedEquipment.trim(), sets })
     }
 
-    return { value: { title, duration, exercises } }
+    // Optional id from the app that makes saving idempotent (a retry returns the same workout)
+    let clientId
+    if (body.clientId !== undefined) {
+        if (typeof body.clientId !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(body.clientId)) {
+            return { error: 'clientId must be 8-64 letters, numbers, dashes or underscores' }
+        }
+        clientId = body.clientId
+    }
+
+    return { value: { title, duration, exercises, ...(clientId ? { clientId } : {}) } }
 }
 
 module.exports = { validateWorkoutInput, sanitiseSets, sanitiseTitle, sanitiseDuration }

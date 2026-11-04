@@ -57,4 +57,21 @@ const applyQuestResults = async (questUpdates = []) => {
     }
 }
 
-module.exports = { detectQuestCompletion, applyQuestResults }
+// What the quests looked like before this workout touched them, so a failed save can undo it
+const snapshotQuests = (questUpdates = []) => questUpdates.map(({ quest }) => ({
+    id: quest._id,
+    status: quest.status,
+    completion: JSON.parse(JSON.stringify(quest.completion ?? {}))
+}))
+
+// Puts quests back as they were and removes the progress this workout logged
+const restoreQuests = async (snapshots = [], workoutId) => {
+    for (const snapshot of snapshots) {
+        await Quest.updateOne(
+            { _id: snapshot.id },
+            { $set: { status: snapshot.status, completion: snapshot.completion }, $pull: { progressLog: { workoutId } } }
+        )
+    }
+}
+
+module.exports = { detectQuestCompletion, applyQuestResults, snapshotQuests, restoreQuests }
