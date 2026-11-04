@@ -3,6 +3,7 @@
 // Imports
 import axios from 'axios'
 import { clearLocalStorage } from '../../hooks/useLocalStorage'
+import { clearPendingWorkouts } from '../../utils/pendingWorkouts.js'
 
 const API_URL = import.meta.env.VITE_API_URL + '/api/users/'
 
@@ -87,8 +88,9 @@ const deleteUser = async (userId, token, password) => {
     const response = await axios.delete(API_URL + userId, config)
 
     if (response.data) {
-        // Clear user data and workout data
+        // Clear user data and workout data, including any workouts still waiting to upload
         clearLocalStorage()
+        clearPendingWorkouts()
     }
 
     return response.data

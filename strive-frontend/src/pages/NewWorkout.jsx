@@ -35,8 +35,11 @@ import { setToRaw } from '../utils/trackingModes.js'
 
 const DRAFT_KEYS = [
     'newWorkout_title', 'newWorkout_exercises', 'newWorkout_currentExercise', 'newWorkout_currentSet',
-    'newWorkout_started', 'newWorkout_startTime', 'newWorkout_setHistory'
+    'newWorkout_started', 'newWorkout_startTime', 'newWorkout_setHistory', 'newWorkout_clientId'
 ]
+
+// A random id for one workout. Drafts started before this existed get one when they are saved.
+const newClientId = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `w-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
 
 const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
@@ -55,6 +58,8 @@ const NewWorkout = () => {
     const [started, setStarted] = useLocalStorage('newWorkout_started', false)
     const [startTime, setStartTime] = useLocalStorage('newWorkout_startTime', null)
     const [restTimerDuration, setRestTimerDuration] = useLocalStorage('newWorkout_restTimer', 60)
+    // Identifies this workout to the server so saving it twice (a retry, a double tap) is harmless
+    const [clientId, setClientId] = useLocalStorage('newWorkout_clientId', null)
 
     // Local state
     const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
@@ -71,8 +76,14 @@ const NewWorkout = () => {
         setCurrentSet({})
         setStarted(false)
         setStartTime(null)
+        setClientId(null)
         setTimeout(() => DRAFT_KEYS.forEach(key => localStorage.removeItem(key)), 0)
     }
+
+    // A workout already in progress from before ids existed gets one now
+    useEffect(() => {
+        if (started && !clientId) setClientId(newClientId())
+    }, [started, clientId, setClientId])
 
     // Check streak & momentum on mount
     useEffect(() => {
@@ -124,7 +135,7 @@ const NewWorkout = () => {
     const { restTimeRemaining, startRestTimer, skipTimer, adjustRest, adjustSeconds } = useRestTimer(restTimerDuration)
 
     // ----- WORKOUTS -----
-    const { submitWorkout } = useWorkoutSubmit({ title, startTime, resetWorkoutState })
+    const { submitWorkout } = useWorkoutSubmit({ title, startTime, clientId, resetWorkoutState })
 
     // Anything logged in the exercise being edited is included when the workout ends
     const pendingExercise = currentExercise.exerciseId && currentExercise.sets?.length > 0 && currentExercise.selectedEquipment
@@ -197,6 +208,7 @@ const NewWorkout = () => {
         }
         setStarted(true)
         setStartTime(Date.now())
+        setClientId(newClientId())
     }
 
     if (isLoading || !user || isSubmittingWorkout) return <Spinner />

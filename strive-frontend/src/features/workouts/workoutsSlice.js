@@ -3,7 +3,7 @@
 // Imports
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import workoutsService from './workoutsService'
-import { getErrorMessage } from '../../utils/getErrorMessage.js'
+import { getErrorMessage, isRetryableError } from '../../utils/getErrorMessage.js'
 
 // Initial state
 const initialState = {
@@ -22,7 +22,9 @@ export const createWorkout = createAsyncThunk('workouts/create', async (workoutD
 		return await workoutsService.createWorkout(workoutData, token)
 	} catch (error) {
 		const message = getErrorMessage(error)
-		return thunkAPI.rejectWithValue(message)
+		// `retryable` tells the caller whether trying again later could help (no connection or
+		// a server problem), as opposed to the server refusing the workout
+		return thunkAPI.rejectWithValue(message, { retryable: isRetryableError(error), status: error.response?.status })
 	}
 })
 
@@ -92,13 +94,19 @@ export const workoutsSlice = createSlice({
 			})
 			.addCase(createWorkout.rejected, (state, action) => {
 				state.isLoading = false
-				state.isError = true
-				state.message = action.payload
+				// A failure worth retrying (offline, server trouble) is kept on the device and
+				// uploaded later, so it must not leave the whole app in an error state
+				if (!action.meta?.retryable) {
+					state.isError = true
+					state.message = action.payload
+				}
 			})
 
 		// Get Workouts
 			.addCase(getWorkouts.pending, (state) => {
 				state.isLoading = true
+				state.isError = false
+				state.message = ''
 			})
 			.addCase(getWorkouts.fulfilled, (state, action) => {
 				state.isLoading = false
