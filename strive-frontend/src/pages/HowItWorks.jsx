@@ -3,10 +3,8 @@
 // Keep in step with the backend (utils/workoutSummary.js, spRules.js, momentum.js, workoutServices.js).
 
 import { useEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import PublicHeader from '../components/headers/PublicHeader.jsx'
-import AppLayout from '../components/layout/AppLayout.jsx'
+import FlexibleLayout from '../components/layout/FlexibleLayout.jsx'
 import Card from '../components/ui/Card.jsx'
 import PageTitle from '../components/ui/PageTitle.jsx'
 
@@ -99,17 +97,10 @@ const Content = () => {
     )
 }
 
-const HowItWorks = () => {
-    const { user } = useSelector((state) => state.auth)
-
-    return user ? (
-        <AppLayout><Content /></AppLayout>
-    ) : (
-        <>
-            <PublicHeader />
-            <main className="px-4 pt-4"><Content /></main>
-        </>
-    )
-}
+const HowItWorks = () => (
+    <FlexibleLayout>
+        <Content />
+    </FlexibleLayout>
+)
 
 export default HowItWorks

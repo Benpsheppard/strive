@@ -28,6 +28,12 @@ const Games = lazy(() => import('./pages/Games.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword.jsx'))
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'))
+const Privacy = lazy(() => import('./pages/Privacy.jsx'))
+const Terms = lazy(() => import('./pages/Terms.jsx'))
+const Support = lazy(() => import('./pages/Support.jsx'))
 
 // The home screen is the workout logger when signed in, and the landing page when not
 const Home = () => {
@@ -58,6 +64,12 @@ const App = () => {
 						<Route path='/login' element={<Login />} />
 						<Route path='/register' element={<Register />} />
 						<Route path='/how-it-works' element={<HowItWorks />} />
+						<Route path='/forgot-password' element={<ForgotPassword />} />
+						<Route path='/reset-password' element={<ResetPassword />} />
+						<Route path='/verify-email' element={<VerifyEmail />} />
+						<Route path='/privacy' element={<Privacy />} />
+						<Route path='/terms' element={<Terms />} />
+						<Route path='/support' element={<Support />} />
 
 						{/* Signed in, no app navigation */}
 						<Route element={<RequireAuth />}>

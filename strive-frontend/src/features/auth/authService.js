@@ -75,12 +75,13 @@ const logout = () => {
     clearLocalStorage()
 }
 
-// Delete user
-const deleteUser = async (userId, token) => {
+// Delete user (members confirm with their password)
+const deleteUser = async (userId, token, password) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        data: { password }
     }
 
     const response = await axios.delete(API_URL + userId, config)
@@ -179,8 +180,38 @@ const updateMomentum = async (data, token) => {
     return response.data
 }
 
+const authHeader = (token) => ({ headers: { Authorization: `Bearer ${token}` } })
+
+// Password reset and email confirmation (no session needed)
+const forgotPassword = async (email) => (await axios.post(API_URL + 'forgot-password', { email })).data
+const resetPassword = async (token, password) => (await axios.post(API_URL + 'reset-password', { token, password })).data
+const verifyEmail = async (token) => (await axios.post(API_URL + 'verify-email', { token })).data
+
+// Account security (signed in)
+const resendVerification = async (token) => (await axios.post(API_URL + 'resend-verification', {}, authHeader(token))).data
+
+const changePassword = async (data, token) => {
+    const response = await axios.put(API_URL + 'password', data, authHeader(token))
+
+    // This session continues with a fresh token; every other session is signed out
+    if (response.data) localStorage.setItem('Strive:user', JSON.stringify(response.data))
+    return response.data
+}
+
+const changeEmail = async (data, token) => (await axios.put(API_URL + 'email', data, authHeader(token))).data
+
+// Everything held about the user, as JSON
+const exportData = async (token) => (await axios.get(API_URL + 'export', authHeader(token))).data
+
 // Export functions
 const authService = {
+    forgotPassword,
+    resetPassword,
+    verifyEmail,
+    resendVerification,
+    changePassword,
+    changeEmail,
+    exportData,
     getMe,
     register,
     logout,

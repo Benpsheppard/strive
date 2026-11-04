@@ -2,6 +2,7 @@
 // Promise-based confirmation and notice dialogs:
 //   const confirm = useConfirm()  (from ./confirmContext.js)
 //   if (await confirm({ title: 'Delete?', tone: 'danger' })) { ... }
+// With askPassword it resolves to the password that was typed (or false if cancelled).
 
 import { useState, useCallback, useRef } from 'react'
 import { ConfirmContext } from './confirmContext.js'
@@ -12,11 +13,13 @@ import Input from './Input.jsx'
 export const ConfirmProvider = ({ children }) => {
     const [request, setRequest] = useState(null)
     const [typed, setTyped] = useState('')
+    const [password, setPassword] = useState('')
     const resolver = useRef(null)
 
     const confirm = useCallback((options) => new Promise((resolve) => {
         resolver.current = resolve
         setTyped('')
+        setPassword('')
         setRequest(options)
     }), [])
 
@@ -27,7 +30,8 @@ export const ConfirmProvider = ({ children }) => {
     }
 
     const needsText = Boolean(request?.requireText)
-    const canConfirm = !needsText || typed === request.requireText
+    const needsPassword = Boolean(request?.askPassword)
+    const canConfirm = (!needsText || typed === request.requireText) && (!needsPassword || password.length > 0)
 
     return (
         <ConfirmContext.Provider value={confirm}>
@@ -38,6 +42,15 @@ export const ConfirmProvider = ({ children }) => {
                 title={request?.title}
                 description={request?.message}
             >
+                {needsPassword && (
+                    <Input
+                        label="Your password"
+                        type="password"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                    />
+                )}
                 {needsText && (
                     <Input
                         label={`Type ${request.requireText} to confirm`}
@@ -55,7 +68,7 @@ export const ConfirmProvider = ({ children }) => {
                     )}
                     <Button
                         disabled={!canConfirm}
-                        onClick={() => settle(true)}
+                        onClick={() => settle(needsPassword ? password : true)}
                     >
                         {request?.confirmLabel || 'Confirm'}
                     </Button>

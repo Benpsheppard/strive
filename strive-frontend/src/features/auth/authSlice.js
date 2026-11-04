@@ -65,10 +65,10 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 })
 
 // Delete user
-export const deleteUser = createAsyncThunk('auth/deleteUser', async (id, thunkAPI) => {
+export const deleteUser = createAsyncThunk('auth/deleteUser', async ({ id, password }, thunkAPI) => {
     try {
         const token = thunkAPI.getState().auth.user.token
-        return await authService.deleteUser(id, token)
+        return await authService.deleteUser(id, token, password)
     } catch (error) {
         const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
@@ -105,6 +105,26 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (profi
     } catch (error) {
         const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
+    }
+})
+
+// Change password (returns the user with a fresh token)
+export const changePassword = createAsyncThunk('auth/changePassword', async (data, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.changePassword(data, token)
+    } catch (error) {
+        return thunkAPI.rejectWithValue(getErrorMessage(error))
+    }
+})
+
+// Change email (the new address must be confirmed again)
+export const changeEmail = createAsyncThunk('auth/changeEmail', async (data, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await authService.changeEmail(data, token)
+    } catch (error) {
+        return thunkAPI.rejectWithValue(getErrorMessage(error))
     }
 })
 
@@ -162,7 +182,8 @@ export const authSlice = createSlice({
             .addCase(getMe.fulfilled, (state, action) => {
                 state.isLoading = false
                 state.isSuccess = true
-                state.user = action.payload
+                // /me does not send the token back, so keep the one we are using
+                state.user = { ...action.payload, token: state.user?.token }
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(getMe.rejected, (state, action) => {
@@ -282,6 +303,16 @@ export const authSlice = createSlice({
                 state.isLoading = false
                 state.isError = true
                 state.message = action.payload
+            })
+
+        // Change password / email (these report errors in their own dialogs, so they leave isError alone)
+            .addCase(changePassword.fulfilled, (state, action) => {
+                state.user = action.payload
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
+            })
+            .addCase(changeEmail.fulfilled, (state, action) => {
+                state.user = { ...state.user, ...action.payload, token: state.user.token }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
 
         // Update Target

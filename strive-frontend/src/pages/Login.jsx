@@ -118,6 +118,9 @@ const Login = () => {
                             onChange={onChange}
                         />
                         <Button type="submit" fullWidth size="lg">Sign in</Button>
+                        <p className="text-center text-sm">
+                            <Link to="/forgot-password" className="font-semibold text-accent-fg hover:underline">Forgot your password?</Link>
+                        </p>
                     </form>
 
                     <p className="text-center text-sm text-muted">

@@ -3,6 +3,7 @@
 // Imports
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
 
 // Feature Imports
 import { logout, deleteUser, resetUser, reset } from '../features/auth/authSlice.js'
@@ -16,6 +17,7 @@ import Spinner from '../components/spinners/Spinner.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
 import EditDetailsDialog from '../components/profile/EditDetailsDialog.jsx'
+import SecurityCard from '../components/profile/SecurityCard.jsx'
 import Toggle from '../components/profile/Toggle.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -39,9 +41,13 @@ const Profile = () => {
     }
 
     const onDeleteAccount = async () => {
-        if (await alerts.deleteAccount()) {
-            dispatch(deleteUser(user._id))
-            dispatch(reset())
+        // Members confirm with their password; guests have none, so they only type DELETE
+        const confirmed = await alerts.deleteAccount({ askPassword: !user.isGuest })
+        if (!confirmed) return
+
+        const result = await dispatch(deleteUser({ id: user._id, password: typeof confirmed === 'string' ? confirmed : undefined }))
+        if (deleteUser.rejected.match(result)) {
+            toast.error(result.payload || 'Your account could not be deleted')
         }
     }
 
@@ -79,6 +85,8 @@ const Profile = () => {
 
             <ProfileStats user={user} onEdit={() => setEditing(true)} />
             <EditDetailsDialog open={editing} user={user} onClose={() => setEditing(false)} />
+
+            <SecurityCard />
 
             <Card as="section" aria-label="Session">
                 <Button variant="secondary" fullWidth onClick={onLogout}>Log out</Button>

@@ -69,11 +69,12 @@ export const useAlerts = () => {
             message: 'Are you sure you want to log out?',
             confirmLabel: 'Log out'
         }),
-        deleteAccount: () => confirm({
+        deleteAccount: ({ askPassword = true } = {}) => confirm({
             title: 'Delete account?',
-            message: 'This permanently deletes your account, workouts and all data. It cannot be undone.',
+            message: 'This permanently deletes your account, workouts and all data. It cannot be undone. You can download your data first from Profile.',
             confirmLabel: 'Delete account',
             requireText: 'DELETE',
+            askPassword,
             tone: 'danger'
         }),
         resetAccount: () => confirm({

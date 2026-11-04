@@ -12,13 +12,14 @@ export const getPasswordRules = (password) => [
 ]
 
 // Returns { [field]: message } for anything invalid
-export const validateCredentials = ({ email, username, password, password2 }) => {
+export const validateCredentials = ({ email, username, password, password2, acceptedTerms }) => {
     const errors = {}
 
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) errors.email = 'Enter a valid email address'
     if (!USERNAME_REGEX.test(username.trim())) errors.username = '3-30 characters: letters, numbers, . _ or -'
     if (getPasswordRules(password).some(rule => !rule.met)) errors.password = 'Your password does not meet all the rules below'
     if (password !== password2) errors.password2 = 'Passwords do not match'
+    if (acceptedTerms !== true) errors.acceptedTerms = 'Please accept the terms and privacy policy to continue'
 
     return errors
 }

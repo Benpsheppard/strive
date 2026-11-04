@@ -111,10 +111,13 @@ const Landing = () => (
         </main>
 
         <footer className="border-t border-line/60 px-4 py-8 text-center text-sm text-muted">
-            <nav aria-label="Footer" className="mb-2 flex justify-center gap-5">
+            <nav aria-label="Footer" className="mb-2 flex flex-wrap justify-center gap-x-5 gap-y-1">
                 <Link to="/how-it-works" className="hover:text-fg">How it works</Link>
                 <Link to="/login" className="hover:text-fg">Sign in</Link>
                 <Link to="/register" className="hover:text-fg">Sign up</Link>
+                <Link to="/privacy" className="hover:text-fg">Privacy</Link>
+                <Link to="/terms" className="hover:text-fg">Terms</Link>
+                <Link to="/support" className="hover:text-fg">Support</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} Strive</p>
         </footer>

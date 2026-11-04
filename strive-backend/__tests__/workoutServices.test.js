@@ -1,5 +1,6 @@
 jest.mock('../models/userModel.js')
 jest.mock('../models/workoutModel.js')
+jest.mock('../models/questModel.js')
 jest.mock('../models/leaderboardEntryModel.js')
 jest.mock('../utils/dateFormat.js', () => ({
     getPreviousISOWeekString: jest.fn(),
@@ -15,6 +16,7 @@ jest.mock('../utils/momentum.js', () => ({
 
 const User = require('../models/userModel.js')
 const Workout = require('../models/workoutModel.js')
+const Quest = require('../models/questModel.js')
 const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 const { getISOWeekString, getPreviousISOWeekString, getPreviousWeekRange, getWeeksBetween } = require('../utils/dateFormat.js')
 const { resetWorkoutData, checkAndIncreaseStreak, checkAndBreakStreak } = require('../utils/workoutServices.js')
@@ -56,6 +58,7 @@ describe('workoutServices', () => {
         expect(Workout.find).toHaveBeenCalledWith({ user: 'user123' })
         expect(select).toHaveBeenCalledWith('summary.totalStrivePoints.total')
         expect(Workout.deleteMany).toHaveBeenCalledWith({ user: 'user123' })
+        expect(Quest.deleteMany).toHaveBeenCalledWith({ user: 'user123' })
         expect(LeaderboardEntry.deleteMany).toHaveBeenCalledWith({ user: 'user123' })
         expect(user).toMatchObject({
             workouts: [],

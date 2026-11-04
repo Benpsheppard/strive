@@ -3,6 +3,7 @@
 // Imports
 const User = require('../models/userModel')
 const Workout = require('../models/workoutModel')
+const Quest = require('../models/questModel')
 const LeaderboardEntry = require('../models/leaderboardEntryModel')
 const { getPreviousISOWeekString, getISOWeekString, getPreviousWeekRange, getStartOfWeek, getEndOfWeek, getWeeksBetween } = require('./dateFormat')
 const { calculateMomentum } = require('./momentum')
@@ -83,6 +84,7 @@ const resetWorkoutData = async (user) => {
     )
 
     await Workout.deleteMany({ user: user._id })
+    await Quest.deleteMany({ user: user._id })
     await LeaderboardEntry.deleteMany({ user: user._id })
 
     user.workouts = []

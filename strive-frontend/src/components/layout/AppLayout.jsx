@@ -3,6 +3,7 @@
 
 import { Outlet } from 'react-router-dom'
 import Header from '../headers/Header.jsx'
+import EmailBanner from './EmailBanner.jsx'
 
 const AppLayout = ({ children }) => (
     <>
@@ -11,6 +12,7 @@ const AppLayout = ({ children }) => (
         </a>
         <Header />
         <main id="main" className="mx-auto w-full max-w-5xl px-4 pb-32 pt-4 md:pb-12">
+            <EmailBanner />
             {children ?? <Outlet />}
         </main>
     </>
