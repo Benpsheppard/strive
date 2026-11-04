@@ -62,12 +62,12 @@ export const detectNewPBs = (newWorkout, existingWorkouts) => {
 		}
 
         const existingPB = existingPBs[buildPBKey(name, equipment)]
-        if (!existingPB || maxWeight > existingPB.weight) {
+        // First time logging an exercise isn't a PB
+        if (existingPB && maxWeight > existingPB.weight) {
             newPBs.push({
                 exerciseName: name,
                 newWeight: maxWeight,
-                oldWeight: existingPB ? existingPB.weight : 0,
-                isFirstTime: !existingPB
+                oldWeight: existingPB.weight
             })
         }
     })

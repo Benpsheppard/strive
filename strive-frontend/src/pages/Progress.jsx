@@ -28,7 +28,7 @@ const Progress = () => {
 
     useEffect(() => {
         if (isError) {
-            console.log(message)
+            console.error(message)
         }
 
         if (!user){
@@ -81,14 +81,10 @@ const Progress = () => {
                     </div>
 
                     <MuscleGroupSplit 
-                        className="fade-in-card"
-                        style={{ animationDelay: '1.0s' }}
                         workouts={workouts} 
                         useImperial={user.useImperial}
                     />
                     <OneRepMax 
-                        className="fade-in-card"
-                        style={{ animationDelay: '1.2s' }}
                         useImperial={user.useImperial} 
                         workouts={workouts}
                     />

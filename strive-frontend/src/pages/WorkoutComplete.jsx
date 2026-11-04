@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 // Function Imports
-import { getWorkouts } from '../features/workouts/workoutsSlice'
+import { getWorkouts, clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
 // Component Imports
 import Header from '../components/headers/Header'
@@ -35,7 +35,7 @@ const WorkoutComplete = () => {
 
     useEffect(() => {
 		if (isError) {
-			console.log(message)
+			console.error(message)
 			return
 		}
 
@@ -51,6 +51,7 @@ const WorkoutComplete = () => {
         if (hasStats) {
             navigate('/progress-update')
         } else {
+            dispatch(clearLastWorkoutStats())
             navigate('/')
         }
     }
@@ -102,7 +103,7 @@ const WorkoutComplete = () => {
                     </button>
 
                     {!hasStats && (
-                        <button onClick={() => navigate('/progress')} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
+                        <button onClick={() => { dispatch(clearLastWorkoutStats()); navigate('/progress') }} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
                             View Progress
                         </button>
                     )}

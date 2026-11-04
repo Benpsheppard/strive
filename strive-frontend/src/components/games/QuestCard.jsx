@@ -5,7 +5,29 @@ import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
 // Function Imports
-import { formatWeight } from '../../utils/formatValues'
+import { formatWeight, formatDistance, formatSeconds, formatNumber } from '../../utils/formatValues'
+
+// Format a progressive quest value according to its metric
+const PROGRESSIVE_LABELS = {
+    max_weight: 'Best weight',
+    max_reps: 'Best reps',
+    session_volume: 'Best session volume',
+    total_distance: 'Best distance',
+    total_duration: 'Best duration'
+}
+
+const formatProgressiveValue = (metric, value, useImperial) => {
+    switch (metric) {
+        case 'max_reps':
+            return `${formatNumber(value)} reps`
+        case 'total_distance':
+            return formatDistance(value, useImperial)
+        case 'total_duration':
+            return formatSeconds(value)
+        default:
+            return formatWeight(value, useImperial)
+    }
+}
 
 // Component Imports
 import ProgressBar from '../../components/games/ProgressBar'
@@ -66,7 +88,7 @@ const QuestCard = ({ quest }) => {
                             {quest.completion.exercise}
                             {quest.completion.selectedEquipment && ` (${quest.completion.selectedEquipment})`}
                         </p>
-                        <p className='text-sm text-[#EDF2F4]/20'>Current Progress: {formatWeight(quest.completion.baseline, user.useImperial)}</p>
+                        <p className='text-sm text-[#EDF2F4]/20'>{PROGRESSIVE_LABELS[quest.completion.metric] || 'Current best'} to beat: {formatProgressiveValue(quest.completion.metric, quest.completion.baseline, user.useImperial)}</p>
                     </div>
                 )}
 

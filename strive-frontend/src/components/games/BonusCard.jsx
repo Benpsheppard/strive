@@ -21,7 +21,7 @@ const BonusCard = ({ user, workouts }) => {
         )
     }).length
 
-    const bonusHit = workoutsThisWeek > user.target
+    const bonusHit = workoutsThisWeek >= user.target
 
     return (
         <div className="flex flex-col items-center p-6 w-full space-y-3 bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">

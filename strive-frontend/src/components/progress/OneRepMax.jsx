@@ -10,7 +10,7 @@ import { formatWeight } from '../../utils/formatValues'
 // Variable Imports
 import { MUSCLE_GROUPS, MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
 
-const OneRepMax = ({ workouts }) => {
+const OneRepMax = ({ workouts, useImperial }) => {
     const [maxes, setMaxes] = useState([])
     const [expanded, setExpanded] = useState(false)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
@@ -132,7 +132,7 @@ const OneRepMax = ({ workouts }) => {
                             <h2 className="text-[#EDF2F4]/60">{max.muscleGroup}</h2>
                         </div>
                         
-                        <h2>{formatWeight(max.oneRepMax)}</h2>
+                        <h2>{formatWeight(max.oneRepMax, useImperial)}</h2>
                     </div>
                 ))}
             </div>
