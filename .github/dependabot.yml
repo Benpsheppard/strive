@@ -1,0 +1,17 @@
+# Weekly pull requests for out-of-date or vulnerable dependencies
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /strive-backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /strive-frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

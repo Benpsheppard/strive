@@ -10,7 +10,7 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 - Build workouts from a library of 130+ exercises, or create your own custom exercises. Every exercise is tracked the right way: weight and reps, bodyweight reps, assisted reps, time, distance, or distance and time
 - Last session and personal best shown while you train, with the next set prefilled; any set or exercise can be edited or removed
 - Sticky workout clock and rest timer (+/-15s, sound and vibration)
-- An in-progress workout survives a refresh
+- An in-progress workout survives a refresh, and a workout finished with no signal is kept on the device and uploaded automatically later (saving is safe to repeat, so nothing is stored or scored twice)
 - Previous workouts list, with the ability to delete workouts
 - Workout summary on completion: stats, personal bests, muscle group radar graph and Strive points earned
 - Metric / imperial unit preference
@@ -33,7 +33,10 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 - Keyboard and screen reader support: labelled form fields, accessible dialogs and combobox, focus rings and reduced-motion support
 
 ### Accounts
-- Register / login with JWT authentication
+- Register / login with JWT authentication, consent to the terms recorded at sign-up
+- Forgot password, email confirmation, change password and email (changing the password signs out other devices), account deletion that asks for your password
+- Download everything Strive holds about you, as JSON
+- Draft Privacy and Terms pages and a Support page (the drafts need review before launch)
 - Guest mode, with a migration flow to move guest data into a new account
 - Onboarding, profile editing, account reset and deletion
 
@@ -101,14 +104,19 @@ MONGO_URI_TEST=mongodb://...   # database used when NODE_ENV=development
 JWT_SECRET=<at least 32 characters>
 FRONTEND_URL=http://localhost:3000
 ANTHROPIC_API_KEY=sk-ant-...
+RESEND_API_KEY=re_...         # sends password reset and confirmation emails (optional in development)
+MAIL_FROM=Strive <hello@your-domain.com>   # a sender verified with Resend
 ```
 
 In development (`NODE_ENV=development`) the server connects to `MONGO_URI_TEST` instead of `MONGO_URI`, and exits if it isn't set. The server also exits on startup if `NODE_ENV`, `PORT`, `MONGO_URI`, `JWT_SECRET` or `FRONTEND_URL` is missing. In production `JWT_SECRET` must be at least 32 characters and `FRONTEND_URL` must be a valid URL.
+
+Without `RESEND_API_KEY` the server prints each email (including its link) to the console instead of sending it, so password reset and email confirmation can be tried locally with no account. In production the key is required for those emails to be sent, and the server warns at startup if it is missing. Quests need `ANTHROPIC_API_KEY`; without it the app works but no quests are generated.
 
 Create `strive-frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:8000
+VITE_SUPPORT_EMAIL=support@your-domain.com   # shown on the Support page and in the legal pages
 ```
 
 > The Vite dev server proxies `/api` to `http://localhost:8000`, so use that port for local development.
@@ -144,17 +152,23 @@ All routes are under `/api`. Everything except register, login and the exercise 
 
 | Prefix | Purpose |
 | --- | --- |
-| `/api/users` | Register, login, `me`, profile, unit preference, momentum, streak checks, guest migration, reset, delete |
+| `/api/users` | Register, login, `me`, profile, unit preference, momentum, streak checks, guest migration, reset, delete (needs password), forgot/reset password, confirm email, change password/email, `GET /export` |
 | `/api/workouts` | Create, list and delete workouts, plus add an exercise to a workout |
 | `/api/exercises` | `GET` the exercise library (plus your own custom exercises when signed in), `POST` to create a custom exercise |
 | `/api/quests` | `GET /` list quests, `POST /generate/:duration` (`daily`, `weekly`, `monthly`) |
 | `/api/leaderboard` | Leaderboard rankings |
 
-Login, registration and quest generation have their own stricter rate limits on top of the general 500 requests / 15 minutes limit.
+Login, registration, password reset and quest generation have their own stricter rate limits on top of the general 500 requests / 15 minutes limit, and repeated failed sign-ins lock that account for a while.
+
+`GET /health` says the process is up and `GET /ready` checks the database connection (use them for monitoring and deploy checks). The server waits for the database before it starts listening and shuts down gracefully on SIGTERM.
 
 ## Testing
 
-Backend tests live in `strive-backend/__tests__` and cover controllers, quest generation and models, workout services and summaries, the leaderboard and security. They run on every push and pull request via GitHub Actions (`.github/workflows/tests.yml`).
+- **Backend unit tests** (`strive-backend/__tests__`) cover controllers, quest generation and models, workout services and summaries, the leaderboard and security, with the database mocked.
+- **Backend integration tests** (`strive-backend/__tests__/integration`) run the real Express app against a real in-memory MongoDB (supertest and mongodb-memory-server): sign-up, email confirmation, password reset, session revocation, account export and deletion, and saving workouts (repeats, races, undo on failure, quests, daily limits). The first run downloads a MongoDB binary.
+- **Frontend tests** (`strive-frontend/src/__tests__`, Vitest and Testing Library) cover the logger, tracking modes, dialogs, account pages, the offline queue, routing, and colour contrast of the design tokens.
+
+They run on every push and pull request via GitHub Actions (`.github/workflows/tests.yml`), along with the frontend lint and build and a non-blocking `npm audit`. Dependabot opens weekly update pull requests.
 
 ## Deployment
 

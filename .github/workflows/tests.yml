@@ -25,9 +25,22 @@ jobs:
         working-directory: strive-backend
         run: npm ci
 
-      - name: Run backend tests
+      # The integration tests download a MongoDB binary once; keep it between runs
+      - name: Cache MongoDB test binary
+        uses: actions/cache@v4
+        with:
+          path: strive-backend/node_modules/.cache/mongodb-memory-server
+          key: mongodb-memory-server-${{ runner.os }}-${{ hashFiles('strive-backend/package-lock.json') }}
+
+      - name: Run backend tests (unit and integration)
         working-directory: strive-backend
         run: npm test
+
+      # Reports known vulnerabilities in production dependencies. Not blocking: it warns.
+      - name: Audit backend dependencies
+        working-directory: strive-backend
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
 
   frontend:
     name: Frontend lint, tests and build
@@ -59,3 +72,8 @@ jobs:
       - name: Build
         working-directory: strive-frontend
         run: npm run build
+
+      - name: Audit frontend dependencies
+        working-directory: strive-frontend
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
