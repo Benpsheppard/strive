@@ -4,8 +4,11 @@
 const User = require('../models/userModel')
 const Workout = require('../models/workoutModel')
 const LeaderboardEntry = require('../models/leaderboardEntryModel')
-const { getPreviousISOWeekString, getISOWeekString, getPreviousWeekRange, getStartOfWeek, getEndOfWeek } = require('./dateFormat')
+const { getPreviousISOWeekString, getISOWeekString, getPreviousWeekRange, getStartOfWeek, getEndOfWeek, getWeeksBetween } = require('./dateFormat')
 const { calculateMomentum } = require('./momentum')
+
+// A shield is earned every time the streak reaches a multiple of this many weeks
+const WEEKS_PER_SHIELD = 4
 
 // Get number of workouts completed this week
 const getWorkoutsThisWeek = async (userId, date) => {
@@ -129,7 +132,15 @@ const checkAndBreakStreak = async (userId) => {
         }
     })
 
-    if (completedWorkouts < user.target) {
+    // A shield only covers a single missed week. If more than one whole week has passed
+    // without a workout, the streak is lost regardless of any shield.
+    const weeksSinceLastWorkoutWeek = user.streak.lastIncrementedWeek
+        ? getWeeksBetween(user.streak.lastIncrementedWeek, currentWeek) - 1
+        : 0
+
+    if (weeksSinceLastWorkoutWeek > 1) {
+        user.streak.current = 0
+    } else if (completedWorkouts < user.target) {
         if (user.streak.shield) {
             user.streak.shield = false
         } else {
@@ -157,6 +168,11 @@ const checkAndIncreaseStreak = async (userId, workoutsThisWeek) => {
     user.streak.current++
     user.streak.best = Math.max(user.streak.best, user.streak.current)
     user.streak.lastIncrementedWeek = currentWeek
+
+    // Earn a shield for every WEEKS_PER_SHIELD weeks of streak (only one can be held)
+    if (user.streak.current % WEEKS_PER_SHIELD === 0) {
+        user.streak.shield = true
+    }
 
     const updatedUser = await user.save()
     return updatedUser
