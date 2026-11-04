@@ -138,7 +138,7 @@ const setWorkout = asyncHandler(async (req, res) => {
     })
 
     // Update leaderboards
-    await updateLeaderboardEntry(req.user.id, workout)
+    if (!req.user.isGuest) await updateLeaderboardEntry(req.user.id, workout)
 
     // Output created workout + user + gamification flags
     res.status(201).json({
@@ -198,7 +198,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
         }
     )
     await workout.deleteOne()
-    await updateLeaderboardEntry(req.user.id, workout)
+    if (!req.user.isGuest) await updateLeaderboardEntry(req.user.id, workout)
 
     const updatedUser = await User.findById(req.user.id)
     res.status(200).json({

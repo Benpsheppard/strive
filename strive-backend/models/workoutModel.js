@@ -70,7 +70,16 @@ const summarySchema = mongoose.Schema({
         bonus: {
             type: Number,
             default: 0
+        },
+        // True when the daily SP cap reduced this workout's SP
+        dailyCapReached: {
+            type: Boolean,
+            default: false
         }
+    },
+    // Why this workout earned no SP (too small), if so
+    noSPReason: {
+        type: String
     },
     // Quests Completed
     questsCompleted: [

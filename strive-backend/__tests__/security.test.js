@@ -98,6 +98,20 @@ describe('getLeaderboard', () => {
         expect(LeaderboardEntry.find).not.toHaveBeenCalled()
     })
 
+    test('leaves guests off the board and returns at most 15 entries', async () => {
+        const entries = Array.from({ length: 20 }, (_, i) => ({ _id: i, user: i % 2 === 0 ? { username: `u${i}` } : null }))
+        const q = chain(entries)
+        const res = createRes()
+
+        await getLeaderboard({ query: {} }, res)
+
+        // Guests are removed by the populate match, which leaves user null
+        const returned = res.json.mock.calls[0][0]
+        expect(returned).toHaveLength(10)
+        expect(returned.every(e => e.user)).toBe(true)
+        expect(q.populate).toHaveBeenCalledWith(expect.objectContaining({ match: { isGuest: { $ne: true } } }))
+    })
+
     test('rejects non-string metric (query-string objects/arrays)', async () => {
         const res = createRes()
         await expect(getLeaderboard({ query: { metric: ['totalSP'] } }, res)).rejects.toThrow('Invalid metric')

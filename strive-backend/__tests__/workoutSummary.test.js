@@ -45,7 +45,7 @@ const exercise = {
     exerciseId: 'exercise-1',
     selectedEquipment: 'Smith Machine',
     trackingMode: 'weight_reps',
-    sets: [{ weight: 70, reps: 8 }]
+    sets: [{ weight: 70, reps: 8 }, { weight: 70, reps: 8 }, { weight: 70, reps: 8 }]
 }
 
 const makeSummary = async quest => {
@@ -61,7 +61,8 @@ const makeSummary = async quest => {
         [exercise],
         {
             _id: 'workout-1',
-            createdAt: new Date()
+            createdAt: new Date(),
+            duration: 30
         }
     )
 }

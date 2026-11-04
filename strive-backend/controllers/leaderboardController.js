@@ -25,10 +25,13 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 
     const weekStart = getStartOfWeek(new Date())
 
-    const leaderboard = await LeaderboardEntry.find({ weekStart })
+    // Guests are kept off the public board
+    const entries = await LeaderboardEntry.find({ weekStart })
         .sort({ [metric]: -1 })
-        .limit(15)
-        .populate('user', 'username')
+        .limit(50)
+        .populate({ path: 'user', select: 'username', match: { isGuest: { $ne: true } } })
+
+    const leaderboard = entries.filter(entry => entry.user).slice(0, 15)
 
     res.json(leaderboard)
 })

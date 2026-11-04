@@ -7,6 +7,14 @@ const { getWorkoutsThisWeek } = require('./workoutServices')
 const { detectQuestCompletion } = require('./quests/progress')
 const { buildExerciseKey } = require('./exerciseKey')
 const { getMaxWeight, getMaxReps, getMaxDuration, getTotalDistance } = require('./workoutMetrics')
+const {
+    MAX_FIRST_LIFTS_REWARDED,
+    NO_SP_REASON,
+    isWorkoutEligibleForSP,
+    getMinPBIncrease,
+    getStartOfDay,
+    getRemainingDailySP
+} = require('./spRules')
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -239,7 +247,7 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
     ])
 
     const personalBestsReward = personalBests.length * 500
-    const firstLiftsReward = firstLifts.length * FIRST_LIFT_REWARD
+    const firstLiftsReward = Math.min(firstLifts.length, MAX_FIRST_LIFTS_REWARDED) * FIRST_LIFT_REWARD
 
     // The workout isn't saved yet, so add it to the count already in the database
     const workoutsThisWeek = await getWorkoutsThisWeek(user._id, workout.createdAt) + 1
@@ -249,10 +257,21 @@ const calculateTotalStrivePoints = async (workoutHistory, existingPBs, user, wor
     const targetBonus = targetReached ? getWeeklyBonus(target) : 0
 
     const completeReward = Math.ceil((volumeReward + strengthReward + progressionReward) * consistencyMultiplier)
-    const total = Math.ceil((completeReward + totalQuestSP + personalBestsReward + firstLiftsReward + targetBonus) * momentumMultiplier)
-    
+    const uncappedTotal = Math.ceil((completeReward + totalQuestSP + personalBestsReward + firstLiftsReward + targetBonus) * momentumMultiplier)
+
+    // Cap what can be earned in one day
+    const dayStart = getStartOfDay(workout.createdAt)
+    const dayEnd = new Date(dayStart)
+    dayEnd.setDate(dayEnd.getDate() + 1)
+    const earnedToday = workoutHistory
+        .filter(w => w.createdAt >= dayStart && w.createdAt < dayEnd)
+        .reduce((sum, w) => sum + (Number(w.summary?.totalStrivePoints?.total) || 0), 0)
+    const total = Math.min(uncappedTotal, getRemainingDailySP(earnedToday))
+    const dailyCapReached = total < uncappedTotal
+
     return {
         total,
+        dailyCapReached,
         volume: { reward: volumeReward, score: volumeScore },
         strength: { reward: strengthReward, score: strengthScore },
         progression: { reward: progressionReward, score: progressionScore },
@@ -276,6 +295,7 @@ const getPBMetric = (trackingMode, sets) => {
             return { metric: 'max_reps', value: getMaxReps(sets) }
         case 'duration':
             return { metric: 'best_duration', value: getMaxDuration(sets) }
+        case 'distance':
         case 'distance_duration':
             return { metric: 'total_distance', value: getTotalDistance(sets) }
         default:
@@ -341,7 +361,7 @@ const detectPersonalBests = (exercises, existingPBs) => {
             return
         }
 
-        if (pb.value > existingPB.value) {
+        if (pb.value >= existingPB.value + getMinPBIncrease(pb.metric, existingPB.value)) {
             if (pbIndexByKey[key] !== undefined) {
                 // Same exercise logged twice: keep a single PB with the best value
                 newPBs[pbIndexByKey[key]].newValue = pb.value
@@ -390,6 +410,7 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
         {
             createdAt: 1,
             'summary.totalWeight': 1,
+            'summary.totalStrivePoints.total': 1,
             'exercises.exercise': 1,
             'exercises.selectedEquipment': 1,
             'exercises.sets': 1
@@ -401,11 +422,20 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
 
     const existingPBs = getExistingPBs(workoutHistory)
 
-    const { questsCompleted, totalQuestSP, questUpdates } = await detectQuestCompletion(user._id, exercises, workout)
+    const eligible = isWorkoutEligibleForSP(totalSets, workout.duration)
 
-    const { personalBests, firstLifts } = detectPersonalBests(exercises, existingPBs)
+    // Tiny workouts are saved but earn nothing: no SP, PBs, first lifts or quest progress
+    const { questsCompleted, totalQuestSP, questUpdates } = eligible
+        ? await detectQuestCompletion(user._id, exercises, workout)
+        : { questsCompleted: [], totalQuestSP: 0, questUpdates: [] }
 
-    const totalStrivePoints = await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP)
+    const { personalBests, firstLifts } = eligible
+        ? detectPersonalBests(exercises, existingPBs)
+        : { personalBests: [], firstLifts: [] }
+
+    const totalStrivePoints = eligible
+        ? await calculateTotalStrivePoints(workoutHistory, existingPBs, user, workout, exercises, personalBests, firstLifts, totalWeight, totalQuestSP)
+        : { total: 0, totalQuestSP: 0, personalBestsReward: 0, firstLiftsReward: 0, bonus: 0 }
 
     return {
         summary: {
@@ -418,7 +448,8 @@ const calculateWorkoutSummary = async (user, exercises, workout) => {
             totalStrivePoints,
             questsCompleted,
             personalBests,
-            firstLifts
+            firstLifts,
+            ...(eligible ? {} : { noSPReason: NO_SP_REASON })
         },
         questUpdates
     }
