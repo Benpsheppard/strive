@@ -7,10 +7,10 @@ import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
-import { showConfirmDeleteAlert } from '../../alerts/workoutItem.js'
+import { useAlerts } from '../../hooks/useAlerts.js'
 
 // Component Imports
-import SetList from './SetList.jsx'
+import SetRow from './SetRow.jsx'
 import { formatDistance, formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
 
 const WorkoutItem = ({ workout }) => {
@@ -20,19 +20,17 @@ const WorkoutItem = ({ workout }) => {
     const summary = { totalWeight: 0, totalReps: 0, totalSets: 0, totalDistance: 0, totalDuration: 0, ...workout.summary }
 
     const dispatch = useDispatch()
+    const alerts = useAlerts()
 
     const [workoutExpanded, setWorkoutExpanded] = useState(false)
     const [exerciseExpanded, setExerciseExpanded] = useState(false)
 
-    const onDelete = (e) => {
+    const onDelete = async (e) => {
         e.stopPropagation()
 
-        showConfirmDeleteAlert()
-        .then((result) => {
-            if (result.isConfirmed) {
-                dispatch(deleteWorkout(workout._id))
-            }
-        })
+        if (await alerts.deleteWorkout()) {
+            dispatch(deleteWorkout(workout._id))
+        }
     }
 
     const toggleExercise = (e, index) => {
@@ -155,7 +153,11 @@ const WorkoutItem = ({ workout }) => {
                                         {/* Exercise Sets */}
                                         {exerciseExpanded[index] && (
                                             <div className="px-3 pb-3 pt-1">
-                                                <SetList sets={ex.sets} trackingMode={ex.exercise?.trackingMode} useImperial={user.useImperial} />
+                                                <ul className="space-y-2">
+                                                    {(ex.sets || []).map((set, i) => (
+                                                        <SetRow key={i} set={set} number={i + 1} trackingMode={ex.exercise?.trackingMode} useImperial={user.useImperial} />
+                                                    ))}
+                                                </ul>
                                             </div>
                                         )}
                                     </li>

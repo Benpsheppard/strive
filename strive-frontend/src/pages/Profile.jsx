@@ -18,7 +18,7 @@ import GuestCard from '../components/guest/GuestCard.jsx'
 import ProfileStats from '../components/profile/ProfileStats.jsx'
 
 // Alert Imports
-import { showDeleteAccountAlert, showLogoutAccountAlert, showResetAccountAlert } from '../alerts/profile.js'
+import { useAlerts } from '../hooks/useAlerts.js'
 
 const Profile = () => {
     const { user, isLoading, isError, message } = useSelector((state) => state.auth)
@@ -26,34 +26,26 @@ const Profile = () => {
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const alerts = useAlerts()
 
-    const onLogout = () => {
-        showLogoutAccountAlert()
-        .then((result) => {
-            if (result.isConfirmed) {
-                dispatch(logout())
-            }
-        })
+    const onLogout = async () => {
+        if (await alerts.logout()) {
+            dispatch(logout())
+        }
     }
 
-    const onDeleteAccount = () => {
-        showDeleteAccountAlert()
-        .then((result) => {
-            if (result.isConfirmed) {
-                dispatch(deleteUser(user._id))
-                dispatch(reset())
-            }
-        })
+    const onDeleteAccount = async () => {
+        if (await alerts.deleteAccount()) {
+            dispatch(deleteUser(user._id))
+            dispatch(reset())
+        }
     }
 
-    const onResetAccount = () => {
-        showResetAccountAlert()
-        .then((result) => {
-            if (result.isConfirmed) {
-                dispatch(resetUser(user._id))
-                dispatch(reset())
-            }
-        })
+    const onResetAccount = async () => {
+        if (await alerts.resetAccount()) {
+            dispatch(resetUser(user._id))
+            dispatch(reset())
+        }
     }
 
     useEffect(() => {

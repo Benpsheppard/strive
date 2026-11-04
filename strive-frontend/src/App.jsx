@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Spinner from './components/spinners/Spinner.jsx'
+import { ConfirmProvider } from './components/ui/ConfirmProvider.jsx'
 import { getMe } from './features/auth/authSlice.js'
 
 // Lazy load pages for performance optimization
@@ -39,7 +40,7 @@ const App = () => {
 
 	// Visuals
 	return (
-		<>
+		<ConfirmProvider>
 			<Router>
 				<div className="w-full min-h-screen">
 					<Suspense fallback={<Spinner />}>
@@ -62,7 +63,7 @@ const App = () => {
 				</div>
 			</Router>
 			<ToastContainer />
-		</>
+		</ConfirmProvider>
 	)
 }
 
