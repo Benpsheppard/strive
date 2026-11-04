@@ -9,7 +9,7 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 ### Workouts
 - Build workouts from a seeded exercise library, with sets that track weight, reps, duration or distance depending on the exercise's tracking mode
 - Rest timer and workout timer while you train
-- Previous workouts list, with the ability to edit or remove exercises
+- Previous workouts list, with the ability to delete workouts
 - Workout summary on completion: stats, personal bests, muscle group radar graph and Strive points earned
 - Metric / imperial unit preference
 
@@ -37,9 +37,9 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 | Frontend | React 19, Vite, Redux Toolkit, React Router, Tailwind CSS 4, Chart.js / Recharts, Framer Motion, vite-plugin-pwa |
 | Backend | Node.js, Express 5, Mongoose 9 |
 | Database | MongoDB |
-| Auth & security | JWT, bcryptjs, Helmet (with CSP), CORS, express-rate-limit, express-validator, mongo-sanitize |
+| Auth & security | JWT, bcryptjs, Helmet (with CSP), CORS, express-rate-limit, validator |
 | AI | Anthropic SDK (quest generation) |
-| Testing / CI | Jest, GitHub Actions |
+| Testing / CI | Jest (backend), Vitest (frontend), GitHub Actions |
 
 ## Project Structure
 
@@ -90,12 +90,13 @@ Create `strive-backend/.env`:
 NODE_ENV=development          # development | production | test
 PORT=8000
 MONGO_URI=mongodb://...
+MONGO_URI_TEST=mongodb://...   # database used when NODE_ENV=development
 JWT_SECRET=<at least 32 characters>
 FRONTEND_URL=http://localhost:3000
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-The server exits on startup if `NODE_ENV`, `PORT`, `MONGO_URI`, `JWT_SECRET` or `FRONTEND_URL` is missing. In production `JWT_SECRET` must be at least 32 characters and `FRONTEND_URL` must be a valid URL.
+In development (`NODE_ENV=development`) the server connects to `MONGO_URI_TEST` instead of `MONGO_URI`, and exits if it isn't set. The server also exits on startup if `NODE_ENV`, `PORT`, `MONGO_URI`, `JWT_SECRET` or `FRONTEND_URL` is missing. In production `JWT_SECRET` must be at least 32 characters and `FRONTEND_URL` must be a valid URL.
 
 Create `strive-frontend/.env`:
 
@@ -126,18 +127,18 @@ This starts the API and the Vite frontend together. Open http://localhost:3000.
 | `npm run server` | Backend only |
 | `npm run client` | Frontend only |
 | `npm run build` | Build the frontend for production |
-| `npm test` | Run Jest tests |
+| `npm test` | Run the backend Jest tests |
 
-Lint the frontend with `npm run lint --prefix strive-frontend`.
+Lint the frontend with `npm run lint --prefix strive-frontend`, and run its Vitest tests with `npm test --prefix strive-frontend`. CI runs the backend tests, then the frontend lint, tests and build.
 
 ## API Overview
 
-All routes are under `/api`. Everything except register and login requires a `Authorization: Bearer <token>` header (the workouts, quests and leaderboard routers are fully protected).
+All routes are under `/api`. Everything except register, login and the exercise library (`GET /api/exercises`) requires an `Authorization: Bearer <token>` header.
 
 | Prefix | Purpose |
 | --- | --- |
 | `/api/users` | Register, login, `me`, profile, unit preference, momentum, streak checks, guest migration, reset, delete |
-| `/api/workouts` | CRUD for workouts, plus add / update / remove exercises within a workout |
+| `/api/workouts` | Create, list and delete workouts, plus add an exercise to a workout |
 | `/api/exercises` | Exercise library |
 | `/api/quests` | `GET /` list quests, `POST /generate/:duration` (`daily`, `weekly`, `monthly`) |
 | `/api/leaderboard` | Leaderboard rankings |
