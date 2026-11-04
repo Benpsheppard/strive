@@ -63,6 +63,10 @@ const summarySchema = mongoose.Schema({
             type: Number,
             default: 0
         },
+        firstLiftsReward: {
+            type: Number,
+            default: 0
+        },
         bonus: {
             type: Number,
             default: 0
@@ -88,6 +92,13 @@ const summarySchema = mongoose.Schema({
                 enum: ['daily', 'weekly', 'monthly'],
                 required: true
             },
+        }
+    ],
+    // First time an exercise/equipment pair was logged (rewarded, but not a PB)
+    firstLifts: [
+        {
+            exercise: { type: String },
+            equipment: { type: String }
         }
     ],
     // Personal Bests
