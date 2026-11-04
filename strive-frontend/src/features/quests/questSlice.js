@@ -2,6 +2,7 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import questService from './questService'
+import { getErrorMessage } from '../../utils/getErrorMessage.js'
 
 const initialState = {
     quests: { daily: [], weekly: [], monthly: [] },
@@ -16,8 +17,7 @@ export const getQuests = createAsyncThunk('quests/getAll', async (_, thunkAPI) =
         const token = thunkAPI.getState().auth.user.token
         return await questService.getQuests(token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) 
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -27,8 +27,7 @@ export const generateQuests = createAsyncThunk('quests/generate', async (duratio
         const token = thunkAPI.getState().auth.user.token
         return await questService.generateQuests(duration, token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) 
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -69,7 +68,8 @@ export const questSlice = createSlice({
             .addCase(generateQuests.fulfilled, (state, action) => {
                 state.isLoading = false
                 state.isSuccess = true
-                state.quests.push(action.payload)
+                // The API returns the newly generated quests; the duration is the thunk argument
+                state.quests[action.meta.arg] = action.payload.quests
             })
             .addCase(generateQuests.rejected, (state, action) => {
                 state.isLoading = false

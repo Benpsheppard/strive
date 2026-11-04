@@ -3,6 +3,7 @@
 // Imports
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import leaderboardService from './leaderboardService'
+import { getErrorMessage } from '../../utils/getErrorMessage.js'
 
 // Initial state
 const initialState = {
@@ -19,8 +20,7 @@ export const getLeaderboard = createAsyncThunk('leaderboard/get', async (metric,
         const token = thunkAPI.getState().auth.user.token
         return await leaderboardService.getLeaderboard(metric, token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+        const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
     }
 })

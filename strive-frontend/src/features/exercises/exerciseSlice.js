@@ -3,6 +3,7 @@
 // Imports
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import exerciseService from './exerciseService'
+import { getErrorMessage } from '../../utils/getErrorMessage.js'
 
 // Initial state
 const initialState = {
@@ -18,8 +19,7 @@ export const getExercises = createAsyncThunk('exercises/getAll', async (_, thunk
     try {
         return await exerciseService.getExercises()
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message) 
-		|| error.message || error.toString()
+        const message = getErrorMessage(error)
 		return thunkAPI.rejectWithValue(message)
     }
 })

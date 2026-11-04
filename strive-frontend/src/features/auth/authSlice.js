@@ -4,6 +4,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import authService from './authService.js'
 import { deleteWorkout, createWorkout } from '../workouts/workoutsSlice.js'
+import { getErrorMessage } from '../../utils/getErrorMessage.js'
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('Strive:user'))
@@ -22,9 +23,8 @@ export const getMe = createAsyncThunk('auth/getMe', async (_, thunkAPI) => {
         const token = thunkAPI.getState().auth.user.token
         return await authService.getMe(token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
-        return thunkAPI.rejectWithValue(message)
+        const message = getErrorMessage(error)
+        return thunkAPI.rejectWithValue(message, { status: error.response?.status })
     }
 })
 
@@ -33,8 +33,7 @@ export const register = createAsyncThunk('auth/register', async (user, thunkAPI)
     try {
         return await authService.register(user)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -44,8 +43,7 @@ export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
     try {
         return await authService.login(user)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -56,8 +54,7 @@ export const migrate = createAsyncThunk('auth/migrate', async (user, thunkAPI) =
         const token = thunkAPI.getState().auth.user.token
         return await authService.migrate(user, token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -73,8 +70,7 @@ export const deleteUser = createAsyncThunk('auth/deleteUser', async (id, thunkAP
         const token = thunkAPI.getState().auth.user.token
         return await authService.deleteUser(id, token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -85,8 +81,7 @@ export const resetUser = createAsyncThunk('auth/resetUser', async (id, thunkAPI)
         const token = thunkAPI.getState().auth.user.token
         return await authService.resetUser(id, token)
     } catch (error) {
-        const message = (error.response && error.response.data && error.response.data.message)
-        || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -97,9 +92,7 @@ export const updateUnitPreference = createAsyncThunk('auth/updatePreference', as
       const token = thunkAPI.getState().auth.user.token
       return await authService.updateUnitPreference(useImperial, token)
     } catch (error) {
-      const message = 
-        (error.response && error.response.data && error.response.data.message) 
-        || error.message || error.toString()
+      const message = getErrorMessage(error)
       return thunkAPI.rejectWithValue(message)
     }
 })
@@ -110,9 +103,7 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (profi
         const token = thunkAPI.getState().auth.user.token
         return await authService.updateProfile(profileData, token)
     } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message)
-            || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -123,9 +114,7 @@ export const checkIfStreakBroken = createAsyncThunk('auth/streak-broken', async 
         const token = thunkAPI.getState().auth.user.token
         return await authService.checkIfStreakBroken(id, token)
     } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message)
-            || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -136,9 +125,7 @@ export const checkIfStreakIncreased = createAsyncThunk('auth/streak-increased', 
         const token = thunkAPI.getState().auth.user.token
         return await authService.checkIfStreakIncreased(id, token)
     } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message)
-            || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -149,9 +136,7 @@ export const updateMomentum = createAsyncThunk('auth/updateMomentum', async (dat
         const token = thunkAPI.getState().auth.user.token
         return await authService.updateMomentum(data, token)
     } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message)
-            || error.message || error.toString()
+        const message = getErrorMessage(error)
         return thunkAPI.rejectWithValue(message)
     }
 })
@@ -181,8 +166,12 @@ export const authSlice = createSlice({
                 localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(getMe.rejected, (state, action) => {
-                state.user = null
-                localStorage.removeItem('Strive:user')
+                state.isLoading = false
+                // Only end the session when the token is rejected, not on offline/server errors
+                if (action.meta?.status === 401) {
+                    state.user = null
+                    localStorage.removeItem('Strive:user')
+                }
             })
         // Register User
             .addCase(register.pending, (state) => {
@@ -337,7 +326,7 @@ export const authSlice = createSlice({
                 state.isLoading = true
             })
             .addCase(checkIfStreakBroken.fulfilled, (state, action) => {
-                state.isLoading = false,
+                state.isLoading = false
                 state.isSuccess = true
                 state.user = {
                     ...state.user,
@@ -356,7 +345,7 @@ export const authSlice = createSlice({
                 state.isLoading = true
             })
             .addCase(checkIfStreakIncreased.fulfilled, (state, action) => {
-                state.isLoading = false,
+                state.isLoading = false
                 state.isSuccess = true
                 state.user = {
                     ...state.user,
