@@ -29,5 +29,7 @@ const leaderboardEntrySchema = mongoose.Schema({
 })
 
 leaderboardEntrySchema.index({ user: 1, weekStart: 1 }, { unique: true })
+// The leaderboard query filters by week and sorts by a metric
+leaderboardEntrySchema.index({ weekStart: 1 })
 
 module.exports = mongoose.model('LeaderboardEntry', leaderboardEntrySchema)

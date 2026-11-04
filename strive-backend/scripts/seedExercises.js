@@ -4,7 +4,7 @@
 //
 // Usage:  node scripts/seedExercises.js
 //         node scripts/seedExercises.js --allow-production   (required when NODE_ENV=production)
-require('dotenv').config({ path: '../.env' })
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
 const mongoose = require('mongoose')
 const Exercise = require('../models/exerciseModel')
 const exercises = require('../data/exerciseLibrary')

@@ -7,6 +7,9 @@ const mongoose = require('mongoose')
 const connectDB = async () => { 
     try {
         if (process.env.NODE_ENV === 'development') {
+            if (!process.env.MONGO_URI_TEST) {
+                throw new Error('MONGO_URI_TEST must be set when NODE_ENV=development')
+            }
             const conn = await mongoose.connect(process.env.MONGO_URI_TEST)
             console.log(`MongoDB Connected (development): ${conn.connection.host}`)
         } else {
