@@ -1,12 +1,11 @@
 // Spinner.jsx
+// Full-screen loading indicator
 
-const Spinner = () => {
-    return (
-        <div className="loadingSpinnerContainer">
-            <div className="loadingSpinner"></div>
-        </div>
-    )
-}
+const Spinner = () => (
+    <div className="loadingSpinnerContainer" role="status" aria-live="polite">
+        <div className="loadingSpinner" aria-hidden="true"></div>
+        <span className="sr-only">Loading</span>
+    </div>
+)
 
-// Export
 export default Spinner

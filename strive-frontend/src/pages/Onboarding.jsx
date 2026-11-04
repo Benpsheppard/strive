@@ -1,170 +1,145 @@
 // Onboarding.jsx
+// Three quick questions. Everything can be skipped and changed later in Profile.
 
-// Imports
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Picker from 'react-mobile-picker'
+import { toast } from 'react-toastify'
 
-// Feature Imports
 import { updateProfile } from '../features/auth/authSlice.js'
 
-// Component Imports
-import AuthHeader from '../components/headers/AuthHeader'
+import PublicHeader from '../components/headers/PublicHeader.jsx'
 import Toggle from '../components/profile/Toggle.jsx'
+import Card from '../components/ui/Card.jsx'
+import Input from '../components/ui/Input.jsx'
+import Select from '../components/ui/Select.jsx'
+import Button from '../components/ui/Button.jsx'
+import PageTitle from '../components/ui/PageTitle.jsx'
 
-// Util Imports
 import { lbsToKg } from '../utils/formatValues.js'
+import { cx } from '../utils/cx.js'
+
+const TARGET_HINTS = {
+    1: 'A gentle start',
+    2: 'Easy to fit in',
+    3: 'Recommended for most people',
+    4: 'Recommended for most people',
+    5: 'Very committed',
+    6: 'Serious training',
+    7: 'Every single day'
+}
 
 const Onboarding = () => {
     const { user } = useSelector((state) => state.auth)
 
-    const [formData, setFormData] = useState({
-        target: '3',
-        height: {
-            feet: '5',
-            inches: '8'
-        },
-        weight: '0'
-    })
+    const [form, setForm] = useState({ target: 3, feet: 5, inches: 8, weight: '' })
+    const [weightError, setWeightError] = useState('')
+    const [saving, setSaving] = useState(false)
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault()
+        setWeightError('')
 
-        const convertedWeight = user.useImperial ? lbsToKg(formData.weight) : formData.weight
-
-        const updatedForm = {
-            ...formData,
-            weight: convertedWeight,
+        const weightValue = Number(form.weight)
+        if (form.weight !== '' && (!Number.isFinite(weightValue) || weightValue <= 0 || weightValue > 700)) {
+            setWeightError('Enter a realistic weight, or leave it blank to skip')
+            return
         }
 
-        try {
-            dispatch(updateProfile(updatedForm))
-        } catch (error) {
-            console.error('Error during onboarding submission:', error)
+        const profile = {
+            target: form.target,
+            height: { feet: form.feet, inches: form.inches }
+        }
+        if (form.weight !== '') {
+            profile.weight = user.useImperial ? lbsToKg(weightValue) : weightValue
         }
 
-        navigate('/')
+        setSaving(true)
+        const result = await dispatch(updateProfile(profile))
+        setSaving(false)
+
+        if (updateProfile.fulfilled.match(result)) {
+            navigate('/', { replace: true })
+        } else {
+            toast.error(result.payload || 'We could not save your details. You can add them later in Profile.')
+        }
     }
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32 pt-20 space-y-3">
-            <AuthHeader />
+        <>
+            <PublicHeader />
+            <main className="mx-auto max-w-xl px-4 pb-12">
+                <PageTitle
+                    accent={user.isGuest ? 'Guest' : user.username}
+                    subtitle="Three quick questions help Strive set your goals. You can change these any time in Profile."
+                >
+                    Welcome,
+                </PageTitle>
 
-            <div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                <h1>
-                    Welcome to Strive{' '}
-                    <span className="text-[#EF233C]">
-                        {user.isGuest ? 'Guest' : user.username}
-                    </span>
-                </h1>
-            </div>
-
-            <div className='p-6 w-full sm:max-w-2xl mx-auto text-[#EDF2F4] bg-[#8D99AE] shadow rounded-2xl text-center'>
-                <h2 className='text-2xl'>
-                    Enter your <span className="text-[#EF233C]">height, weight and consistency target</span>
-                </h2>
-            </div>
-
-            <form onSubmit={onSubmit} className='space-y-4 w-full flex flex-col items-center'>
-                {/* Height */}
-                <div className='p-6 w-full sm:max-w-2xl text-[#EDF2F4] bg-[#8D99AE] text-center shadow rounded-2xl'>
-                    <h2 className='text-xl mb-4'>
-                        How <span className="text-[#EF233C]">Tall</span> are you?
-                    </h2>
-
-                    <Picker
-                        value={formData.height}
-                        onChange={(val) =>
-                            setFormData({
-                                ...formData,
-                                height: val
-                            })
-                        }
-                    >
-                        <Picker.Column name="feet">
-                            {['4', '5', '6', '7'].map(option => (
-                                <Picker.Item key={option} value={option}>
-                                    {option} ft
-                                </Picker.Item>
+                <form onSubmit={onSubmit} className="space-y-4" noValidate>
+                    <Card as="fieldset" className="space-y-3">
+                        <legend className="sr-only">Weekly target</legend>
+                        <h2 className="font-display text-2xl font-bold">How many workouts a <span className="text-accent-fg">week</span>?</h2>
+                        <p className="text-sm text-muted">
+                            This is your weekly target. Hitting it earns a bonus and keeps your streak alive.
+                        </p>
+                        <div className="grid grid-cols-7 gap-1.5" role="radiogroup" aria-label="Workouts per week">
+                            {[1, 2, 3, 4, 5, 6, 7].map(n => (
+                                <button
+                                    key={n}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={form.target === n}
+                                    onClick={() => setForm(prev => ({ ...prev, target: n }))}
+                                    className={cx(
+                                        'rounded-xl border py-3 text-lg font-bold transition-colors',
+                                        form.target === n ? 'border-accent bg-accent text-white' : 'border-line bg-bg text-fg hover:border-muted'
+                                    )}
+                                >
+                                    {n}
+                                </button>
                             ))}
-                        </Picker.Column>
+                        </div>
+                        <p className="text-center text-sm text-muted">{TARGET_HINTS[form.target]}</p>
+                    </Card>
 
-                        <Picker.Column name="inches">
-                            {Array.from({ length: 12 }, (_, i) => i.toString()).map(option => (
-                                <Picker.Item key={option} value={option}>
-                                    {option} in
-                                </Picker.Item>
-                            ))}
-                        </Picker.Column>
-                    </Picker>
-                </div>
+                    <Card className="space-y-3">
+                        <h2 className="font-display text-2xl font-bold">Your <span className="text-accent-fg">body weight</span></h2>
+                        <Toggle useImperial={user.useImperial} />
+                        <Input
+                            label={`Weight (${user.useImperial ? 'lbs' : 'kg'}) - optional`}
+                            type="number"
+                            inputMode="decimal"
+                            min="0"
+                            step="0.1"
+                            value={form.weight}
+                            error={weightError}
+                            onChange={(e) => setForm(prev => ({ ...prev, weight: e.target.value }))}
+                        />
+                    </Card>
 
-                {/* Weight */}
-                <div className='p-6 w-full sm:max-w-2xl text-[#EDF2F4] bg-[#8D99AE] space-y-3 text-center shadow rounded-2xl'>
-                    <h2 className='text-xl mb-4'>
-                        What is your <span className="text-[#EF233C]">weight</span>?
-                    </h2>
+                    <Card className="space-y-3">
+                        <h2 className="font-display text-2xl font-bold">Your <span className="text-accent-fg">height</span></h2>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Select label="Feet" value={form.feet} onChange={(e) => setForm(prev => ({ ...prev, feet: Number(e.target.value) }))}>
+                                {[4, 5, 6, 7].map(n => <option key={n} value={n}>{n} ft</option>)}
+                            </Select>
+                            <Select label="Inches" value={form.inches} onChange={(e) => setForm(prev => ({ ...prev, inches: Number(e.target.value) }))}>
+                                {Array.from({ length: 12 }, (_, i) => i).map(n => <option key={n} value={n}>{n} in</option>)}
+                            </Select>
+                        </div>
+                    </Card>
 
-                    <Toggle useImperial={user.useImperial} />
-
-                    <input
-                        type="number"
-                        placeholder={user.useImperial ? 'Enter your weight (lbs)' : 'Enter your weight (kg)'}
-                        value={formData.weight}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                weight: e.target.value
-                            })
-                        }
-                        className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
-                    />
-                </div>
-
-                {/* Weekly Target */}
-                <div className='p-6 w-full sm:max-w-2xl text-[#EDF2F4] bg-[#8D99AE] text-center shadow rounded-2xl'>
-                    <h2 className='text-xl mb-4'>
-                        How many workouts per <span className="text-[#EF233C]">week?</span>
-                    </h2>
-
-                    <p className='text-sm text-[#EDF2F4]'>
-                        3-4 is recommended for most people
-                    </p>
-
-                    <Picker
-                        value={{ target: formData.target }}
-                        onChange={(val) =>
-                            setFormData({
-                                ...formData,
-                                target: val.target
-                            })
-                        }
-                    >
-                        <Picker.Column name="target">
-                            {['1', '2', '3', '4', '5', '6', '7'].map(option => (
-                                <Picker.Item key={option} value={option}>
-                                    {option}
-                                </Picker.Item>
-                            ))}
-                        </Picker.Column>
-                    </Picker>
-                </div>
-
-                {/* Submit */}
-                <div className="space-y-4 p-4 w-full sm:max-w-2xl mx-auto bg-[#8D99AE] shadow rounded-2xl flex flex-col items-center">
-                    <button
-                        type="submit"
-                        className="w-full bg-[#EF233C] text-[#EDF2F4] p-2 rounded transition hover:bg-[#D90429]"
-                    >
-                        Submit
-                    </button>
-                </div>
-            </form>
-        </section>
+                    <div className="flex flex-col gap-2">
+                        <Button type="submit" size="lg" fullWidth loading={saving}>Save and start training</Button>
+                        <Button variant="ghost" fullWidth onClick={() => navigate('/', { replace: true })}>Skip for now</Button>
+                    </div>
+                </form>
+            </main>
+        </>
     )
 }
 

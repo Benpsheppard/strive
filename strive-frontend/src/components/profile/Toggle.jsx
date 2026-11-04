@@ -1,40 +1,40 @@
 // Toggle.jsx
+// Metric / imperial switch
 
-// Imports
 import { useSelector, useDispatch } from 'react-redux'
 import { updateUnitPreference } from '../../features/auth/authSlice.js'
+import { cx } from '../../utils/cx.js'
 
 const Toggle = ({ useImperial }) => {
     const { user } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
 
-    const onToggle = () => {
-        dispatch(updateUnitPreference(!user.useImperial))
-    }
-
     return (
-        <div className="bg-[#2B2D42] rounded-lg p-4">
-            <div className="flex items-center justify-between">
-                <span className="text-[#EDF2F4] font-semibold">Units:</span>
-                <div className="flex items-center gap-3">
-                    <span className={`text-sm ${!useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                        Metric (kg, km)
-                    </span>
-                    <button type="button" onClick={onToggle} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#EF233C] focus:ring-offset-2 ${useImperial ? 'bg-[#EF233C]' : 'bg-[#8D99AE]'}`}>
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-[#EDF2F4] transition-transform ${
-                                useImperial ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                        />
-                    </button>
-                    <span className={`text-sm ${useImperial ? 'text-[#EDF2F4] font-bold' : 'text-[#8D99AE]'}`}>
-                        Imperial (lbs, miles)
-                    </span>
-                </div>
+        <div className="flex items-center justify-between gap-3 rounded-xl bg-bg/60 p-3">
+            <span id="units-label" className="font-semibold text-fg">Units</span>
+
+            <div className="flex items-center gap-3">
+                <span className={cx('text-sm', !useImperial ? 'font-bold text-fg' : 'text-muted')}>Metric (kg, km)</span>
+                <button
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(useImperial)}
+                    aria-labelledby="units-label"
+                    onClick={() => dispatch(updateUnitPreference(!user.useImperial))}
+                    className={cx(
+                        'relative inline-flex h-7 w-12 items-center rounded-full transition-colors',
+                        useImperial ? 'bg-accent' : 'bg-line'
+                    )}
+                >
+                    <span
+                        aria-hidden="true"
+                        className={cx('inline-block h-5 w-5 transform rounded-full bg-fg transition-transform', useImperial ? 'translate-x-6' : 'translate-x-1')}
+                    />
+                </button>
+                <span className={cx('text-sm', useImperial ? 'font-bold text-fg' : 'text-muted')}>Imperial (lbs, mi)</span>
             </div>
         </div>
     )
 }
 
-// Export
 export default Toggle

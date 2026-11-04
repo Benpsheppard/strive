@@ -2,16 +2,19 @@
 
 // Imports
 import { Suspense, lazy, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Spinner from './components/spinners/Spinner.jsx'
 import { ConfirmProvider } from './components/ui/ConfirmProvider.jsx'
+import AppLayout from './components/layout/AppLayout.jsx'
+import RequireAuth from './components/layout/RequireAuth.jsx'
 import { getMe } from './features/auth/authSlice.js'
 
 // Lazy load pages for performance optimization
-
+const Landing = lazy(() => import('./pages/Landing.jsx'))
+const HowItWorks = lazy(() => import('./pages/HowItWorks.jsx'))
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
 const Onboarding = lazy(() => import('./pages/Onboarding.jsx'))
@@ -24,45 +27,62 @@ const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
+const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+
+// The home screen is the workout logger when signed in, and the landing page when not
+const Home = () => {
+	const { user } = useSelector((state) => state.auth)
+
+	return user ? <AppLayout><NewWorkout /></AppLayout> : <Landing />
+}
 
 // App
 const App = () => {
-
 	const dispatch = useDispatch()
 
 	useEffect(() => {
 		const cachedUser = JSON.parse(localStorage.getItem('Strive:user'))
-		
+
 		if (cachedUser) {
 			dispatch(getMe())
 		}
-	},[])
+	}, [dispatch])
 
-	// Visuals
 	return (
 		<ConfirmProvider>
 			<Router>
-				<div className="w-full min-h-screen">
-					<Suspense fallback={<Spinner />}>
-						<Routes>
-							<Route path='/' element={<NewWorkout />} />
-							<Route path='/login' element={<Login />} />
-							<Route path='/register' element={<Register />} />
-							<Route path='/onboarding' element={<Onboarding />} />
-							<Route path='/workout-complete' element={<WorkoutComplete />} />
-							<Route path='/progress-update' element={<ProgressUpdate />} />
-							<Route path='/streaks' element={<StreakUpdate />} />
-							<Route path='/prev-workouts' element={<PrevWorkouts />} />
-							<Route path='/progress' element={<Progress />} />
-							<Route path='/games' element={<Games />} />
-							<Route path='/profile' element={<Profile />} />
-							<Route path='/migrate' element={<GuestMigration />} />
+				<Suspense fallback={<Spinner />}>
+					<Routes>
+						{/* Public */}
+						<Route path='/' element={<Home />} />
+						<Route path='/login' element={<Login />} />
+						<Route path='/register' element={<Register />} />
+						<Route path='/how-it-works' element={<HowItWorks />} />
 
-						</Routes>
-					</Suspense>
-				</div>
+						{/* Signed in, no app navigation */}
+						<Route element={<RequireAuth />}>
+							<Route path='/onboarding' element={<Onboarding />} />
+							<Route path='/migrate' element={<GuestMigration />} />
+						</Route>
+
+						{/* Signed in, inside the app shell */}
+						<Route element={<RequireAuth />}>
+							<Route element={<AppLayout />}>
+								<Route path='/workout-complete' element={<WorkoutComplete />} />
+								<Route path='/progress-update' element={<ProgressUpdate />} />
+								<Route path='/streaks' element={<StreakUpdate />} />
+								<Route path='/prev-workouts' element={<PrevWorkouts />} />
+								<Route path='/progress' element={<Progress />} />
+								<Route path='/games' element={<Games />} />
+								<Route path='/profile' element={<Profile />} />
+							</Route>
+						</Route>
+
+						<Route path='*' element={<NotFound />} />
+					</Routes>
+				</Suspense>
 			</Router>
-			<ToastContainer />
+			<ToastContainer position="top-center" />
 		</ConfirmProvider>
 	)
 }

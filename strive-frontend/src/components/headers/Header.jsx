@@ -1,103 +1,92 @@
 // Header.jsx
+// App navigation: top bar (with level, streak and momentum) plus a bottom tab bar on phones
 
-// Imports
 import { useSelector } from 'react-redux'
-import { Link, useLocation } from 'react-router-dom'
-import { Dumbbell, Clock, BarChart2, Gamepad2, User, LogIn, Flame, Zap, Star } from 'lucide-react'
+import { Link, NavLink } from 'react-router-dom'
+import { FaDumbbell, FaHistory, FaChartBar, FaGamepad, FaUser, FaFire, FaBolt, FaStar } from 'react-icons/fa'
+import Wordmark from './Wordmark.jsx'
+import { cx } from '../../utils/cx.js'
+
+const NAV_ITEMS = [
+    { to: '/', label: 'Workout', icon: FaDumbbell, end: true },
+    { to: '/prev-workouts', label: 'History', icon: FaHistory },
+    { to: '/progress', label: 'Progress', icon: FaChartBar },
+    { to: '/games', label: 'Games', icon: FaGamepad },
+    { to: '/profile', label: 'Profile', icon: FaUser }
+]
+
+const Stat = ({ icon: Icon, value, label, colour }) => (
+    <Link
+        to="/how-it-works"
+        title={`${label} - tap to learn how it works`}
+        aria-label={`${label}: ${value}`}
+        className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-base font-semibold text-fg hover:bg-surface-2"
+    >
+        <Icon size={16} aria-hidden="true" className={colour} />
+        <span className="tabular-nums">{value}</span>
+        <span className="hidden text-sm font-normal text-muted lg:inline">{label}</span>
+    </Link>
+)
 
 const Header = () => {
     const { user } = useSelector((state) => state.auth)
-    const location = useLocation()
-
-    const navOps = "text-[#EDF2F4] hover:text-[#EF233C] inline-block transform transition duration-200 hover:scale-110"
-
-    const mobileNavItems = [
-        { to: "/", label: "Workout", icon: Dumbbell },
-        { to: "/prev-workouts", label: "History", icon: Clock },
-        { to: "/progress", label: "Progress", icon: BarChart2 },
-        { to: "/games", label: "Games", icon: Gamepad2 },
-    ]
 
     return (
         <>
-            {/* Main Header */}
-            <header className="fixed top-0 left-0 w-full bg-[#2B2D42] backdrop-blur-md text-[#EDF2F4] shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-100 h-auto">
-                <div className="mx-auto flex items-center justify-between px-6 py-4">
+            <header className="sticky top-0 z-40 border-b border-line/60 bg-bg/90 backdrop-blur">
+                <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
+                    <div className="flex items-center gap-6">
+                        <Wordmark />
 
-                    {/* Header Stats */}
-                    <div className="flex items-center justify-between w-full md:w-auto md:justify-start md:gap-6">
-    
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                            <Star size={20} className="text-[#F4A261]" />
-                            <span>{user ? user.level : "0"}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                            <Flame size={20} className="text-[#EF233C]" />
-                            <span>{user ? user.streak.current : "0"}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                            <Zap size={20} className="text-[#6A4C93]" />
-                            <span>{user ? user.momentum.current : "0"}</span>
-                        </div>
-
-                        {/* Mobile Profile / Sign in */}
-                        <div className="md:hidden">
-                            {user ? (
-                                <Link to='/profile' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/profile' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
-                                    <User size={20} />
-                                    <span>{user.isGuest ? "Guest" : user.username}</span>
-                                </Link>
-                            ) : (
-                                <Link to='/login' className={`flex items-center gap-2 text-sm font-semibold transition duration-200 ${location.pathname === '/login' ? 'text-[#EF233C]' : 'text-[#EDF2F4] hover:text-[#EF233C]'}`} >
-                                    <LogIn size={20} />
-                                    <span>Sign in</span>
-                                </Link>
-                            )}
-                        </div>
+                        {/* Desktop navigation */}
+                        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+                            {NAV_ITEMS.map(({ to, label, end }) => (
+                                <NavLink
+                                    key={to}
+                                    to={to}
+                                    end={end}
+                                    className={({ isActive }) => cx(
+                                        'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
+                                        isActive ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg'
+                                    )}
+                                >
+                                    {label}
+                                </NavLink>
+                            ))}
+                        </nav>
                     </div>
 
-                    {/* Desktop Navbar */}
-                    <nav className="hidden md:block">
-                        <ul className="flex space-x-6 text-lg">
-                            <li><Link to="/" className={navOps}>New Workout</Link></li>
-                            <li><Link to="/prev-workouts" className={navOps}>Previous Workouts</Link></li>
-                            <li><Link to="/progress" className={navOps}>Progress</Link></li>
-                            <li><Link to="/games" className={navOps}>Games</Link></li>
-                            <li>
-                                {user ? (
-                                    <Link to='/profile' className="text-[#EF233C] hover:text-[#D90429] inline-block transform transition duration-200 hover:scale-110">
-                                        {user.isGuest ? "Guest" : user.username}
-                                    </Link>
-                                ) : (
-                                    <Link to='/login' className={navOps}>Sign in</Link>
-                                )}
-                            </li>
-                        </ul>
-                    </nav>
+                    <div className="flex items-center gap-1" role="group" aria-label="Your progress">
+                        <Stat icon={FaStar} value={user?.level ?? 0} label="Level" colour="text-warning" />
+                        <Stat icon={FaFire} value={user?.streak?.current ?? 0} label="Streak" colour="text-accent-fg" />
+                        <Stat icon={FaBolt} value={user?.momentum?.current ?? 0} label="Momentum" colour="text-secondary" />
+                    </div>
                 </div>
             </header>
 
-            {/* Mobile Bottom Nav Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#2B2D42] border-t border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] z-100 p-5">
-                <ul className="flex justify-around items-center py-2">
-                    {mobileNavItems.map(({ to, label, icon: Icon }) => {
-                        const isActive = location.pathname === to
-                        return (
-                            <li key={to}>
-                                <Link to={to} className={`flex flex-col items-center gap-1 text-xs transition duration-200 ${ isActive ? 'text-[#EF233C] scale-120' : 'text-[#EDF2F4] hover:text-[#EF233C]' }`} >
-                                    <Icon size={22} />
-                                    <span>{label}</span>
-                                </Link>
-                            </li>
-                        )
-                    })}
+            {/* Phone tab bar */}
+            <nav
+                aria-label="Main"
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-line/60 bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+            >
+                <ul className="mx-auto flex max-w-md items-stretch justify-around">
+                    {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+                        <li key={to} className="flex-1">
+                            <NavLink
+                                to={to}
+                                end={end}
+                                className={({ isActive }) => cx(
+                                    'flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors',
+                                    isActive ? 'text-accent-fg' : 'text-muted hover:text-fg'
+                                )}
+                            >
+                                <Icon size={20} aria-hidden="true" />
+                                <span>{label}</span>
+                            </NavLink>
+                        </li>
+                    ))}
                 </ul>
             </nav>
-
-            {/* Bottom padding so content isn't hidden behind the nav bar */}
-            <div className="md:hidden h-16" />
         </>
     )
 }
