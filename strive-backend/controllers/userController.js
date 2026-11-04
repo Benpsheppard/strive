@@ -23,14 +23,10 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // Case-insensitive exact match so 'Ben' and 'ben' can't both be registered
 const usernameQuery = (username) => ({ username: new RegExp(`^${escapeRegex(username)}$`, 'i') })
 
-/**
- *   @desc    Register user
- *   @route   POST /api/users
- *   @access  Public
- */
-const registerUser = asyncHandler(async (req, res) => {
-    // Get user info
-    let { username, email, password } = req.body
+// Validates and normalises the username, email and password for register and migrate.
+// Sets a 400 status and throws on invalid input.
+const validateCredentials = (body, res) => {
+    let { username, email, password } = body
 
     // Check if all info exists
     if (!username || !email || !password) {
@@ -58,14 +54,23 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('Invalid email address')
     }
 
-    // Check password is long enough
+    // Check password is strong enough
     if (!validator.isStrongPassword(password)) {
         res.status(400)
         throw new Error('Password must satisfy all criteria.')
     }
 
-    // Normalize email
-    email = validator.normalizeEmail(email)
+    return { username, email: validator.normalizeEmail(email), password }
+}
+
+/**
+ *   @desc    Register user
+ *   @route   POST /api/users
+ *   @access  Public
+ */
+const registerUser = asyncHandler(async (req, res) => {
+    // Get user info
+    const { username, email, password } = validateCredentials(req.body, res)
 
     // Look if email and username exists already
     const emailExists = await User.findOne({ email })
@@ -132,7 +137,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // Check for username
     const user = isEmail 
         ? await User.findOne({ email: validator.normalizeEmail(identifier) })
-        : await User.findOne({ username: identifier })
+        : await User.findOne(usernameQuery(identifier))
 
     // Check username and password match
     if (user && (await bcrypt.compare(password, user.password))){
@@ -145,12 +150,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
 /**
  *   @desc   Migrate guest user to strive user
- *   @route  POST /api/users/migrate
+ *   @route  PUT /api/users/migrate
  *   @access Private
  */
 const migrateUser = asyncHandler(async (req, res) => {
-    // Get new user info
-    let { username, email, password } = req.body
 
     // Get old guest user info
     const user = await User.findById(req.user.id)
@@ -166,40 +169,7 @@ const migrateUser = asyncHandler(async (req, res) => {
         throw new Error('Only guest accounts can migrate')
     }
 
-    // Check if all info exists
-    if (!username || !email || !password) {
-        res.status(400)
-        throw new Error('Please add all fields')
-    }
-
-    // Only plain strings are accepted (blocks NoSQL operator objects like { $ne: null })
-    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
-        res.status(400)
-        throw new Error('Invalid input')
-    }
-
-    username = username.trim()
-
-    // Check username format
-    if (!USERNAME_REGEX.test(username)) {
-        res.status(400)
-        throw new Error('Username must be 3-30 characters and only contain letters, numbers, ., _ or -')
-    }
-
-    // Check email is in email format
-    if (!validator.isEmail(email)) {
-        res.status(400)
-        throw new Error('Invalid email address')
-    }
-
-    // Check password is long enough
-    if (!validator.isStrongPassword(password)) {
-        res.status(400)
-        throw new Error('Password must satisfy all criteria.')
-    }
-
-    // Normalize email
-    email = validator.normalizeEmail(email)
+    const { username, email, password } = validateCredentials(req.body, res)
 
     // Look if email and username exists already
     const emailExists = await User.findOne({ email })
@@ -348,15 +318,21 @@ const updateProfile = asyncHandler(async (req, res) => {
             res.status(400)
             throw new Error('Target must be a number between 1 and 7')
         }
-        user.target = target
+        user.target = Math.round(Number(target))
     }
 
     if (height !== undefined) {
-        if (typeof height !== 'object' || isNaN(Number(height.feet)) || isNaN(Number(height.inches))) {
+        if (!height || typeof height !== 'object' || isNaN(Number(height.feet)) || isNaN(Number(height.inches))) {
             res.status(400)
             throw new Error('Height must be an object with numeric feet and inches')
         }
-        user.height = height
+        const feet = Number(height.feet)
+        const inches = Number(height.inches)
+        if (!Number.isInteger(feet) || feet < 4 || feet > 7 || inches < 0 || inches > 12) {
+            res.status(400)
+            throw new Error('Height must be between 4 and 7 feet, with 0 to 12 inches')
+        }
+        user.height = { feet, inches }
     }
 
     if (weight !== undefined) {

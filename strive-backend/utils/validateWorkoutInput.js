@@ -1,7 +1,7 @@
 // validateWorkoutInput.js
 // Validates and sanitises client-supplied workout data before it is stored or used for scoring
 
-const mongoose = require('mongoose')
+const { isObjectId } = require('./isObjectId')
 
 const LIMITS = {
     title: 100,
@@ -84,7 +84,7 @@ const validateWorkoutInput = (body = {}) => {
     for (const ex of body.exercises) {
         if (!ex || typeof ex !== 'object') return { error: 'Invalid exercise' }
 
-        if (typeof ex.exercise !== 'string' || !mongoose.Types.ObjectId.isValid(ex.exercise)) {
+        if (!isObjectId(ex.exercise)) {
             return { error: 'Each exercise must reference a valid exercise id' }
         }
 

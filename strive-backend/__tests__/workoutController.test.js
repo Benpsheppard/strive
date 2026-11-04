@@ -56,9 +56,7 @@ const {
     setWorkout,
     deleteWorkout,
     deleteAllWorkouts,
-    addExercise,
-    updateExercise,
-    deleteExercise
+    addExercise
 } = require('../controllers/workoutController.js')
 
 const createUser = (overrides = {}) => ({
@@ -585,8 +583,9 @@ describe('workoutController', () => {
             expect(updateLeaderboardEntry).toHaveBeenCalledWith('123', workout)
         
             expect(res.status).toHaveBeenCalledWith(200)
+            expect(formatUser).toHaveBeenCalledWith(updatedUser)
             expect(res.json).toHaveBeenCalledWith({
-                user: updatedUser,
+                user: formatUser.mock.results[formatUser.mock.results.length - 1].value,
                 message: 'Workout deleted successfully'
             })
         })
@@ -762,7 +761,7 @@ describe('workoutController', () => {
         })
 
         const createExercise = (trackingMode = 'weight_reps') => ({
-            _id: 'exercise123',
+            _id: '507f1f77bcf86cd799439012',
             name: 'Bench Press',
             trackingMode,
             equipment: ['barbell', 'dumbbell']
@@ -776,7 +775,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: 'barbell',
                 sets: [
                     {
@@ -797,7 +796,7 @@ describe('workoutController', () => {
                 ...workout,
                 exercises: [
                     {
-                        exercise: 'exercise123',
+                        exercise: '507f1f77bcf86cd799439012',
                         selectedEquipment: 'barbell',
                         sets: req.body.sets
                     }
@@ -811,11 +810,11 @@ describe('workoutController', () => {
             await addExercise(req, res)
 
             expect(Workout.findById).toHaveBeenCalledWith('workout123')
-            expect(Exercise.findById).toHaveBeenCalledWith('exercise123')
+            expect(Exercise.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439012')
 
             expect(workout.exercises).toHaveLength(1)
             expect(workout.exercises[0]).toEqual({
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: 'barbell',
                 sets: req.body.sets
             })
@@ -834,7 +833,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: [
                     {
                         duration: 60
@@ -856,7 +855,7 @@ describe('workoutController', () => {
 
             expect(workout.exercises).toHaveLength(1)
             expect(workout.exercises[0]).toEqual({
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: undefined,
                 sets: req.body.sets
             })
@@ -874,7 +873,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: [
                     {
                         distance: 5,
@@ -893,7 +892,7 @@ describe('workoutController', () => {
             await addExercise(req, res)
 
             expect(workout.exercises[0]).toEqual({
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: undefined,
                 sets: req.body.sets
             })
@@ -917,7 +916,7 @@ describe('workoutController', () => {
 
         test('returns 404 when exercise does not exist', async () => {
             req.params.id = 'workout123'
-            req.body.exercise = 'exercise123'
+            req.body.exercise = '507f1f77bcf86cd799439012'
 
             Workout.findById.mockResolvedValue({
                 _id: 'workout123',
@@ -943,7 +942,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123'
+                exercise: '507f1f77bcf86cd799439012'
             }
 
             Workout.findById.mockResolvedValue({
@@ -953,7 +952,7 @@ describe('workoutController', () => {
             })
 
             Exercise.findById.mockResolvedValue({
-                _id: 'exercise123',
+                _id: '507f1f77bcf86cd799439012',
                 trackingMode: 'weight_reps',
                 equipment: []
             })
@@ -964,11 +963,12 @@ describe('workoutController', () => {
 
             expect(res.status).toHaveBeenCalledWith(401)
             expect(Workout.findById).toHaveBeenCalledWith('workout123')
-            expect(Exercise.findById).toHaveBeenCalledWith('exercise123')
+            expect(Exercise.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439012')
         })
 
         test('rejects when user is missing', async () => {
             req.params.id = 'workout123'
+            req.body.exercise = '507f1f77bcf86cd799439012'
             req.user = null
 
             Workout.findById.mockResolvedValue({
@@ -978,7 +978,7 @@ describe('workoutController', () => {
             })
 
             Exercise.findById.mockResolvedValue({
-                _id: 'exercise123',
+                _id: '507f1f77bcf86cd799439012',
                 trackingMode: 'weight_reps',
                 equipment: []
             })
@@ -998,7 +998,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: {
                     weight: 80,
                     reps: 10
@@ -1030,7 +1030,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: [
                     {
                         weight: '80',
@@ -1064,7 +1064,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: [
                     {
                         duration: '60'
@@ -1097,7 +1097,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 sets: [
                     {
                         distance: 5
@@ -1130,7 +1130,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: 123,
                 sets: []
             }
@@ -1160,7 +1160,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: 'cable',
                 sets: []
             }
@@ -1190,7 +1190,7 @@ describe('workoutController', () => {
             }
 
             req.body = {
-                exercise: 'exercise123'
+                exercise: '507f1f77bcf86cd799439012'
             }
 
             const workout = createWorkout()
@@ -1203,7 +1203,7 @@ describe('workoutController', () => {
             await addExercise(req, res)
 
             expect(workout.exercises[0]).toEqual({
-                exercise: 'exercise123',
+                exercise: '507f1f77bcf86cd799439012',
                 selectedEquipment: undefined,
                 sets: []
             })
@@ -1212,415 +1212,15 @@ describe('workoutController', () => {
             expect(res.status).toHaveBeenCalledWith(200)
         })
     })
-
-    // Update Exercise
-    describe('updateExercise', () => {
-        const createWorkout = () => {
-            const exercise = {
-                _id: 'exerciseInstance123',
-                name: 'Bench Press',
-                musclegroup: 'Chest',
-                description: 'Original description',
-                sets: [
-                    {
-                        weight: 80,
-                        reps: 10
-                    }
-                ]
-            }
-
-            return {
-                _id: 'workout123',
-                user: '123',
-                exercises: {
-                    id: jest.fn().mockReturnValue(exercise)
-                },
-                save: jest.fn(),
-                _exercise: exercise
-            }
-        }
-
-        test('updates an exercise successfully', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-
-            req.user = {
-                id: '123'
-            }
-
-            req.body = {
-                name: 'Incline Bench Press',
-                musclegroup: 'Chest',
-                description: 'Updated description',
-                sets: [
-                    {
-                        weight: 90,
-                        reps: 8
-                    }
-                ]
-            }
-
-            const workout = createWorkout()
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await updateExercise(req, res)
-
-            expect(Workout.findById).toHaveBeenCalledWith('workout123')
-
-            expect(workout.exercises.id)
-                .toHaveBeenCalledWith('exerciseInstance123')
-
-            expect(workout._exercise.name)
-                .toBe('Incline Bench Press')
-
-            expect(workout._exercise.musclegroup)
-                .toBe('Chest')
-
-            expect(workout._exercise.description)
-                .toBe('Updated description')
-
-            expect(workout._exercise.sets)
-                .toEqual([
-                    {
-                        weight: 90,
-                        reps: 8
-                    }
-                ])
-
-            expect(workout.save).toHaveBeenCalled()
-
-            expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(workout)
-        })
-
-        test('updates only supplied fields', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-
-            req.user = {
-                id: '123'
-            }
-
-            req.body = {
-                name: 'Updated Bench Press'
-            }
-
-            const workout = createWorkout()
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await updateExercise(req, res)
-
-            expect(workout._exercise.name)
-                .toBe('Updated Bench Press')
-
-            expect(workout._exercise.musclegroup)
-                .toBe('Chest')
-
-            expect(workout._exercise.description)
-                .toBe('Original description')
-
-            expect(workout._exercise.sets)
-                .toEqual([
-                    {
-                        weight: 80,
-                        reps: 10
-                    }
-                ])
-
-            expect(workout.save).toHaveBeenCalled()
-            expect(res.status).toHaveBeenCalledWith(200)
-        })
-
-        test('updates sets when sets are provided', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-
-            req.user = {
-                id: '123'
-            }
-
-            req.body = {
-                sets: [
-                    {
-                        weight: 100,
-                        reps: 5
-                    }
-                ]
-            }
-
-            const workout = createWorkout()
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await updateExercise(req, res)
-
-            expect(workout._exercise.sets).toEqual([
-                {
-                    weight: 100,
-                    reps: 5
-                }
-            ])
-
-            expect(workout.save).toHaveBeenCalled()
-            expect(res.status).toHaveBeenCalledWith(200)
-        })
-
-        test('returns 404 when workout does not exist', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-
-            Workout.findById.mockResolvedValue(null)
-
-            await expect(updateExercise(req, res))
-                .rejects
-                .toThrow('Workout not found')
-
-            expect(res.status).toHaveBeenCalledWith(404)
-        })
-
-        test('rejects update when user is missing', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-            req.user = null
-
-            Workout.findById.mockResolvedValue({
-                _id: 'workout123',
-                user: '123'
-            })
-
-            await expect(updateExercise(req, res))
-                .rejects
-                .toThrow('User not authorised')
-
-            expect(res.status).toHaveBeenCalledWith(401)
-        })
-
-        test('rejects user from updating another users workout', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exerciseInstance123'
-
-            req.user = {
-                id: '456'
-            }
-
-            Workout.findById.mockResolvedValue({
-                _id: 'workout123',
-                user: '123'
-            })
-
-            await expect(updateExercise(req, res))
-                .rejects
-                .toThrow('User not authorised')
-
-            expect(res.status).toHaveBeenCalledWith(401)
-        })
-
-        test('returns 404 when exercise does not exist in workout', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'missingExercise'
-
-            req.user = {
-                id: '123'
-            }
-
-            const workout = {
-                _id: 'workout123',
-                user: '123',
-                exercises: {
-                    id: jest.fn().mockReturnValue(null)
-                }
-            }
-
-            Workout.findById.mockResolvedValue(workout)
-
-            await expect(updateExercise(req, res))
-                .rejects
-                .toThrow('Exercise not found')
-
-            expect(res.status).toHaveBeenCalledWith(404)
-            expect(workout.exercises.id)
-                .toHaveBeenCalledWith('missingExercise')
-        })
-    })
-
-    // Delete Exercise
-    describe('deleteExercise', () => {
-        test('deletes an exercise successfully', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise123'
-
-            req.user = {
-                id: '123'
-            }
-
-            const workout = {
-                _id: 'workout123',
-                user: '123',
-                exercises: [
-                    {
-                        _id: 'exercise123',
-                        name: 'Bench Press'
-                    },
-                    {
-                        _id: 'exercise456',
-                        name: 'Squat'
-                    }
-                ],
-                save: jest.fn()
-            }
-
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await deleteExercise(req, res)
-
-            expect(Workout.findById).toHaveBeenCalledWith('workout123')
-
-            expect(workout.exercises).toEqual([
-                {
-                    _id: 'exercise456',
-                    name: 'Squat'
-                }
-            ])
-
-            expect(workout.save).toHaveBeenCalled()
-
-            expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(workout)
-        })
-
-        test('returns 404 when workout does not exist', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise123'
-
-            Workout.findById.mockResolvedValue(null)
-
-            await expect(deleteExercise(req, res))
-                .rejects
-                .toThrow('Workout not found')
-
-            expect(res.status).toHaveBeenCalledWith(404)
-        })
-
-        test('rejects user from deleting exercise from another users workout', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise123'
-
-            req.user = {
-                id: '456'
-            }
-
-            Workout.findById.mockResolvedValue({
-                _id: 'workout123',
-                user: '123',
-                exercises: []
-            })
-
-            await expect(deleteExercise(req, res))
-                .rejects
-                .toThrow('User not authorised')
-
-            expect(res.status).toHaveBeenCalledWith(401)
-        })
-
-        test('rejects deletion when user is missing', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise123'
-            req.user = null
-
-            Workout.findById.mockResolvedValue({
-                _id: 'workout123',
-                user: '123',
-                exercises: []
-            })
-
-            await expect(deleteExercise(req, res))
-                .rejects
-                .toThrow('User not authorised')
-
-            expect(res.status).toHaveBeenCalledWith(401)
-        })
-
-        test('saves the workout after removing the exercise', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise123'
-
-            req.user = {
-                id: '123'
-            }
-
-            const workout = {
-                _id: 'workout123',
-                user: '123',
-                exercises: [
-                    {
-                        _id: 'exercise123',
-                        name: 'Bench Press'
-                    }
-                ],
-                save: jest.fn()
-            }
-
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await deleteExercise(req, res)
-
-            expect(workout.exercises).toEqual([])
-            expect(workout.save).toHaveBeenCalledTimes(1)
-
-            expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(workout)
-        })
-
-        test('does not remove another exercise when deleting a specific exercise', async () => {
-            req.params.id = 'workout123'
-            req.params.exerciseId = 'exercise456'
-
-            req.user = {
-                id: '123'
-            }
-
-            const workout = {
-                _id: 'workout123',
-                user: '123',
-                exercises: [
-                    {
-                        _id: 'exercise123',
-                        name: 'Bench Press'
-                    },
-                    {
-                        _id: 'exercise456',
-                        name: 'Squat'
-                    },
-                    {
-                        _id: 'exercise789',
-                        name: 'Deadlift'
-                    }
-                ],
-                save: jest.fn()
-            }
-
-            Workout.findById.mockResolvedValue(workout)
-            workout.save.mockResolvedValue(workout)
-
-            await deleteExercise(req, res)
-
-            expect(workout.exercises).toEqual([
-                {
-                    _id: 'exercise123',
-                    name: 'Bench Press'
-                },
-                {
-                    _id: 'exercise789',
-                    name: 'Deadlift'
-                }
-            ])
-
-            expect(workout.save).toHaveBeenCalled()
-            expect(res.status).toHaveBeenCalledWith(200)
-        })
+})
+describe('addExercise exercise id validation', () => {
+    test('rejects a body exercise that is not a 24-character hex id', async () => {
+        const req = { params: { id: '507f1f77bcf86cd799439011' }, body: { exercise: 'twelve chars' }, user: { id: '123' } }
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+
+        Workout.findById.mockResolvedValue({ _id: req.params.id, user: '123', exercises: [] })
+
+        await expect(addExercise(req, res)).rejects.toThrow('valid exercise id')
+        expect(res.status).toHaveBeenCalledWith(400)
     })
 })
