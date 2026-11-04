@@ -23,6 +23,30 @@ const userSchema = mongoose.Schema ({
         required: [true, 'Please add a password'],
         minlength: 8
     },
+    // Email confirmed by clicking the emailed link (a nudge, not a requirement to use the app)
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    // Bumped on password change or reset; older sessions stop working
+    tokenVersion: {
+        type: Number,
+        default: 0
+    },
+    // Terms of use consent
+    acceptedTermsAt: {
+        type: Date,
+        default: null
+    },
+    termsVersion: {
+        type: String,
+        default: null
+    },
+    // Hashed single-use tokens (never returned by default)
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+    emailVerifyTokenHash: { type: String, select: false },
+    emailVerifyExpires: { type: Date, select: false },
     // Workouts
     workouts: [
         {

@@ -62,9 +62,21 @@ describe('errorHandler', () => {
 
     test('hides internal 500 messages outside development', () => {
         process.env.NODE_ENV = 'production'
+        const logged = jest.spyOn(console, 'error').mockImplementation(() => {})
         const res = createRes()
         errorHandler(new Error('Mongo connection string leaked'), {}, res, jest.fn())
         expect(res.json).toHaveBeenCalledWith({ message: 'Internal server error', stack: null })
+
+        // ...but the real error is still written to the server log
+        expect(logged).toHaveBeenCalledWith(expect.stringContaining('failed:'), expect.stringContaining('Mongo connection string leaked'))
+        logged.mockRestore()
+    })
+
+    test('uses the status code carried by the error (e.g. from body parsing)', () => {
+        const res = createRes()
+        const error = Object.assign(new Error('request entity too large'), { status: 413 })
+        errorHandler(error, {}, res, jest.fn())
+        expect(res.status).toHaveBeenCalledWith(413)
     })
 
     test('keeps client error messages', () => {

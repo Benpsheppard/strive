@@ -21,6 +21,8 @@ jest.mock('../models/questModel.js')
 jest.mock('../models/leaderboardEntryModel.js')
 
 jest.mock('../utils/formatUser.js')
+jest.mock('../utils/mailer.js', () => ({ sendMail: jest.fn().mockResolvedValue({ sent: false }) }))
+jest.mock('../utils/accountData.js', () => ({ deleteUserData: jest.fn().mockResolvedValue(undefined), collectUserData: jest.fn() }))
 
 jest.mock('../utils/workoutServices.js', () => ({
     updateUserMomentum: jest.fn(),
@@ -50,6 +52,8 @@ const Quest = require('../models/questModel.js')
 const LeaderboardEntry = require('../models/leaderboardEntryModel.js')
 
 const formatUser = require('../utils/formatUser.js')
+const loginThrottle = require('../utils/loginThrottle.js')
+const { deleteUserData } = require('../utils/accountData.js')
 
 const {
     updateUserMomentum,
@@ -78,6 +82,7 @@ describe('userController', () => {
     let res
     beforeEach(() => {
         jest.clearAllMocks()
+        loginThrottle.reset()
 
         req = {
             body: {},
@@ -112,7 +117,8 @@ describe('userController', () => {
             req.body = {
                 username: 'john',
                 email: 'john@example.com',
-                password: 'Password123!'
+                password: 'Password123!',
+                acceptedTerms: true
             }
 
             User.findOne
@@ -131,22 +137,24 @@ describe('userController', () => {
             await registerUser(req, res)
 
             expect(User.findOne).toHaveBeenCalledTimes(2)
-            expect(User.create).toHaveBeenCalledWith({
+            expect(User.create).toHaveBeenCalledWith(expect.objectContaining({
                 username: 'john',
                 email: 'john@example.com',
                 password: 'hashed-password',
                 useImperial: false,
-                isGuest: false
-            })
-            expect(bcrypt.genSalt).toHaveBeenCalledWith(10)
+                isGuest: false,
+                termsVersion: expect.any(String)
+            }))
+            expect(User.create.mock.calls[0][0].acceptedTermsAt).toBeInstanceOf(Date)
+            expect(bcrypt.genSalt).toHaveBeenCalledWith(12)
             expect(bcrypt.hash).toHaveBeenCalledWith(
                 'Password123!',
                 'test-salt'
             )
             expect(jwt.sign).toHaveBeenCalledWith(
-                { id: '123' },
+                { id: '123', v: 0 },
                 process.env.JWT_SECRET,
-                { expiresIn: '14d' }
+                { expiresIn: '14d', algorithm: 'HS256' }
             )
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalled()
@@ -203,7 +211,8 @@ describe('userController', () => {
             req.body = { 
                 username: 'john', 
                 email: 'john@example.com', 
-                password: 'Password123!' 
+                password: 'Password123!',
+                acceptedTerms: true 
             } 
             
             User.findOne.mockResolvedValueOnce({ _id: 'existing-user' }) 
@@ -219,7 +228,8 @@ describe('userController', () => {
             req.body = { 
                 username: 'john', 
                 email: 'john@example.com', 
-                password: 'Password123!' 
+                password: 'Password123!',
+                acceptedTerms: true 
             } 
             
             User.findOne 
@@ -347,7 +357,8 @@ describe('userController', () => {
             req.body = {
                 username: 'newusername',
                 email: 'new@example.com',
-                password: 'Password123!'
+                password: 'Password123!',
+                acceptedTerms: true
             }
 
             const user = {
@@ -435,7 +446,8 @@ describe('userController', () => {
             req.body = { 
                 username: 'john',
                 email: 'john@example.com',
-                password: 'Password123!'
+                password: 'Password123!',
+                acceptedTerms: true
             }
 
             User.findById.mockResolvedValue({
@@ -486,7 +498,7 @@ describe('userController', () => {
 
     // Get Me
     describe('getMe', () => {
-        test('returns current user with token', async () => {
+        test('returns the current user without echoing the token back', async () => {
             req.user = {
                 _id: '123',
                 username: 'john'
@@ -496,10 +508,7 @@ describe('userController', () => {
 
             await getMe(req, res)
 
-            expect(formatUser).toHaveBeenCalledWith(
-                req.user,
-                'test-token'
-            )
+            expect(formatUser).toHaveBeenCalledWith(req.user)
 
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalled()
@@ -508,36 +517,18 @@ describe('userController', () => {
 
     // Delete User
     describe('deleteUser', () => {
-        test('deletes user and associated workouts/quests', async () => {
+        test('deletes a member who confirms with their password', async () => {
             req.params.id = '123'
-            req.user = {
-                _id:'123'
-            }
+            req.user = { _id: '123' }
+            req.body = { password: 'Password123!' }
 
-            const user = {
-                _id: '123',
-                deleteOne: jest.fn().mockResolvedValue(true)
-            }
-
+            const user = { _id: '123', password: 'hashed-password', deleteOne: jest.fn().mockResolvedValue(true) }
             User.findById.mockResolvedValue(user)
-            Workout.deleteMany.mockResolvedValue({})
-            Quest.deleteMany.mockResolvedValue({})
-            LeaderboardEntry.deleteMany.mockResolvedValue({})
 
             await deleteUser(req, res)
 
-            expect(Workout.deleteMany).toHaveBeenCalledWith({
-                user: '123'
-            })
-
-            expect(Quest.deleteMany).toHaveBeenCalledWith({
-                user: '123'
-            })
-
-            expect(LeaderboardEntry.deleteMany).toHaveBeenCalledWith({
-                user: '123'
-            })
-
+            expect(bcrypt.compare).toHaveBeenCalledWith('Password123!', 'hashed-password')
+            expect(deleteUserData).toHaveBeenCalledWith('123')
             expect(user.deleteOne).toHaveBeenCalled()
 
             expect(res.status).toHaveBeenCalledWith(200)
@@ -547,36 +538,66 @@ describe('userController', () => {
             })
         })
 
+        test('refuses a member who gives the wrong password', async () => {
+            req.params.id = '123'
+            req.user = { _id: '123' }
+            req.body = { password: 'wrong' }
+            bcrypt.compare.mockResolvedValue(false)
+
+            const user = { _id: '123', password: 'hashed-password', deleteOne: jest.fn() }
+            User.findById.mockResolvedValue(user)
+
+            await expect(deleteUser(req, res)).rejects.toThrow('Incorrect password')
+
+            expect(res.status).toHaveBeenCalledWith(400)
+            expect(deleteUserData).not.toHaveBeenCalled()
+            expect(user.deleteOne).not.toHaveBeenCalled()
+        })
+
+        test('refuses a member who gives no password', async () => {
+            req.params.id = '123'
+            req.user = { _id: '123' }
+            req.body = {}
+
+            User.findById.mockResolvedValue({ _id: '123', password: 'hashed-password', deleteOne: jest.fn() })
+
+            await expect(deleteUser(req, res)).rejects.toThrow('Incorrect password')
+            expect(deleteUserData).not.toHaveBeenCalled()
+        })
+
+        test('guests can delete without a password', async () => {
+            req.params.id = '123'
+            req.user = { _id: '123' }
+            req.body = {}
+
+            const user = { _id: '123', isGuest: true, deleteOne: jest.fn().mockResolvedValue(true) }
+            User.findById.mockResolvedValue(user)
+
+            await deleteUser(req, res)
+
+            expect(deleteUserData).toHaveBeenCalledWith('123')
+            expect(res.status).toHaveBeenCalledWith(200)
+        })
+
         test('returns 404 when user does not exist', async () => {
             req.params.id = '123'
+            req.user = { _id: '123' }
 
             User.findById.mockResolvedValue(null)
 
-            await expect(deleteUser(req, res))
-                .rejects
-                .toThrow('User not found')
+            await expect(deleteUser(req, res)).rejects.toThrow('User not found')
 
             expect(res.status).toHaveBeenCalledWith(404)
         })
 
         test('rejects deleting another user account', async () => {
             req.params.id = '123'
-            req.user = {
-                _id: '456'
-            }
+            req.user = { _id: '456' }
 
-            User.findById.mockResolvedValue({
-                _id: '123'
-            })
+            await expect(deleteUser(req, res)).rejects.toThrow('User not authorized to delete this account')
 
-            await expect(deleteUser(req, res))
-                .rejects
-                .toThrow('User not authorized to delete this account')
-
-            expect(res.status).toHaveBeenCalledWith(401)
-
-            expect(Workout.deleteMany).not.toHaveBeenCalled()
-            expect(Quest.deleteMany).not.toHaveBeenCalled()
+            expect(res.status).toHaveBeenCalledWith(403)
+            expect(deleteUserData).not.toHaveBeenCalled()
         })
     })
 

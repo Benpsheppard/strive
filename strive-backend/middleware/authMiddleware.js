@@ -24,11 +24,18 @@ const protect = asyncHandler(async (req, res, next) => {
 
     // Verify token and get user
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        req.user = await User.findById(decoded.id).select('-password')
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] })
+        req.user = await User.findById(decoded.id).select('-password -workouts')
+
+        // A password change or reset signs out every older session
+        if (req.user && (decoded.v ?? 0) !== (req.user.tokenVersion ?? 0)) {
+            req.user = null
+            res.status(401)
+            throw new Error('Session expired, please sign in again')
+        }
     } catch (error) {
         res.status(401)
-        throw new Error('Not Authorised')
+        throw new Error(error.message === 'Session expired, please sign in again' ? error.message : 'Not Authorised')
     }
 
     // Token is valid but the account no longer exists (e.g. deleted)
@@ -46,8 +53,9 @@ const optionalProtect = asyncHandler(async (req, res, next) => {
 
     if (header && header.startsWith('Bearer ')) {
         try {
-            const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET)
-            req.user = await User.findById(decoded.id).select('-password')
+            const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] })
+            req.user = await User.findById(decoded.id).select('-password -workouts')
+            if (req.user && (decoded.v ?? 0) !== (req.user.tokenVersion ?? 0)) req.user = null
         } catch (error) {
             req.user = null
         }

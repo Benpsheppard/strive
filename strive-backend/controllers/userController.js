@@ -3,11 +3,19 @@
 // Imports
 const asyncHandler = require('express-async-handler')
 const jwt = require('jsonwebtoken')  
-const bcrypt = require('bcryptjs')    
+const bcrypt = require('bcryptjs')
 const validator = require('validator')    
 
 // Function Imports
 const formatUser = require('../utils/formatUser.js')
+const { hashPassword, DUMMY_HASH } = require('../utils/passwords.js')
+const { TERMS_VERSION } = require('../utils/legal.js')
+const loginThrottle = require('../utils/loginThrottle.js')
+const mailer = require('../utils/mailer.js')
+const { verifyEmail } = require('../utils/emails.js')
+const { createToken, VERIFY_TOKEN_TTL_MS } = require('../utils/tokens.js')
+const { deleteUserData } = require('../utils/accountData.js')
+const { getDuplicateField } = require('../utils/duplicateKey.js')
 const { updateUserMomentum, checkAndBreakStreak, checkAndIncreaseStreak, getWorkoutsThisWeek, resetWorkoutData } = require('../utils/workoutServices.js')
 
 // Model Imports
@@ -71,6 +79,13 @@ const validateCredentials = (body, res) => {
 const registerUser = asyncHandler(async (req, res) => {
     // Get user info
     const { username, email, password } = validateCredentials(req.body, res)
+    const isGuest = req.body.isGuest === true
+
+    // Members must agree to the terms (guests are just trying the app)
+    if (!isGuest && req.body.acceptedTerms !== true) {
+        res.status(400)
+        throw new Error('Please accept the terms and privacy policy to create an account')
+    }
 
     // Look if email and username exists already
     const emailExists = await User.findOne({ email })
@@ -89,25 +104,40 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Hash password
-    const salt = await bcrypt.genSalt(10)  // generating a hash string to add to unhashed password
-    const hashPassword = await bcrypt.hash(password, salt)     // hash users password using salt
+    const hashedPassword = await hashPassword(password)
 
-    // Create user
-    const user = await User.create({
-        username,
-        email,
-        password: hashPassword,
-        useImperial: false,
-        isGuest: req.body.isGuest === true
-    })
-    
+    // Create user. Two sign-ups at the same moment can both pass the checks above, so a
+    // duplicate-key error from the unique index is reported like any other duplicate.
+    let user
+    try {
+        user = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            useImperial: false,
+            isGuest,
+            acceptedTermsAt: isGuest ? null : new Date(),
+            termsVersion: isGuest ? null : TERMS_VERSION
+        })
+    } catch (error) {
+        const duplicate = getDuplicateField(error)
+        if (duplicate) {
+            res.status(400)
+            throw new Error(duplicate === 'email' ? 'Email already exists' : 'Username already exists')
+        }
+        throw error
+    }
+
     // Verify user creation
-    if (user) {
-        res.status(201).json(formatUser(user, genToken(user._id)))
-    } else {
+    if (!user) {
         res.status(400)
         throw new Error('Invalid user data')
     }
+
+    // Ask new members to confirm their email. A failure to send must not fail sign-up.
+    if (!isGuest) await sendVerificationEmail(user).catch(error => console.error('Verification email failed:', error.message))
+
+    res.status(201).json(formatUser(user, genToken(user)))
 })
 
 /**
@@ -139,10 +169,20 @@ const loginUser = asyncHandler(async (req, res) => {
         ? await User.findOne({ email: validator.normalizeEmail(identifier) })
         : await User.findOne(usernameQuery(identifier))
 
-    // Check username and password match
-    if (user && (await bcrypt.compare(password, user.password))){
-        res.status(200).json(formatUser(user, genToken(user._id)))
+    // Too many recent failures for this account
+    if (loginThrottle.isLocked(identifier)) {
+        res.status(429)
+        throw new Error('Too many failed sign-in attempts for this account. Please wait a few minutes or reset your password.')
+    }
+
+    // Always run a password comparison, even for unknown users, so timing doesn't reveal accounts
+    const passwordMatches = await bcrypt.compare(password, user ? user.password : DUMMY_HASH)
+
+    if (user && passwordMatches) {
+        loginThrottle.clearFailures(identifier)
+        res.status(200).json(formatUser(user, genToken(user)))
     } else {
+        loginThrottle.recordFailure(identifier)
         res.status(400)
         throw new Error('Invalid user credentials')
     }
@@ -187,18 +227,33 @@ const migrateUser = asyncHandler(async (req, res) => {
         throw new Error('Username already exists')
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10)  // generating a hash string to add to unhashed password
-    const hashPassword = await bcrypt.hash(password, salt)     // hash users password using salt
+    if (req.body.acceptedTerms !== true) {
+        res.status(400)
+        throw new Error('Please accept the terms and privacy policy to create an account')
+    }
 
     user.username = username
     user.email = email
-    user.password = hashPassword
+    user.password = await hashPassword(password)
     user.isGuest = false
+    user.emailVerified = false
+    user.acceptedTermsAt = new Date()
+    user.termsVersion = TERMS_VERSION
 
-    await user.save()
+    try {
+        await user.save()
+    } catch (error) {
+        const duplicate = getDuplicateField(error)
+        if (duplicate) {
+            res.status(400)
+            throw new Error(duplicate === 'email' ? 'Email already exists' : 'Username already exists')
+        }
+        throw error
+    }
 
-    res.status(201).json(formatUser(user, genToken(user._id)))
+    await sendVerificationEmail(user).catch(error => console.error('Verification email failed:', error.message))
+
+    res.status(201).json(formatUser(user, genToken(user)))
 })
 
 /**
@@ -207,47 +262,44 @@ const migrateUser = asyncHandler(async (req, res) => {
  *   @access  Private
  */
 const getMe = asyncHandler(async (req, res) => {
-    const token = req.headers.authorization.split(' ')[1]
-
-    res.status(200).json(formatUser(req.user, token))
+    res.status(200).json(formatUser(req.user))
 })
 
 /**
- *   @desc    Delete user and all associated data (workouts, quests)
+ *   @desc    Delete user and all associated data (workouts, quests, leaderboard, custom exercises)
  *   @route   DELETE /api/users/:id
- *   @access  Private
+ *   @access  Private (members confirm with their password)
  */
 const deleteUser = asyncHandler(async (req, res) => {
-    // Get user from database
+    // Only your own account
+    if (req.params.id !== req.user._id.toString()) {
+        res.status(403)
+        throw new Error('User not authorized to delete this account')
+    }
+
+    // Load with the password so members can confirm it
     const user = await User.findById(req.params.id)
 
-    // Check if user exists
     if (!user) {
         res.status(404)
         throw new Error('User not found')
     }
 
-    // Check if the authenticated user is deleting their own account
-    if (user._id.toString() !== req.user._id.toString()) {
-        res.status(401)
-        throw new Error('User not authorized to delete this account')
+    // A stolen session alone must not be able to erase an account
+    if (!user.isGuest) {
+        const { password } = req.body || {}
+        if (typeof password !== 'string' || !(await bcrypt.compare(password, user.password))) {
+            res.status(400)
+            throw new Error('Incorrect password')
+        }
     }
 
-    // Delete all workouts associated with the user
-    await Workout.deleteMany({ user: req.params.id })
-
-    // Delete all quests associated with the user
-    await Quest.deleteMany({ user: req.params.id })
-
-    // Delete all leaderboard entries associated with the user
-    await LeaderboardEntry.deleteMany({ user: req.params.id })
-
-    // Delete user
+    await deleteUserData(user._id)
     await user.deleteOne()
 
-    res.status(200).json({ 
+    res.status(200).json({
         id: req.params.id,
-        message: 'User and associated data deleted successfully' 
+        message: 'User and associated data deleted successfully'
     })
 })
 
@@ -400,14 +452,24 @@ const updateMomentum = asyncHandler(async (req, res) => {
 })
 
 // Generate JWT token
-const genToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '14d'
+const genToken = (user) => {
+    return jwt.sign({ id: user._id, v: user.tokenVersion || 0 }, process.env.JWT_SECRET, {
+        expiresIn: '14d',
+        algorithm: 'HS256'
     })
+}
+
+// Creates and emails a fresh email-confirmation link
+const sendVerificationEmail = async (user) => {
+    const { token, hash, expires } = createToken(VERIFY_TOKEN_TTL_MS)
+    await User.updateOne({ _id: user._id }, { emailVerifyTokenHash: hash, emailVerifyExpires: expires })
+    await mailer.sendMail({ to: user.email, ...verifyEmail(`${process.env.FRONTEND_URL}/verify-email?token=${token}`) })
 }
 
 // Export functions
 module.exports = { 
+    genToken,
+    sendVerificationEmail,
     registerUser, 
     loginUser, 
     migrateUser,

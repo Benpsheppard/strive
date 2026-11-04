@@ -11,6 +11,11 @@ const errorHandler = (err, req, res, next) => {
 
     const isDevelopment = ['development'].includes(process.env.NODE_ENV)
 
+    // Server errors are hidden from clients, so they must at least be visible in the logs
+    if (statusCode >= 500) {
+        console.error(`[${req.id || '-'}] ${req.method} ${(req.originalUrl || '').split('?')[0]} failed:`, err.stack || err.message)
+    }
+
     res.status(statusCode)
 
     // Don't leak internal error details for server errors outside development

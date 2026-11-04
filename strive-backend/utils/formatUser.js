@@ -8,6 +8,8 @@ const formatUser = (user, token = null) => {
         createdAt: user.createdAt,
         useImperial: user.useImperial,
         isGuest: user.isGuest,
+        emailVerified: Boolean(user.emailVerified),
+        acceptedTermsAt: user.acceptedTermsAt,
         lastWorkout: user.lastWorkout,
         level: user.level,
         strivepoints: user.strivepoints,

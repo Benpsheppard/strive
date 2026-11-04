@@ -81,9 +81,9 @@ const setWorkout = asyncHandler(async (req, res) => {
         throw new Error(error)
     }
 
-    // Check if user is guest account
-    const workoutCount = req.user.workouts.length
-    if (req.user.isGuest && workoutCount >= 5) {
+    // Guest accounts are limited to 5 workouts (counted in the database, so no big array
+    // has to be loaded on every request)
+    if (req.user.isGuest && (await Workout.countDocuments({ user: req.user.id })) >= 5) {
         res.status(403)
         throw new Error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
     }
@@ -176,7 +176,7 @@ const deleteWorkout = asyncHandler(async (req, res) => {
 
     // Check that logged in user matches workout user/owner 
     if (workout.user.toString() !== req.user.id){
-        res.status(401)
+        res.status(403)
         throw new Error('User not authorised')
     }
 
@@ -263,7 +263,7 @@ const addExercise = asyncHandler(async (req, res) => {
 
     // Validate User
     if (!req.user || workout.user.toString() !== req.user.id) {
-        res.status(401)
+        res.status(403)
         throw new Error('User not authorised')
     }
 

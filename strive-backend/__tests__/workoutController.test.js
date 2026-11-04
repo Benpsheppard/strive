@@ -211,11 +211,8 @@ describe('workoutController', () => {
         })
     
         test('rejects guest user after reaching five workouts', async () => {
-            // Guest limit now comes from req.user.workouts.length, not Workout.countDocuments
-            req.user = createUser({
-                isGuest: true,
-                workouts: new Array(5).fill('workoutId')
-            })
+            req.user = createUser({ isGuest: true })
+            Workout.countDocuments.mockResolvedValue(5)
             req.body = baseBody()
     
             await expect(setWorkout(req, res))
@@ -228,10 +225,8 @@ describe('workoutController', () => {
         })
  
         test('allows guest user with fewer than five workouts', async () => {
-            req.user = createUser({
-                isGuest: true,
-                workouts: new Array(4).fill('workoutId')
-            })
+            req.user = createUser({ isGuest: true })
+            Workout.countDocuments.mockResolvedValue(4)
             req.body = baseBody()
     
             arrangeWorkout()
@@ -250,10 +245,8 @@ describe('workoutController', () => {
         })
  
         test('does not apply the workout limit to non-guest users', async () => {
-            req.user = createUser({
-                isGuest: false,
-                workouts: new Array(20).fill('workoutId')
-            })
+            req.user = createUser({ isGuest: false })
+            Workout.countDocuments.mockResolvedValue(20)
             req.body = baseBody()
     
             arrangeWorkout()
@@ -681,7 +674,7 @@ describe('workoutController', () => {
                 .rejects
                 .toThrow('User not authorised')
 
-            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.status).toHaveBeenCalledWith(403)
             expect(User.findById).not.toHaveBeenCalled()
             expect(User.findByIdAndUpdate).not.toHaveBeenCalled()
         })
@@ -961,7 +954,7 @@ describe('workoutController', () => {
                 .rejects
                 .toThrow('User not authorised')
 
-            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.status).toHaveBeenCalledWith(403)
             expect(Workout.findById).toHaveBeenCalledWith('workout123')
             expect(Exercise.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439012')
         })
@@ -987,7 +980,7 @@ describe('workoutController', () => {
                 .rejects
                 .toThrow('User not authorised')
 
-            expect(res.status).toHaveBeenCalledWith(401)
+            expect(res.status).toHaveBeenCalledWith(403)
         })
 
         test('rejects sets when sets is not an array', async () => {
