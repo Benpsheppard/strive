@@ -1,194 +1,122 @@
 // PrevWorkouts.jsx
 
-// Imports 
-import { useNavigate, Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState, useMemo } from 'react'
+// Imports
+import { useState, useMemo, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { FaHistory } from 'react-icons/fa'
 
 // Feature Imports
-import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx'
-import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
+import WorkoutItem from '../components/workouts/WorkoutItem.jsx'
 import GuestCard from '../components/guest/GuestCard.jsx'
+import PageTitle from '../components/ui/PageTitle.jsx'
+import EmptyState from '../components/ui/EmptyState.jsx'
+import Input from '../components/ui/Input.jsx'
+import Select from '../components/ui/Select.jsx'
+import Button from '../components/ui/Button.jsx'
 
-// PrevWorkouts
+const PAGE_SIZE = 20
+
+const sp = (w) => w.summary?.totalStrivePoints?.total || 0
+
+const SORTS = {
+    newest: { label: 'Newest', compare: (a, b) => new Date(b.createdAt) - new Date(a.createdAt) },
+    oldest: { label: 'Oldest', compare: (a, b) => new Date(a.createdAt) - new Date(b.createdAt) },
+    'title-asc': { label: 'Title (A-Z)', compare: (a, b) => (a.title || '').localeCompare(b.title || '') },
+    'title-desc': { label: 'Title (Z-A)', compare: (a, b) => (b.title || '').localeCompare(a.title || '') },
+    'l-duration': { label: 'Longest first', compare: (a, b) => (b.duration || 0) - (a.duration || 0) },
+    's-duration': { label: 'Shortest first', compare: (a, b) => (a.duration || 0) - (b.duration || 0) },
+    weight: { label: 'Most volume', compare: (a, b) => (b.summary?.totalWeight || 0) - (a.summary?.totalWeight || 0) },
+    reps: { label: 'Most reps', compare: (a, b) => (b.summary?.totalReps || 0) - (a.summary?.totalReps || 0) },
+    sets: { label: 'Most sets', compare: (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) },
+    sp: { label: 'Most Strive Points', compare: (a, b) => sp(b) - sp(a) }
+}
+
 const PrevWorkouts = () => {
     const { user } = useSelector((state) => state.auth)
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
+    const { workouts, isLoading } = useSelector((state) => state.workout)
+    const dispatch = useDispatch()
 
     const [sortOption, setSortOption] = useState('newest')
     const [searchTerm, setSearchTerm] = useState('')
-    const [visibleCount, setVisibleCount] = useState(20)
-
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-
-    const filteredAndSortedWorkouts = useMemo(() => {
-        let filtered = [...workouts]
-
-        if (searchTerm.trim() !== '') {
-            const lowerSearch = searchTerm.toLowerCase()
-
-            filtered = filtered.filter(workout => {
-                const titleMatch = workout.title 
-                    ?.toLowerCase()
-                    .includes(lowerSearch)
-                
-                const exerciseMatch = workout.exercises?.some(ex =>
-                    ex.exercise?.name?.toLowerCase().includes(lowerSearch)
-                )
-
-                return titleMatch || exerciseMatch
-            })
-        }
-
-        switch (sortOption) {
-            case 'newest':
-                filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
-                break
-            case 'oldest':
-                filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-                break
-            case 'title-asc':
-                filtered.sort((a, b) => a.title.localeCompare(b.title))
-                break
-            case 'title-desc':
-                filtered.sort((a, b) => b.title.localeCompare(a.title))
-                break
-            case 'l-duration':
-                filtered.sort((a, b) => b.duration - a.duration)
-                break
-            case 's-duration':
-                filtered.sort((a, b) => a.duration - b.duration)
-                break
-            case 'weight':
-                filtered.sort( (a, b) => (b.summary?.totalWeight || 0) - (a.summary?.totalWeight || 0) )
-                break
-            case 'reps':
-                filtered.sort( (a, b) => (b.summary?.totalReps || 0) - (a.summary?.totalReps || 0) )
-                break
-            case 'sets':
-                filtered.sort( (a, b) => (b.summary?.totalSets || 0) - (a.summary?.totalSets || 0) )
-                break
-            case 'sp':
-                filtered.sort( (a, b) => (b.summary?.totalStrivePoints.total || 0) - (a.summary?.totalStrivePoints.total || 0) )
-                break
-            default:
-                break
-        }
-
-        return filtered
-    }, [workouts, sortOption, searchTerm])
-
-    const visibleWorkouts = filteredAndSortedWorkouts.slice(0, visibleCount)
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
     useEffect(() => {
-        if (isError) {
-            console.error(message)
-        }
-
-        if (!user){
-            navigate('/login')
-            return
-        }
-
         dispatch(getWorkouts())
+    }, [dispatch])
 
-        return () => {
-            dispatch(reset())
-        }
+    const results = useMemo(() => {
+        const term = searchTerm.trim().toLowerCase()
 
-    }, [user, isError, message, navigate, dispatch])
+        const matching = term
+            ? workouts.filter(workout =>
+                workout.title?.toLowerCase().includes(term) ||
+                workout.exercises?.some(ex => ex.exercise?.name?.toLowerCase().includes(term))
+            )
+            : [...workouts]
 
-    if(isLoading){
-        return (
-            <Spinner />
-        )
-    }
+        return matching.sort(SORTS[sortOption].compare)
+    }, [workouts, sortOption, searchTerm])
+
+    if (isLoading && workouts.length === 0) return <Spinner />
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
-            <Header /> 
+        <div className="mx-auto max-w-2xl space-y-4">
+            <PageTitle accent="workouts">Your completed</PageTitle>
 
-            <div className="text-4xl md:text-6xl text-[#EDF2F4] font-semibold text-center p-4">
-                <h1>Your Completed <span className="text-[#EF233C]">Workouts</span></h1>
-            </div>
+            {user.isGuest && <GuestCard workouts={workouts} />}
 
-            {/* Guest Card */}
-            {user?.isGuest && 
-                <GuestCard workouts={workouts} isMigrate={false} />
-            }
-
-            {/* Filter + Search */}
-            <div className="text-[#EDF2F4] w-full max-w-2xl flex flex-col md:flex-row gap-4 m-4">
-
-                {/* Search Input */}
-                <input
-                    type="text"
-                    placeholder="Search by workout title or exercise..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-[#8D99AE] flex-1 rounded-lg px-4 py-2 font-semibold border border-transparent focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+            {workouts.length === 0 ? (
+                <EmptyState
+                    icon={FaHistory}
+                    title="No workouts yet"
+                    message="Your finished workouts will be listed here so you can look back on every set."
+                    actionLabel="Start a workout"
+                    actionTo="/"
                 />
-
-                {/* Sort Dropdown */}
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-[#8D99AE] rounded-lg px-4 py-2 font-semibold border border-transparent focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40">
-                    <option value="newest">Newest</option>
-                    <option value="oldest">Oldest</option>
-                    <option value="title-asc">Title (A–Z)</option>
-                    <option value="title-desc">Title (Z–A)</option>
-                    <option value="l-duration">Longest Duration</option>
-                    <option value="s-duration">Shortest Duration</option>
-                    <option value="weight">Weight</option>
-                    <option value="reps">Reps</option>
-                    <option value="sets">Sets</option>
-                    <option value="sp">Strive Points</option>
-                </select>
-            </div>
-
-            <p className='bg-[#8D99AE]/40 text-[#EDF2F4]/40 w-full max-w-2xl rounded-lg px-4 py-2 mb-12 font-semibold'>
-                {searchTerm
-                    ? `${filteredAndSortedWorkouts.length} workout${
-                        filteredAndSortedWorkouts.length !== 1 ? 's' : ''
-                    } match "${searchTerm}"`
-                    : `${filteredAndSortedWorkouts.length} total workout${
-                        filteredAndSortedWorkouts.length !== 1 ? 's' : ''
-                    }`
-                }
-            </p>
-
-            {/* Workout Display */}
-            <div className="max-w-2xl w-full space-y-3">
-                {workouts.length > 0 ? 
-                (
-                    <>
-                        {visibleWorkouts.map((wo) => (
-                            <WorkoutItem key={wo._id} workout={wo} />
-                        ))}
-
-                        {visibleCount < filteredAndSortedWorkouts.length && (
-                            <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-2 rounded-lg"> 
-                                Load more
-                            </button>
-                        )}
-                    </>
-                ) : (
-                    <div className="text-[#EDF2F4] text-xl text-center mt-10">
-                        <h3>You have not completed any workouts!</h3>
-                        <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                            <Link to='/'>
-                                New Workout 
-                            </Link>
-                        </button>
+            ) : (
+                <>
+                    <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
+                        <Input
+                            label="Search"
+                            type="search"
+                            placeholder="Workout title or exercise"
+                            value={searchTerm}
+                            onChange={(e) => { setSearchTerm(e.target.value); setVisibleCount(PAGE_SIZE) }}
+                        />
+                        <Select label="Sort by" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                            {Object.entries(SORTS).map(([key, { label }]) => <option key={key} value={key}>{label}</option>)}
+                        </Select>
                     </div>
-                )}
-            </div>
-        </section>
+
+                    <p className="text-sm text-muted" aria-live="polite">
+                        {searchTerm.trim()
+                            ? `${results.length} workout${results.length === 1 ? '' : 's'} match "${searchTerm.trim()}"`
+                            : `${results.length} workout${results.length === 1 ? '' : 's'}`}
+                    </p>
+
+                    {results.length === 0 ? (
+                        <p className="py-8 text-center text-muted">Nothing matches that search. Try a different word.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {results.slice(0, visibleCount).map(workout => (
+                                <WorkoutItem key={workout._id} workout={workout} />
+                            ))}
+
+                            {visibleCount < results.length && (
+                                <Button variant="secondary" fullWidth onClick={() => setVisibleCount(count => count + PAGE_SIZE)}>
+                                    Show more ({results.length - visibleCount} left)
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
     )
 }
 
-// Export PrevWorkouts
 export default PrevWorkouts

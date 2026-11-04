@@ -18,7 +18,6 @@ import { useRestTimer } from '../hooks/useRestTimer.js'
 import { useAlerts } from '../hooks/useAlerts.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
 import ExerciseList from '../components/workouts/ExerciseList.jsx'
 import Timer from '../components/workouts/Timer.jsx'
@@ -104,7 +103,7 @@ const NewWorkout = () => {
         }
 
         checkGamification().catch(() => {})
-    }, [user])
+    }, [user, dispatch, alerts])
 
     // Initial data fetch
     useEffect(() => {
@@ -148,7 +147,7 @@ const NewWorkout = () => {
             return
         }
 
-        if (!(await alerts.endWorkout(totalSets))) return
+        if (!(await alerts.endWorkout(totalSets, Math.round((Date.now() - startTime) / 60000)))) return
 
         setIsSubmittingWorkout(true)
         await submitWorkout(finalExercises)
@@ -203,8 +202,7 @@ const NewWorkout = () => {
     if (isLoading || !user || isSubmittingWorkout) return <Spinner />
 
     return (
-        <section className="mt-0 flex min-h-dvh flex-col items-center px-4 pb-32 md:mt-20">
-            <Header />
+        <div>
 
             {!started && (
                 <WorkoutDashBoard
@@ -274,7 +272,7 @@ const NewWorkout = () => {
                     </Card>
                 </div>
             )}
-        </section>
+        </div>
     )
 }
 

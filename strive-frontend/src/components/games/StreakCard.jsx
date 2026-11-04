@@ -1,27 +1,31 @@
 // StreakCard.jsx
 
-// Component Imports
-import { FaFire } from "react-icons/fa"
+import { Link } from 'react-router-dom'
+import { FaFire, FaShieldAlt } from 'react-icons/fa'
+import Card, { CardTitle } from '../ui/Card.jsx'
 
-const StreakCard = ({ user }) => {
-    return (
-        <div className="flex flex-col items-center p-6 w-full space-y-3 bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
-            <h2 className="font-bold text-2xl">
-                Current Streak
-            </h2>
-            
-            <div className='flex items-center space-x-2 text-6xl'>
-                <h2 className='font-bold'>{user.streak.current}</h2>
-                <span className="text-[#EF233C]"><FaFire /></span>
-            </div>
+const StreakCard = ({ user }) => (
+    <Card as="section" aria-labelledby="streak-title" className="space-y-3">
+        <CardTitle id="streak-title">Weekly streak</CardTitle>
 
-            {user.streak.shield ? (
-                <p className="text-sm text-[#EDF2F4]">Streak Shield Active</p>
-            ) : (
-                <p className="text-sm text-[#EDF2F4]">No Streak Shield Active</p>
-            )}
-        </div>
-    )
-}
+        <p className="flex items-center gap-3 font-display text-5xl font-extrabold">
+            {user.streak.current}
+            <FaFire aria-hidden="true" className="text-3xl text-accent-fg" />
+            <span className="font-sans text-base font-normal text-muted">{user.streak.current === 1 ? 'week' : 'weeks'}</span>
+        </p>
+
+        <p className="flex items-center gap-2 text-sm text-muted">
+            <FaShieldAlt aria-hidden="true" className={user.streak.shield ? 'text-success' : 'text-muted'} />
+            {user.streak.shield
+                ? 'Shield ready: it will save your streak if you miss a week.'
+                : 'No shield yet. You earn one every 4 weeks of streak.'}
+        </p>
+
+        <p className="text-sm text-muted">
+            Best streak: <span className="font-semibold text-fg">{user.streak.best}</span>{' · '}
+            <Link to="/how-it-works#streaks" className="text-accent-fg hover:underline">How streaks work</Link>
+        </p>
+    </Card>
+)
 
 export default StreakCard

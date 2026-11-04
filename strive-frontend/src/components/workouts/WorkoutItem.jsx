@@ -1,175 +1,134 @@
 // WorkoutItem.jsx
+// One saved workout: a summary row that expands to show stats and every set
 
-// Imports
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
+import { FaTrash, FaChevronDown } from 'react-icons/fa'
 
-// Function Imports
 import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
 import { useAlerts } from '../../hooks/useAlerts.js'
 
-// Component Imports
+import Card from '../ui/Card.jsx'
+import StatTile from '../ui/StatTile.jsx'
 import SetRow from './SetRow.jsx'
-import { formatDistance, formatDuration, formatNumber, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
+import { formatDistance, formatDuration, formatNumber, formatSeconds, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
+import { cx } from '../../utils/cx.js'
 
 const WorkoutItem = ({ workout }) => {
-    const FIELD_STYLING = "bg-[#EDF2F4]/30 bg-opacity-20 rounded-lg p-2 text-center hover:scale-102"
     const { user } = useSelector((state) => state.auth)
-    // Older workouts may be missing parts of the summary
-    const summary = { totalWeight: 0, totalReps: 0, totalSets: 0, totalDistance: 0, totalDuration: 0, ...workout.summary }
-
     const dispatch = useDispatch()
     const alerts = useAlerts()
+    const panelId = useId()
 
-    const [workoutExpanded, setWorkoutExpanded] = useState(false)
-    const [exerciseExpanded, setExerciseExpanded] = useState(false)
+    const [expanded, setExpanded] = useState(false)
+    const [openExercises, setOpenExercises] = useState({})
 
-    const onDelete = async (e) => {
-        e.stopPropagation()
+    // Older workouts may be missing parts of the summary
+    const summary = { totalWeight: 0, totalReps: 0, totalSets: 0, totalDistance: 0, totalDuration: 0, ...workout.summary }
+    const exercises = workout.exercises || []
+    const sp = summary.totalStrivePoints?.total
 
+    const onDelete = async () => {
         if (await alerts.deleteWorkout()) {
             dispatch(deleteWorkout(workout._id))
         }
     }
 
-    const toggleExercise = (e, index) => {
-        e.stopPropagation()
-        setExerciseExpanded(prev => ({
-            ...prev,
-            [index]: !prev[index]
-        }))
-    }
-
-    const exerciseCount = workout.exercises?.length
+    // Only show the stats that mean something for this workout
+    const tiles = [
+        { label: 'Sets', value: formatNumber(summary.totalSets) },
+        { label: 'Reps', value: formatNumber(summary.totalReps), show: summary.totalReps > 0 },
+        { label: 'Volume', value: formatWeight(summary.totalWeight, user.useImperial), show: summary.totalWeight > 0 },
+        { label: 'Distance', value: formatDistance(summary.totalDistance, user.useImperial), show: summary.totalDistance > 0 },
+        { label: 'Timed', value: formatSeconds(Math.round(summary.totalDuration)), show: summary.totalDuration > 0 },
+        { label: 'Duration', value: formatDuration(workout.duration) },
+        { label: 'SP earned', value: formatNumber(sp ?? 0) },
+        { label: 'PBs', value: formatNumber(summary.personalBests?.length || 0) },
+        { label: 'Quests', value: formatNumber(summary.questsCompleted?.length || 0) }
+    ].filter(tile => tile.show !== false)
 
     return (
-        <div className={`relative bg-[#8D99AE] rounded-xl shadow-md p-2 flex flex-col gap-2 mx-auto cursor-pointer transition-all duration-300 ${workoutExpanded ? "max-h-auto" : "max-h-[50px] overflow-hidden"}`}
-            onClick={() => setWorkoutExpanded(!workoutExpanded)}>
-            <div className="flex flex-row justify-between">
-                {/* Header: Title + Date */}
-                <div className="flex justify-between items-center gap-3 text-[#EDF2F4]">
-                    <button>
-                        {workoutExpanded ? (
-                            <FaChevronDown />
-                        ) : (
-                            <FaChevronRight />
-                        )}
-                    </button>
-                    
-                    <h2 className="text-xl font-semibold items-center">
-                        {workout.title}
-                    </h2>
-                </div>
+        <Card padding="none" as="article">
+            <div className="flex items-center">
+                <button
+                    type="button"
+                    aria-expanded={expanded}
+                    aria-controls={panelId}
+                    onClick={() => setExpanded(prev => !prev)}
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl p-4 text-left"
+                >
+                    <FaChevronDown aria-hidden="true" className={cx('shrink-0 text-muted transition-transform duration-200', expanded && 'rotate-180')} />
+                    <span className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-xl font-bold text-fg">{workout.title}</span>
+                        <span className="block text-sm text-muted">
+                            {formatWorkoutStartTime(workout.createdAt, workout.duration)}
+                            {' · '}{exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
+                            {sp > 0 && <span className="text-accent-fg"> · +{formatNumber(sp)} SP</span>}
+                        </span>
+                    </span>
+                </button>
 
-                <div className="flex flex-row items-center gap-3">
-                    {/* Date and starting time */}
-                    <p className="text-sm text-[#2B2D42]">
-                        {formatWorkoutStartTime(workout.createdAt, workout.duration)}
-                    </p>
-
-                    {/* X delete button in top right */}
-                    <button onClick={onDelete} className="text-[#EF233C] hover:text-[#D90429] text-sm font-bold">
-                        <FaTimes />
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    aria-label={`Delete workout ${workout.title}`}
+                    onClick={onDelete}
+                    className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-accent-fg"
+                >
+                    <FaTrash aria-hidden="true" />
+                </button>
             </div>
 
-            {/* Workout Expanded content */}
-            {workoutExpanded && (
-                <>
+            {expanded && (
+                <div id={panelId} className="space-y-4 px-4 pb-4">
                     <div className="grid grid-cols-3 gap-2">
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Weight</p>
-                            <p className="font-semibold text-[#EF233C]">{formatWeight(summary.totalWeight, user.useImperial)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Reps</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalReps)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Sets</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalSets)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Duration</p>
-                            <p className="font-semibold text-[#EF233C]">{formatDuration(workout.duration)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Distance</p>
-                            <p className="font-semibold text-[#EF233C]">{formatDistance(summary.totalDistance, user.useImperial)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Cardio</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalDuration)}m</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">SP</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber(summary.totalStrivePoints?.total)}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">Quests Completed</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber((summary.questsCompleted?.length || 0))}</p>
-                        </div>
-
-                        <div className={FIELD_STYLING}>
-                            <p className="text-xs text-[#EDF2F4]">PBs Achieved</p>
-                            <p className="font-semibold text-[#EF233C]">{formatNumber((summary.personalBests?.length || 0))}</p>
-                        </div>
+                        {tiles.map(tile => <StatTile key={tile.label} value={tile.value} label={tile.label} />)}
                     </div>
 
-                    {exerciseCount > 0 && (
-                        <div>
-                            <h3 className="text-sm font-semibold text-[#EDF2F4] mb-2">Exercises</h3>
-                            <ul className="space-y-2">
-                                {workout.exercises.map((ex, index) => (
-                                    <li key={index} className="bg-[#EDF2F4]/30 bg-opacity-20 rounded-lg">
-                                        {/* Exercise Header */}
-                                        <div className="flex justify-between items-center p-3 cursor-pointer rounded-lg transition-colors" onClick={(e) => toggleExercise(e, index)}>
-                                            <div className="flex items-center gap-2">
-                                                {ex.sets?.length > 0 && (
-                                                    exerciseExpanded[index]
-                                                        ? <FaChevronDown className="text-[#EDF2F4] text-xs" />
-                                                        : <FaChevronRight className="text-[#EDF2F4] text-xs" />
-                                                )}
-                                                <span className="text-sm font-medium text-[#EF233C]">
-                                                    {ex.exercise?.name}{'   '}
-                                                    <span className="text-[#EDF2F4]">{ex.exercise?.muscleGroup}{" | "}</span>
-                                                    <span className="text-[#EDF2F4]">{ex.selectedEquipment}</span>
-                                                </span>
-                                            </div>
-                                            <span className="text-xs text-[#2B2D42]">
-                                                {ex.sets?.length ? `${ex.sets.length} sets` : "No sets"}
-                                            </span>
-                                        </div>
+                    {workout.summary?.noSPReason && (
+                        <p className="rounded-lg bg-bg/60 p-3 text-sm text-muted">{workout.summary.noSPReason}</p>
+                    )}
 
-                                        {/* Exercise Sets */}
-                                        {exerciseExpanded[index] && (
-                                            <div className="px-3 pb-3 pt-1">
-                                                <ul className="space-y-2">
-                                                    {(ex.sets || []).map((set, i) => (
-                                                        <SetRow key={i} set={set} number={i + 1} trackingMode={ex.exercise?.trackingMode} useImperial={user.useImperial} />
-                                                    ))}
-                                                </ul>
-                                            </div>
+                    {exercises.length > 0 && (
+                        <ul className="space-y-2" aria-label="Exercises">
+                            {exercises.map((ex, index) => {
+                                const open = Boolean(openExercises[index])
+                                const sets = ex.sets || []
+                                return (
+                                    <li key={index} className="rounded-xl bg-bg/60">
+                                        <button
+                                            type="button"
+                                            aria-expanded={open}
+                                            disabled={sets.length === 0}
+                                            onClick={() => setOpenExercises(prev => ({ ...prev, [index]: !prev[index] }))}
+                                            className="flex w-full items-center justify-between gap-3 rounded-xl p-3 text-left"
+                                        >
+                                            <span>
+                                                <span className="block font-semibold text-fg">{ex.exercise?.name || 'Removed exercise'}</span>
+                                                <span className="block text-sm text-muted">
+                                                    {[ex.exercise?.muscleGroup, ex.selectedEquipment].filter(Boolean).join(' · ')}
+                                                </span>
+                                            </span>
+                                            <span className="shrink-0 text-sm text-muted">
+                                                {sets.length} {sets.length === 1 ? 'set' : 'sets'}
+                                            </span>
+                                        </button>
+
+                                        {open && (
+                                            <ul className="space-y-2 px-3 pb-3">
+                                                {sets.map((set, i) => (
+                                                    <SetRow key={i} set={set} number={i + 1} trackingMode={ex.exercise?.trackingMode} useImperial={user.useImperial} />
+                                                ))}
+                                            </ul>
                                         )}
                                     </li>
-                                ))}
-                            </ul>
-                        </div>
+                                )
+                            })}
+                        </ul>
                     )}
-                </>
+                </div>
             )}
-        </div>
+        </Card>
     )
 }
 
-// Export
 export default WorkoutItem

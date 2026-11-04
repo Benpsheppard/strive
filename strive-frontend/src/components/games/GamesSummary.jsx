@@ -1,41 +1,39 @@
 // GamesSummary.jsx
+// Level and Strive Points with progress to the next level
 
-// Imports
-import { formatNumber } from "../../utils/formatValues"
-
-// Component Imports
-import ProgressBar from "./ProgressBar"
+import { formatNumber } from '../../utils/formatValues'
+import Card from '../ui/Card.jsx'
+import ProgressBar from './ProgressBar'
 
 const GamesSummary = ({ user }) => {
     const currentLevel = user.level
 
+    // Level n starts at 100 x (n - 1)^2 SP
     const currentLevelMinSP = 100 * Math.pow(currentLevel - 1, 2)
     const nextLevelMinSP = 100 * Math.pow(currentLevel, 2)
 
     const progressWithinLevel = user.strivepoints - currentLevelMinSP
     const totalSPForLevel = nextLevelMinSP - currentLevelMinSP
-
     const spToNextLevel = nextLevelMinSP - user.strivepoints
 
     return (
-        <div className='fade-in-card bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center' style={{ animationDelay: '0.2s' }}>
-            <p className='text-[#EDF2F4] text-lg font-semibold'>
-                Level: <span className='text-[#EF233C]'>{user?.level}</span>
-            </p>
-            <p className='text-[#EDF2F4] text-lg font-semibold'>
-                Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
-            </p>
-
-            {/* Progress Bar */}
-            <div className='mt-4'>
-                <ProgressBar numerator={progressWithinLevel} denominator={totalSPForLevel} unit={'SP'} />
-
-                {/* SP needed for next level */}
-                <p className='mt-2 text-sm text-[#EDF2F4]/80'>
-                    {spToNextLevel} SP until Level {currentLevel + 1}
-                </p>
+        <Card as="section" aria-label="Level and Strive Points" className="space-y-4">
+            <div className="flex items-end justify-between gap-4">
+                <div>
+                    <p className="text-sm text-muted">Level</p>
+                    <p className="font-display text-5xl font-extrabold leading-none text-accent-fg">{user.level}</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-sm text-muted">Strive Points</p>
+                    <p className="font-display text-3xl font-bold leading-none">{formatNumber(user.strivepoints, 0)} SP</p>
+                </div>
             </div>
-        </div>
+
+            <div>
+                <ProgressBar numerator={progressWithinLevel} denominator={totalSPForLevel} unit="SP" label={`Progress to level ${currentLevel + 1}`} />
+                <p className="mt-2 text-sm text-muted">{spToNextLevel} SP until level {currentLevel + 1}</p>
+            </div>
+        </Card>
     )
 }
 

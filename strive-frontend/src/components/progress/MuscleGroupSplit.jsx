@@ -1,10 +1,9 @@
 // MuscleGroupSplit.jsx
 
 // Imports
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 
 // Function Imports
@@ -12,23 +11,21 @@ import { kgToLbs, getWeightUnit, formatNumber } from '../../utils/formatValues.j
 
 // Variables Imports
 import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
+import { CHART } from '../../utils/chartTheme.js'
+import CollapsibleCard from '../ui/CollapsibleCard.jsx'
+import Select from '../ui/Select.jsx'
+import Card from '../ui/Card.jsx'
+import { useIsMobile } from '../../hooks/useMediaQuery.js'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const EXCLUDED_MUSCLE_GROUPS = ['Cardio']
 
 const MuscleGroupSplit = ({ workouts, useImperial }) => {
+    const isMobile = useIsMobile()
     const [viewMode, setViewMode] = useState('exercises')
-    const [expanded, setExpanded] = useState(false)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
     const weightUnit = getWeightUnit(useImperial)
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
 
     const muscleGroupCounts = {}
 
@@ -63,7 +60,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 
     const labels = muscleGroupData.map((item) => item.group)
     const dataValues = muscleGroupData.map((item) => item.count)
-    const backgroundColours = muscleGroupData.map((item) => MUSCLE_GROUP_COLOURS[item.group] || '#EDF2F4')
+    const backgroundColours = muscleGroupData.map((item) => MUSCLE_GROUP_COLOURS[item.group] || CHART.text)
 
     const data = {
         labels,
@@ -72,7 +69,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
                 label: viewMode === 'exercises' ? 'Exercises' : viewMode === 'sets' ? 'Sets' : 'Total Weight',
                 data: dataValues,
                 backgroundColor: backgroundColours,
-                borderColor: '#2B2D42',
+                borderColor: CHART.surface,
                 borderWidth: 2,
             },
         ],
@@ -85,7 +82,7 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
             legend: {
                 position: 'bottom',
                 labels: {
-                    color: '#EDF2F4',
+                    color: CHART.text,
                     padding: 15,
                     font: { size: 12 },
                 },
@@ -107,64 +104,47 @@ const MuscleGroupSplit = ({ workouts, useImperial }) => {
 
     if (muscleGroupData.length === 0) {
         return (
-            <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
-                <p>No exercises found</p>
-            </div>
+            <Card className="text-center text-muted">No exercises logged yet.</Card>
         )
     }
 
+    const modes = [['exercises', 'By exercises'], ['sets', 'By sets'], ['weight', 'By weight']]
+
     return (
-        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            <div className="relative flex items-center justify-center gap-2 mb-8">
-                {isMobile && (
-                    <div className="absolute left-0">
-                        {expanded ? (
-                            <FaChevronDown size={22} />
-                        ) : (
-                            <FaChevronRight size={22} />
-                        )}
-                    </div>
-                )}
-                
-                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
-                    Muscle Group <span className="text-[#EF233C]">Split</span>
-                </h2>
+        <CollapsibleCard title="Muscle group" accent="split" summary="How your training is spread across the body" defaultOpen={!isMobile}>
+            <div className="mb-4 flex flex-wrap justify-center gap-2" role="group" aria-label="Measure by">
+                {modes.map(([mode, label]) => (
+                    <button
+                        key={mode}
+                        type="button"
+                        aria-pressed={viewMode === mode}
+                        onClick={() => setViewMode(mode)}
+                        className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${viewMode === mode ? 'border-accent bg-accent text-white' : 'border-line bg-bg text-muted hover:text-fg'}`}
+                    >
+                        {label}
+                    </button>
+                ))}
             </div>
 
-            {/* View Mode Toggles */}
-            <div onClick={(e) => e.stopPropagation()} className="flex gap-2 mb-6 justify-center flex-wrap">
-                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'exercises' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('exercises')} >
-                    By Exercises
-                </button>
-                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'sets' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('sets')} >
-                    By Sets
-                </button>
-                <button className={`px-4 py-2 rounded-lg font-medium transition ${viewMode === 'weight' ? 'bg-[#EF233C] text-[#EDF2F4]' : 'bg-[#2B2D42] text-[#EDF2F4] hover:bg-opacity-80'}`} onClick={() => setViewMode('weight')} >
-                    By Weight
-                </button>
+            <div className="relative flex h-[350px] items-center justify-center md:h-[450px]">
+                <Pie data={data} options={options} aria-label="Pie chart of your training split by muscle group" role="img" />
             </div>
 
-            {/* Chart */}
-            <div className="relative h-[350px] md:h-[450px] flex items-center justify-center">
-                <Pie onClick={(e) => e.stopPropagation()} data={data} options={options} />
-            </div>
-
-            {/* Stats Summary */}
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+            <ul className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
                 {muscleGroupData.map((item, index) => (
-                    <div key={item.group} className="bg-[#2B2D42]/80 p-3 rounded-lg" style={{ borderLeft: `4px solid ${backgroundColours[index]}` }}>
-                        <div className="text-[#EDF2F4] font-semibold text-sm">{item.group}</div>
-                        <div className="text-[#EDF2F4] text-lg font-bold">{item.percentage}%</div>
-                        <div className="text-[#EDF2F4] text-xs opacity-80">
+                    <li key={item.group} className="rounded-lg bg-bg/60 p-3" style={{ borderLeft: `4px solid ${backgroundColours[index]}` }}>
+                        <div className="text-sm font-semibold text-fg">{item.group}</div>
+                        <div className="text-lg font-bold text-fg">{item.percentage}%</div>
+                        <div className="text-xs text-muted">
                             {viewMode === 'weight'
                                 ? `${formatNumber(item.displayCount, 1)} ${weightUnit}`
                                 : `${formatNumber(item.count)} ${viewMode === 'exercises' ? 'exercises' : 'sets'}`
                             }
                         </div>
-                    </div>
+                    </li>
                 ))}
-            </div>
-        </div>
+            </ul>
+        </CollapsibleCard>
     )
 }
 

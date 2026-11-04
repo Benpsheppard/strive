@@ -1,17 +1,17 @@
 // ProgressUpdate.jsx
+// Level-up and momentum news after a workout
 
-// Imports
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { FaTrophy, FaMedal, FaStar, FaArrowUp, FaDumbbell, FaShieldAlt, FaExclamationTriangle, FaFire, FaBolt } from 'react-icons/fa'
-import { Star } from 'lucide-react'
-// Feature Imports
+import { FaStar, FaBolt } from 'react-icons/fa'
+
 import { clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
-// Component Imports
-import Header from '../components/headers/Header'
 import ProgressBar from '../components/games/ProgressBar'
+import Card from '../components/ui/Card.jsx'
+import Button from '../components/ui/Button.jsx'
+import PageTitle from '../components/ui/PageTitle.jsx'
 
 const ProgressUpdate = () => {
     const { user } = useSelector((state) => state.auth)
@@ -21,78 +21,52 @@ const ProgressUpdate = () => {
     const dispatch = useDispatch()
 
     const levelUp = lastWorkoutStats?.levelUp
-    const momentumGained = lastWorkoutStats?.momentumGained 
+    const momentumGained = lastWorkoutStats?.momentumGained
 
-    const hasStreakStats = lastWorkoutStats?.streakIncreased || lastWorkoutStats?.shieldEarned || lastWorkoutStats?.shieldUsed || lastWorkoutStats?.streakBroken
+    const hasStreakStats = lastWorkoutStats?.streakIncreased || lastWorkoutStats?.shieldEarned ||
+        lastWorkoutStats?.shieldUsed || lastWorkoutStats?.streakBroken
 
     useEffect(() => {
-        if (!lastWorkoutStats) {
-            navigate('/')
-        }
+        if (!lastWorkoutStats) navigate('/', { replace: true })
     }, [lastWorkoutStats, navigate])
 
-    const onHome = () => {
+    const finish = (path) => {
         dispatch(clearLastWorkoutStats())
-        navigate('/')
-    }
-
-    const onProgress = () => {
-        dispatch(clearLastWorkoutStats())
-        navigate('/progress')
+        navigate(path)
     }
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
-			<Header />
+        <div className="mx-auto max-w-2xl space-y-4">
+            <PageTitle accent="update">Progress</PageTitle>
 
-            <div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                <h1>
-                    Progress <span className="text-[#EF233C]">Update</span>
-                </h1>
-            </div>  
+            {levelUp && (
+                <Card as="section" aria-label="Level up" className="space-y-2 py-8 text-center">
+                    <FaStar aria-hidden="true" className="jump mx-auto text-8xl text-warning" />
+                    <p className="font-display text-4xl font-bold">Level up!</p>
+                    <p className="text-lg text-muted">You are now level {levelUp}.</p>
+                </Card>
+            )}
 
-            <div className="w-full max-w-2xl flex flex-col flex-grow space-y-4">
-                {/* Level Up */}
-                {levelUp && (
-                    <div className="fade-in-card flex-1 flex flex-col bg-[#8D99AE] rounded-2xl px-6 py-5 space-y-2 text-center items-center justify-center shadow-lg" style={{ animationDelay: '0.2s' }}>
-                        <Star size={200} className="jump text-[#EDF2F4]" />
-                        <p className="text-[#EDF2F4] text-2xl font-bold">Level Up!</p>
-                        <p className="text-[#EDF2F4] opacity-80 text-lg">You are now Level {levelUp}!</p>
-                    </div>
+            {momentumGained > 0 && (
+                <Card as="section" aria-label="Momentum" className="space-y-3 py-8 text-center">
+                    <FaBolt aria-hidden="true" className="jitter mx-auto text-7xl text-secondary" />
+                    <p className="font-display text-3xl font-bold">Momentum up!</p>
+                    <p className="text-lg text-muted">+{momentumGained} momentum. Keep it going!</p>
+                    <ProgressBar numerator={user.momentum.current} denominator={100} label="Momentum" />
+                </Card>
+            )}
+
+            <div className="space-y-3">
+                {hasStreakStats ? (
+                    <Button size="lg" fullWidth onClick={() => navigate('/streaks')}>Continue</Button>
+                ) : (
+                    <>
+                        <Button size="lg" fullWidth onClick={() => finish('/')}>Back to home</Button>
+                        <Button variant="secondary" fullWidth onClick={() => finish('/progress')}>View progress</Button>
+                    </>
                 )}
-
-                {/* Momentum Increased */}
-                {momentumGained > 0 && (
-                    <div className="fade-in-card flex-1 flex flex-col bg-[#8D99AE] rounded-2xl px-6 py-5 space-y-2 text-center justify-center shadow-lg" style={{ animationDelay: '0.4s' }}>
-                        <FaBolt className="jitter text-[#EDF2F4] text-9xl mx-auto mb-5" />
-                        <p className="text-[#EDF2F4] text-2xl font-bold">Momentum Increased!</p>
-                        <p className="text-[#EDF2F4] opacity-80 text-lg">
-                            +{momentumGained} Momentum! Keep it up!
-                        </p>
-                        <ProgressBar numerator={user.momentum.current} denominator={100} />
-                    </div>
-                )}
-
-                {/* Actions */}
-                <div className="fade-in-card space-y-3" style={{ animationDelay: '0.6s' }}>
-                    {hasStreakStats ? (
-                        <button onClick={() => navigate('/streaks')} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
-                            Continue
-                        </button>
-                    ) : (
-                        <>
-                            <button onClick={onHome} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
-                                Back to Home
-                            </button>
-                            
-                            <button onClick={onProgress} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
-                                View Progress
-                            </button>
-                        </>
-                    )}
-                </div>
             </div>
-        </section>
+        </div>
     )
 }
 

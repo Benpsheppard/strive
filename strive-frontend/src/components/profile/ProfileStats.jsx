@@ -1,37 +1,34 @@
 // ProfileStats.jsx
 
-// Function Imports
 import { formatWeight, formatNumber } from '../../utils/formatValues.js'
+import Card, { CardTitle } from '../ui/Card.jsx'
+import Button from '../ui/Button.jsx'
 
-const ProfileStats = ({ user }) => {
-    return (
-        <div className='space-y-3 bg-[#8D99AE] w-full md:max-w-2xl p-6 item-center text-[#2B2D42] text-center shadow-md rounded-xl'>
-            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
-                Level: <span className='text-[#EF233C]'>{user?.level}</span>
-            </p>
-            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
-                Strive Points: <span className='text-[#EF233C]'>{formatNumber(user?.strivepoints, 0)} SP</span>
-            </p>
-            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
-                Streak: <span className='text-[#EF233C]'>{user.streak.current}</span>
-            </p>
-            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
-                Best Streak: <span className='text-[#EF233C]'>{user.streak.best}</span>
-            </p>
-            <p className='text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40'>
-                Momentum: <span className='text-[#EF233C]'>{user.momentum.current}</span>
-            </p>
-            <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
-                Target: <span className="text-[#EF233C]"> {user.target}-a-week</span> 
-            </p>
-            <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
-                Height: <span className="text-[#EF233C]"> {user.height?.feet}' {user.height?.inches}"</span>
-            </p>
-            <p className="text-[#EDF2F4] text-xl font-semibold flex justify-between items-center border-b border-[#EDF2F4]/40">
-                Weight: <span className="text-[#EF233C]"> {formatWeight(user.weight, user.useImperial)}</span>
-            </p>
+const Row = ({ label, children }) => (
+    <div className="flex items-center justify-between border-b border-line/60 py-2">
+        <dt className="text-muted">{label}</dt>
+        <dd className="font-semibold text-fg">{children}</dd>
+    </div>
+)
+
+const ProfileStats = ({ user, onEdit }) => (
+    <Card as="section" aria-labelledby="stats-title">
+        <div className="mb-2 flex items-center justify-between">
+            <CardTitle id="stats-title" accent="details">Your</CardTitle>
+            <Button variant="secondary" size="sm" onClick={onEdit}>Edit</Button>
         </div>
-    )
-}
+
+        <dl>
+            <Row label="Level">{user.level}</Row>
+            <Row label="Strive Points">{formatNumber(user.strivepoints, 0)} SP</Row>
+            <Row label="Current streak">{user.streak?.current ?? 0} {user.streak?.current === 1 ? 'week' : 'weeks'}</Row>
+            <Row label="Best streak">{user.streak?.best ?? 0} {user.streak?.best === 1 ? 'week' : 'weeks'}</Row>
+            <Row label="Momentum">{user.momentum?.current ?? 0}</Row>
+            <Row label="Weekly target">{user.target} workouts</Row>
+            <Row label="Height">{user.height?.feet}&apos; {user.height?.inches}&quot;</Row>
+            <Row label="Body weight">{user.weight ? formatWeight(user.weight, user.useImperial) : 'Not set'}</Row>
+        </dl>
+    </Card>
+)
 
 export default ProfileStats

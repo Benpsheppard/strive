@@ -3,113 +3,82 @@
 // Imports
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { FaGamepad, FaDumbbell } from 'react-icons/fa'
 
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx'
-import Quests from '../components/games/Quests.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
-import ProgressBar from '../components/games/ProgressBar.jsx'
+import PageTitle from '../components/ui/PageTitle.jsx'
+import EmptyState from '../components/ui/EmptyState.jsx'
+import Quests from '../components/games/Quests.jsx'
 import GamesSummary from '../components/games/GamesSummary.jsx'
 import Leaderboard from '../components/games/Leaderboard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import MomentumCard from '../components/games/MomentumCard.jsx'
 import BonusCard from '../components/games/BonusCard.jsx'
 
+const MIN_WORKOUTS = 3
+
 const Games = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading } = useSelector((state) => state.workout)
 
     const dispatch = useDispatch()
-    const navigate = useNavigate()
 
     useEffect(() => {
         dispatch(getWorkouts())
     }, [dispatch])
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/')
-        }
-    }, [user, navigate])
+    if (isLoading && workouts.length === 0) return <Spinner />
 
-    if (isLoading) {
-        return <Spinner />
+    if (user.isGuest) {
+        return (
+            <>
+                <PageTitle accent="Games">Strive</PageTitle>
+                <EmptyState
+                    icon={FaGamepad}
+                    title="Games are for members"
+                    message="Create a free account to unlock quests, the weekly leaderboard, streaks and momentum. Everything you have logged as a guest comes with you."
+                    actionLabel="Create free account"
+                    actionTo="/migrate"
+                />
+            </>
+        )
     }
 
-    if (user?.isGuest) {
+    if (workouts.length < MIN_WORKOUTS) {
         return (
-            <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32"> 
-                <Header />
-
-                {/* Title */}
-                <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                    Strive <span className='text-[#EF233C]'>Games</span>
-                </h1>
-
-                <p className="text-[#EDF2F4]">
-                    Create a Strive account to access Strive Games!
-                </p>
-
-                <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                    <Link to='/'>
-                        Return to Home
-                    </Link>
-                </button>
-            </section>
+            <>
+                <PageTitle accent="Games">Strive</PageTitle>
+                <EmptyState
+                    icon={FaDumbbell}
+                    title={`Complete ${MIN_WORKOUTS} workouts to unlock Games`}
+                    message={`You have completed ${workouts.length} so far. Quests are written from your recent training, so they need a little history first.`}
+                    actionLabel="Start a workout"
+                    actionTo="/"
+                />
+            </>
         )
     }
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
-            <Header />
+        <div className="space-y-4">
+            <PageTitle accent="Games">Strive</PageTitle>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                Strive <span className='text-[#EF233C]'>Games</span>
-            </h1>
-            
-            {workouts.length < 3 ? (
-                <>
-                    <p className="text-[#EDF2F4]">
-                        Complete at least 3 workouts to access Strive Games!
-                    </p>
+            <GamesSummary user={user} />
 
-                    <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                        <Link to='/'>
-                            New Workout
-                        </Link>
-                    </button>
-                </>
-            ) : (
-                <div className='space-y-6 w-full'>
-                    {/* User Games' Summary */}
-                    <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
-                        <GamesSummary user={user} />
-                    </div>
+            <div className="grid gap-4 md:grid-cols-3">
+                <StreakCard user={user} />
+                <BonusCard user={user} workouts={workouts} />
+                <MomentumCard user={user} />
+            </div>
 
-                    {/* Streak and Momentum Card */}
-                    <div className='fade-in-card grid grid-cols-1 md:grid-cols-3 gap-5' style={{ animationDelay: '0.4s' }}>
-                        <StreakCard user={user} workouts={workouts} />
-                        <BonusCard user={user} workouts={workouts} />
-                        <MomentumCard user={user} />
-                    </div>
+            <Leaderboard />
 
-                    {/* SP Leaderboard */}
-                    <div className='fade-in-card' style={{ animationDelay: '0.6s' }}>
-                        <Leaderboard />
-                    </div>
-
-                    {/* Quest lists */}
-                    <div className='fade-in-card space-y-6' style={{ animationDelay: '0.8s' }}>
-                        <Quests />
-                    </div>
-                </div>
-            )}
-        </section>
+            <Quests />
+        </div>
     )
 }
 

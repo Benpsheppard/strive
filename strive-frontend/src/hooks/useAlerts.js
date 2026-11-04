@@ -37,10 +37,10 @@ export const useAlerts = () => {
             cancelLabel: 'Keep training',
             tone: 'danger'
         }),
-        endWorkout: (setCount) => confirm({
+        endWorkout: (setCount, minutes) => confirm({
             title: 'End workout?',
-            message: setCount < 3
-                ? `You have only logged ${setCount} set${setCount === 1 ? '' : 's'}. Workouts need at least 3 sets to earn Strive Points.`
+            message: setCount < 3 || minutes < 5
+                ? 'Workouts need at least 3 sets and 5 minutes to earn Strive Points. This one is saved either way, but it will not earn any yet.'
                 : 'Finish and save this workout?',
             confirmLabel: 'End workout',
             cancelLabel: 'Keep training'

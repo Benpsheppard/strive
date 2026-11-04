@@ -3,14 +3,15 @@
 // Imports
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigate, Link } from 'react-router-dom'
+import { FaChartLine } from 'react-icons/fa'
 
 // Feature Imports
-import { getWorkouts, reset } from '../features/workouts/workoutsSlice.js'
+import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
 // Component Imports
-import Header from '../components/headers/Header.jsx'
 import Spinner from '../components/spinners/Spinner.jsx'
+import PageTitle from '../components/ui/PageTitle.jsx'
+import EmptyState from '../components/ui/EmptyState.jsx'
 import PBChart from '../components/progress/PBChart.jsx'
 import ExerciseProgressChart from '../components/progress/ExerciseProgressChart.jsx'
 import MuscleGroupSplit from '../components/progress/MuscleGroupSplit.jsx'
@@ -21,87 +22,49 @@ import OneRepMax from '../components/progress/OneRepMax.jsx'
 
 const Progress = () => {
     const { user } = useSelector((state) => state.auth)
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
+    const { workouts, isLoading } = useSelector((state) => state.workout)
 
-    const navigate = useNavigate()
     const dispatch = useDispatch()
 
     useEffect(() => {
-        if (isError) {
-            console.error(message)
-        }
-
-        if (!user){
-            navigate('/login')
-            return
-        }
-
         dispatch(getWorkouts())
+    }, [dispatch])
 
-        return () => {
-            dispatch(reset())
-        }
-
-    }, [user, isError, message, navigate, dispatch])
-
-    if(isLoading || !user){
-        return (
-            <Spinner />
-        )
-    }
+    if (isLoading && workouts.length === 0) return <Spinner />
 
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">            
-            <Header />
+        <div className="space-y-4">
+            <PageTitle accent="summary">Progress</PageTitle>
 
-            <h1 className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                Progress <span className="text-[#EF233C]">Summary</span>
-            </h1>
             {workouts.length > 0 ? (
-                <div className='w-full space-y-6'> 
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr] lg:grid-rows-2">
-                        <div className="fade-in-card lg:row-start-1 lg:col-start-1" style={{ animationDelay: '0.2s'}}>
+                <>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <div className="space-y-4">
                             <MonthlyProgressCard workouts={workouts} />
-                        </div>
-
-                        <div className="fade-in-card lg:row-span-2 lg:col-start-2 lg:row-start-1" style={{ animationDelay: '0.4s'}}>
-                            <MonthCalendar workouts={workouts} />
-                        </div>
-
-                        <div className="fade-in-card lg:row-start-2 lg:col-start-1" style={{ animationDelay: '0.6s'}}>
                             <TotalProgressCard workouts={workouts} />
                         </div>
+                        <MonthCalendar workouts={workouts} />
                     </div>
 
-                    {/* Charts Section */}
-                    <div className="fade-in-card grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.8s'}}>
-                        <PBChart workouts={workouts} useImperial={user.useImperial}/>
-                        <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial}/>
+                    <div className="grid items-start gap-4 lg:grid-cols-2">
+                        <PBChart workouts={workouts} useImperial={user.useImperial} />
+                        <ExerciseProgressChart workouts={workouts} useImperial={user.useImperial} />
                     </div>
 
-                    <MuscleGroupSplit 
-                        workouts={workouts} 
-                        useImperial={user.useImperial}
-                    />
-                    <OneRepMax 
-                        useImperial={user.useImperial} 
-                        workouts={workouts}
-                    />
-                </div>
+                    <MuscleGroupSplit workouts={workouts} useImperial={user.useImperial} />
+                    <OneRepMax workouts={workouts} useImperial={user.useImperial} />
+                </>
             ) : (
-                <div className="text-[#EDF2F4] text-xl text-center mt-10">
-                    <h3>You have not completed any workouts!</h3>
-                    <button className="rounded-lg bg-[#EF233C] px-4 py-2 mt-10 font-semibold text-[#EDF2F4] transition hover:bg-[#D90429]">
-                        <Link to='/'>
-                            New Workout 
-                        </Link>
-                    </button>
-                </div>
+                <EmptyState
+                    icon={FaChartLine}
+                    title="No workouts yet"
+                    message="Finish your first workout and your progress, personal bests and charts will appear here."
+                    actionLabel="Start a workout"
+                    actionTo="/"
+                />
             )}
-        </section>
+        </div>
     )
 }
 
-// Export
 export default Progress

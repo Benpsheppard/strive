@@ -1,28 +1,34 @@
-import { useState, useEffect } from "react"
+// ProgressBar.jsx
 
-const ProgressBar = ({ numerator, denominator, unit }) => {
+import { useState, useEffect } from 'react'
+
+const ProgressBar = ({ numerator, denominator, unit, label }) => {
     const [width, setWidth] = useState(0)
-    const progressPercentage = (numerator / denominator) * 100
+
+    // Guard against divide-by-zero and values outside 0..100
+    const percentage = denominator > 0 ? Math.min(100, Math.max(0, (numerator / denominator) * 100)) : 0
 
     useEffect(() => {
-        // Let the browser paint the 0-width state first, then update
-        const id = requestAnimationFrame(() => setWidth(progressPercentage))
-
+        // Let the browser paint the 0-width state first, then animate to the value
+        const id = requestAnimationFrame(() => setWidth(percentage))
         return () => cancelAnimationFrame(id)
-    }, [progressPercentage])
+    }, [percentage])
 
     return (
-        <div className='relative w-full bg-[#2B2D42] rounded-xl h-10 overflow-hidden border-2 border-[#EDF2F4]'>
-
-            {/* Fill */}
+        <div
+            role="progressbar"
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={denominator}
+            aria-valuenow={Math.min(numerator, denominator)}
+            className="relative h-8 w-full overflow-hidden rounded-xl border border-line bg-bg"
+        >
             <div
-                className='bg-[#EF233C] h-10 transition-[width] duration-700 delay-500 ease-out'
+                className="h-full bg-accent transition-[width] duration-500 ease-out"
                 style={{ width: `${width}%` }}
             />
-
-            {/* Text Overlay */}
-            <div className='absolute inset-0 flex items-center justify-center'>
-                <span className='text-xs font-bold text-white'>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xs font-bold text-white drop-shadow">
                     {numerator} / {denominator} {unit ?? ''}
                 </span>
             </div>

@@ -1,36 +1,26 @@
 // WorkoutStats.jsx
 
-// Imports
 import { FaDumbbell } from 'react-icons/fa'
-import { formatDuration, formatWeight } from '../../utils/formatValues'
+import Card, { CardTitle } from '../ui/Card.jsx'
+import StatTile from '../ui/StatTile.jsx'
+import { formatDuration, formatWeight, formatNumber } from '../../utils/formatValues'
 
 const WorkoutStats = ({ workout, user }) => {
+    const sets = workout.exercises.reduce((total, ex) => total + (ex.sets?.length || 0), 0)
+    const volume = workout.summary?.totalWeight || 0
+
     return (
-        <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.2s' }}>
-            <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
-                <FaDumbbell className="text-[#EF233C]" /> Workout Stats
-            </h2>
-            <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                    <p className="text-[#EF233C] text-xl font-bold">{formatDuration(workout.duration)}</p>
-                    <p className="text-[#EDF2F4]/40 text-xs mt-1">Duration</p>
-                </div>
-                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                    <p className="text-[#EF233C] text-xl font-bold">{workout.exercises.length}</p>
-                    <p className="text-[#EDF2F4]/40 text-xs mt-1">Exercises</p>
-                </div>
-                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                    <p className="text-[#EF233C] text-xl font-bold">
-                        {workout.exercises.reduce((acc, ex) => acc + (ex.sets?.length || 0), 0)}
-                    </p>
-                    <p className="text-[#EDF2F4]/40 text-xs mt-1">Sets</p>
-                </div>
-                <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                    <p className="text-[#EF233C] text-xl font-bold">{formatWeight(workout.summary.totalWeight, user.useImperial)}</p>
-                    <p className="text-[#EDF2F4]/40 text-xs mt-1">Lifted</p>
-                </div>
+        <Card as="section" aria-labelledby="stats-title" className="space-y-3">
+            <CardTitle id="stats-title" className="flex items-center gap-2">
+                <FaDumbbell aria-hidden="true" className="text-accent-fg" /> Workout stats
+            </CardTitle>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatTile value={formatDuration(workout.duration)} label="Duration" />
+                <StatTile value={formatNumber(workout.exercises.length)} label="Exercises" />
+                <StatTile value={formatNumber(sets)} label="Sets" />
+                <StatTile value={volume > 0 ? formatWeight(volume, user.useImperial) : '—'} label="Lifted" />
             </div>
-        </div>
+        </Card>
     )
 }
 

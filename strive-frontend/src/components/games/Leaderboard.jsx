@@ -1,93 +1,72 @@
 // Leaderboard.jsx
+// This week's top members, switchable between total and per-category SP
 
-// Imports
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from 'react-redux'
 import { useState, useEffect } from 'react'
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
-import { motion, AnimatePresence } from 'framer-motion'
+import Card, { CardTitle } from '../ui/Card.jsx'
+import { getLeaderboard } from '../../features/leaderboard/leaderboardSlice'
+import { formatNumber } from '../../utils/formatValues.js'
+import { cx } from '../../utils/cx.js'
 
-// Function Imports
-import { getLeaderboard } from '../../features/leaderboard/leaderboardSlice' 
-
-// Metrics
-const metrics = [
-    { key: "totalSP", label: "Total" },
-    { key: "totalVolumeSP", label: "Volume" },
-    { key: "totalStrengthSP", label: "Strength" },
-    { key: "totalProgressionSP", label: "Progression" }
+const METRICS = [
+    { key: 'totalSP', label: 'Total' },
+    { key: 'totalVolumeSP', label: 'Volume' },
+    { key: 'totalStrengthSP', label: 'Strength' },
+    { key: 'totalProgressionSP', label: 'Progression' }
 ]
 
-// Animation Variants
-const variants = {
-    enter: (dir) => ({
-        x: dir * 40,
-        opacity: 0
-    }),
-    center: {
-        x: 0,
-        opacity: 1
-    },
-    exit: (dir) => ({
-        x: -dir * 40,
-        opacity: 0
-    })
-}
-
 const Leaderboard = () => {
-    const { leaderboard } = useSelector((state) => state.leaderboard)
-
-    const [metricIndex, setMetricIndex] = useState(0)
-    const [direction, setDirection] = useState(1)
-
-    const currentMetric = metrics[metricIndex]
-
     const dispatch = useDispatch()
+    const { leaderboard, isLoading, isError } = useSelector((state) => state.leaderboard)
+    const { user } = useSelector((state) => state.auth)
+    const [metric, setMetric] = useState(METRICS[0])
 
     useEffect(() => {
-        dispatch(getLeaderboard(currentMetric.key))
-    }, [dispatch, currentMetric])
-
-    const handleNext = () => {
-        setDirection(1)
-        setMetricIndex((prev) => (prev + 1) % metrics.length)
-    }
-
-    const handlePrev = () => {
-        setDirection(-1)
-        setMetricIndex((prev) => (prev - 1 + metrics.length) % metrics.length)
-    }
+        dispatch(getLeaderboard(metric.key))
+    }, [dispatch, metric])
 
     return (
-        <div className="bg-[#8D99AE] text-[#EDF2F4] flex flex-col text-center rounded-2xl px-6 py-5">
-            <h2 className='font-bold text-3xl mb-5'>
-                Weekly 
-                <span className='text-[#EF233C]'> Leaderboard</span>
-            </h2>
-            <div className='font-bold text-2xl flex flex-row justify-between items-center mb-5 rounded-2xl shadow p-2'>
-                <div onClick={handlePrev} className='text-[#EDF2F4]/40 text-lg hover:text-[#EDF2F4]'>
-                    <FaChevronLeft />
-                </div>
-                <h2>
-                    {currentMetric.label} SP {' '}
-                </h2>
-                <div onClick={handleNext} className='text-[#EDF2F4]/40 text-lg hover:text-[#EDF2F4]'>
-                    <FaChevronRight />
-                </div>
+        <Card as="section" aria-labelledby="leaderboard-title" className="space-y-4">
+            <CardTitle id="leaderboard-title" accent="leaderboard">Weekly</CardTitle>
+
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Rank by">
+                {METRICS.map(option => (
+                    <button
+                        key={option.key}
+                        type="button"
+                        aria-pressed={metric.key === option.key}
+                        onClick={() => setMetric(option)}
+                        className={cx(
+                            'rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
+                            metric.key === option.key ? 'border-accent bg-accent text-white' : 'border-line bg-bg text-muted hover:text-fg'
+                        )}
+                    >
+                        {option.label} SP
+                    </button>
+                ))}
             </div>
 
-            <div className="rounded-2xl shadow p-2">
-                <AnimatePresence mode='wait' custom={direction} >
-                    <motion.div className="space-y-3" key={currentMetric.key} custom={direction} variants={variants} initial='enter' animate='center' exit='exit' transition={{ duration: '0.25' }} >
-                    {leaderboard.map((entry, index) => (
-                        <div key={entry._id} className='flex flex-row justify-between items-center bg-[#2B2D42] rounded-xl p-2 text-xl'>
-                            <span>#{index + 1} {entry.user?.username || 'Unknown'}</span>
-                            <span>{entry[currentMetric.key] || 0}SP</span>
-                        </div>
-                    ))}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-        </div>
+            {isError ? (
+                <p className="text-muted">The leaderboard could not be loaded. Try again in a moment.</p>
+            ) : leaderboard.length === 0 && !isLoading ? (
+                <p className="text-muted">No one has earned points this week yet. Be the first!</p>
+            ) : (
+                <ol className="space-y-2" aria-busy={isLoading}>
+                    {leaderboard.map((entry, index) => {
+                        const isYou = entry.user?._id === user?._id
+                        return (
+                            <li key={entry._id} className={cx('flex items-center justify-between rounded-xl px-4 py-2.5', isYou ? 'bg-accent/25 ring-1 ring-accent-fg' : 'bg-bg/60')}>
+                                <span className="flex items-center gap-3">
+                                    <span className="w-6 text-right font-bold text-muted">{index + 1}</span>
+                                    <span className="font-semibold text-fg">{entry.user?.username || 'Unknown'}{isYou && ' (you)'}</span>
+                                </span>
+                                <span className="font-bold text-fg">{formatNumber(entry[metric.key] || 0)} SP</span>
+                            </li>
+                        )
+                    })}
+                </ol>
+            )}
+        </Card>
     )
 }
 

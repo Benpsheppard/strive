@@ -1,13 +1,13 @@
 // QuestCard.jsx
 
-// Imports
-import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { FaCheckCircle } from 'react-icons/fa'
 
-// Function Imports
-import { formatWeight, formatDistance, formatSeconds, formatNumber } from '../../utils/formatValues'
+import { formatWeight, formatDistance, formatSeconds, formatNumber, kgToLbs, getWeightUnit } from '../../utils/formatValues'
+import Card from '../ui/Card.jsx'
+import ProgressBar from './ProgressBar'
+import { cx } from '../../utils/cx.js'
 
-// Format a progressive quest value according to its metric
 const PROGRESSIVE_LABELS = {
     max_weight: 'Best weight',
     max_reps: 'Best reps',
@@ -16,6 +16,7 @@ const PROGRESSIVE_LABELS = {
     total_duration: 'Best duration'
 }
 
+// Format a progressive quest value according to its metric
 const formatProgressiveValue = (metric, value, useImperial) => {
     switch (metric) {
         case 'max_reps':
@@ -29,87 +30,60 @@ const formatProgressiveValue = (metric, value, useImperial) => {
     }
 }
 
-// Component Imports
-import ProgressBar from '../../components/games/ProgressBar'
-
 const QuestCard = ({ quest }) => {
     const { user } = useSelector((state) => state.auth)
-
-    const type = quest.questType
-
-    const [isOpen, setIsOpen] = useState(false)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768)
-        }
-
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
+    const { completion = {} } = quest
+    const done = quest.status === 'completed'
+    const exerciseName = [completion.exercise, completion.selectedEquipment && `(${completion.selectedEquipment})`].filter(Boolean).join(' ')
 
     return (
-        <div onClick={() => {if (isMobile) setIsOpen(!isOpen)}} className={`rounded-2xl shadow-xl bg-[#2B2D42] text-[#EDF2F4] overflow-hidden transition-all duration-300 hover:scale-102 ${quest.status === 'completed' ? 'opacity-50' : ''} ${isOpen || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            {/* Main content */}
-            <div className='p-5'>
-                {/* Header */}
-                <div className='flex flex-col justify-between items-center'>
-                    <h3 className={`text-2xl text-[#EF233C] font-bold ${isOpen ? '' : 'pb-6'}`}>{quest.title}</h3>
-                    <p>{quest.description}</p>
-                </div>
+        <Card raised as="article" className={cx('flex h-full flex-col gap-3', done && 'opacity-75')}>
+            <div>
+                <h3 className="flex items-center gap-2 font-display text-xl font-bold text-fg">
+                    {done && <FaCheckCircle aria-label="Completed" className="text-success" />}
+                    {quest.title}
+                </h3>
+                <p className="text-sm text-muted">{quest.description}</p>
+            </div>
 
-                {/* Completion */}
-                {type === 'strength' && (
-                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>
-                            {quest.completion.exercise}
-                            {quest.completion.selectedEquipment && ` (${quest.completion.selectedEquipment})`}
-                        </p>
-                        <p className='text-sm text-[#EDF2F4]/20'>{formatWeight(quest.completion.weight, user.useImperial)} x {quest.completion.reps} reps</p>
-                    </div>
+            <div className="mt-auto space-y-3">
+                {quest.questType === 'strength' && (
+                    <p className="text-sm">
+                        <span className="font-semibold text-fg">{exerciseName}</span>
+                        <span className="block text-muted">{formatWeight(completion.weight, user.useImperial)} × {completion.reps} reps</span>
+                    </p>
                 )}
 
-                {type === 'consistency' && (
-                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <ProgressBar numerator={quest.completion.currentCount} denominator={quest.completion.targetCount} />
-                    </div>
-                )}
-
-                {type === 'volume' && (
-                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <ProgressBar numerator={quest.completion.currentVolume} denominator={quest.completion.targetVolume} />
-                    </div>
-                )}
-
-                {type === 'progressive' && (
-                    <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                        <p className='font-semibold'>
-                            {quest.completion.exercise}
-                            {quest.completion.selectedEquipment && ` (${quest.completion.selectedEquipment})`}
-                        </p>
-                        <p className='text-sm text-[#EDF2F4]/20'>{PROGRESSIVE_LABELS[quest.completion.metric] || 'Current best'} to beat: {formatProgressiveValue(quest.completion.metric, quest.completion.baseline, user.useImperial)}</p>
-                    </div>
-                )}
-
-                {/* Footer */}
-                <div className='flex justify-between items-center mt-4 pt-3 border-t border-[#EDF2F4]/20 text-sm'>
-                    <span className='font-semibold'>Reward: {quest.reward} SP</span>
-
-                    {quest.status === 'active' ? (
-                        <span className='text-sm text-[#EDF2F4]/20'>
-                            Expires:{' '}
-                            {new Date(quest.expiry).toLocaleDateString('en-GB', {
-                                day: 'numeric',
-                                month: 'short'
-                            })}
+                {quest.questType === 'progressive' && (
+                    <p className="text-sm">
+                        <span className="font-semibold text-fg">{exerciseName}</span>
+                        <span className="block text-muted">
+                            {PROGRESSIVE_LABELS[completion.metric] || 'Current best'} to beat: {formatProgressiveValue(completion.metric, completion.baseline, user.useImperial)}
                         </span>
-                    ) : (
-                        <span className='text-sm text-[#EDF2F4]/20'>Completed</span>
-                    )}
+                    </p>
+                )}
+
+                {quest.questType === 'consistency' && (
+                    <ProgressBar numerator={completion.currentCount} denominator={completion.targetCount} label={quest.title} />
+                )}
+
+                {quest.questType === 'volume' && (
+                    <ProgressBar
+                        numerator={Math.round(user.useImperial ? kgToLbs(completion.currentVolume) : completion.currentVolume)}
+                        denominator={Math.round(user.useImperial ? kgToLbs(completion.targetVolume) : completion.targetVolume)}
+                        unit={getWeightUnit(user.useImperial)}
+                        label={quest.title}
+                    />
+                )}
+
+                <div className="flex items-center justify-between border-t border-line pt-3 text-sm">
+                    <span className="font-semibold text-accent-fg">+{quest.reward} SP</span>
+                    <span className="text-muted">
+                        {done ? 'Completed' : `Expires ${new Date(quest.expiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`}
+                    </span>
                 </div>
             </div>
-        </div>
+        </Card>
     )
 }
 

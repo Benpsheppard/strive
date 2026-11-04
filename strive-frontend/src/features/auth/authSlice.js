@@ -291,10 +291,13 @@ export const authSlice = createSlice({
             .addCase(updateProfile.fulfilled, (state, action) => {
                 state.isLoading = false
                 state.isSuccess = true
+                // The profile response has no token, so keep the one we have
                 state.user = {
-                    ...state.user,      
-                    ...action.payload
+                    ...state.user,
+                    ...action.payload,
+                    token: state.user.token
                 }
+                localStorage.setItem('Strive:user', JSON.stringify(state.user))
             })
             .addCase(updateProfile.rejected, (state, action) => {
                 state.isLoading = false

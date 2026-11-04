@@ -1,86 +1,90 @@
 // StrivePointsEarned.jsx
+// How many Strive Points the workout earned and where they came from
 
-// Imports
 import { FaStar } from 'react-icons/fa'
+import Card, { CardTitle } from '../ui/Card.jsx'
+import { formatNumber } from '../../utils/formatValues.js'
+
+// Labels and colours for how this workout compared with your own recent average
+const getRating = (score) => {
+    if (score <= 0.9) return { label: 'Building', colour: 'text-muted' }
+    if (score <= 1.0) return { label: 'Solid', colour: 'text-success' }
+    if (score <= 1.05) return { label: 'Great', colour: 'text-secondary' }
+    if (score <= 1.1) return { label: 'Excellent', colour: 'text-warning' }
+    if (score <= 1.25) return { label: 'Elite', colour: 'text-warning' }
+    return { label: 'Legendary', colour: 'text-accent-fg' }
+}
 
 const StrivePointsEarned = ({ workout }) => {
-    const getRating = (score) => {
-        if (score <= 0.9) return {label: "BUILDING", colour: "#B8C4D6"}
-        if (score <= 1.0) return {label: "SOLID", colour: "#22C55E"}
-        if (score <= 1.05) return {label: "GREAT", colour: "#0077B6"}
-        if (score <= 1.1) return {label: "EXCELLENT", colour: "#6A4C93"}
-        if (score <= 1.25) return {label: "ELITE", colour: "#FFD700"}
-        return {label: "LEGENDARY", colour: "#A7D8DE"}
+    const points = workout.summary?.totalStrivePoints || {}
+    const noSPReason = workout.summary?.noSPReason
+
+    // Too small to count: explain why instead of showing an empty breakdown
+    if (noSPReason) {
+        return (
+            <Card as="section" aria-labelledby="sp-title" className="space-y-3">
+                <CardTitle id="sp-title" className="flex items-center gap-2">
+                    <FaStar aria-hidden="true" className="text-accent-fg" /> Strive Points
+                </CardTitle>
+                <p className="py-4 text-center font-display text-5xl font-extrabold text-muted">+0 SP</p>
+                <p role="status" className="rounded-xl bg-bg/60 p-4 text-center text-muted">{noSPReason}</p>
+            </Card>
+        )
     }
 
     const categories = [
-        {
-            title: "Volume",
-            data: workout.summary.totalStrivePoints.volume,
-        },
-        {
-            title: "Strength",
-            data: workout.summary.totalStrivePoints.strength,
-        },
-        {
-            title: "Progression",
-            data: workout.summary.totalStrivePoints.progression,
-        },
-    ]      
+        { title: 'Volume', data: points.volume },
+        { title: 'Strength', data: points.strength },
+        { title: 'Progression', data: points.progression }
+    ].filter(category => category.data)
 
     return (
-        <div className="fade-in-card bg-[#8D99AE] rounded-2xl px-6 py-5" style={{ animationDelay: '0.4s' }}>
-            <h2 className="text-[#EDF2F4] font-semibold text-lg mb-4 flex items-center gap-2">
-                <FaStar className="text-[#EF233C]" /> Strive Points Earned
-            </h2>
+        <Card as="section" aria-labelledby="sp-title" className="space-y-4">
+            <CardTitle id="sp-title" className="flex items-center gap-2">
+                <FaStar aria-hidden="true" className="text-accent-fg" /> Strive Points earned
+            </CardTitle>
 
-            <div className="text-center mb-5 bg-[#EDF2F4]/30 rounded-lg p-8">
-                <p className="text-[#EF233C] text-7xl font-bold">+{workout.summary.totalStrivePoints.total} SP</p>
+            <p className="rounded-xl bg-bg/60 py-6 text-center font-display text-6xl font-extrabold text-accent-fg">
+                +{formatNumber(points.total)} SP
+            </p>
+
+            {points.dailyCapReached && (
+                <p role="status" className="rounded-xl bg-bg/60 p-3 text-center text-sm text-muted">
+                    You reached today&apos;s Strive Points limit, so this workout was capped. It resets tomorrow.
+                </p>
+            )}
+
+            <div className="grid grid-cols-3 gap-3">
+                {categories.map(({ title, data }) => {
+                    const rating = getRating(data.score)
+                    return (
+                        <div key={title} className="rounded-xl bg-bg/60 p-3 text-center">
+                            <p className="text-sm text-muted">{title}</p>
+                            <p className="font-bold text-fg">+{data.reward} SP</p>
+                            <p className={`text-xs font-bold uppercase tracking-wider ${rating.colour}`}>{rating.label}</p>
+                        </div>
+                    )
+                })}
             </div>
 
-            <div className="flex flex-col space-y-1 mb-3">
-                <div className="grid grid-cols-3 gap-3 bg-[#EDF2F4]/30 rounded-lg p-4 w-full">
-                    {categories.map(category => {
-                        const rating = getRating(category.data.score)
-
-                        return (
-                            <div key={category.title} className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2" style={{ borderColor: rating.colour }} >
-                                <p className="font-bold">{category.title}</p>
-
-                                <p>+{category.data.reward} SP</p>
-
-                                <p className="font-bold tracking-widest text-xs mt-1" style={{ color: rating.colour }} >
-                                    {rating.label}
-                                </p>
-                            </div>
-                        )
-                    })}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-bg/60 p-3 text-center">
+                    <p className="text-sm text-muted">Consistency</p>
+                    <p className="font-bold text-fg">×{points.consistencyMultiplier}</p>
+                </div>
+                <div className="rounded-xl bg-bg/60 p-3 text-center">
+                    <p className="text-sm text-muted">Momentum</p>
+                    <p className="font-bold text-fg">×{points.momentumMultiplier}</p>
                 </div>
             </div>
 
-            <div className="flex flex-col items-center space-y-1 mb-3">
-                <div className="grid grid-cols-2 gap-3 bg-[#EDF2F4]/30 rounded-lg p-4 w-full">
-                    <div className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2 border-[#EF27A6]">
-                        <p className="font-bold">Consistency</p>
-                        <p>x{workout.summary.totalStrivePoints.consistencyMultiplier}</p>
-                    </div>
-
-                    <div className="flex flex-col items-center text-sm text-[#EDF2F4] bg-[#8D99AE] shadow-xl rounded-xl p-4 border-2 border-[#6A4C93]">
-                        <p className="font-bold">Momentum</p>
-                        <p>x{workout.summary.totalStrivePoints.momentumMultiplier}</p>
-                    </div>
-                </div>
-            </div>
-            
-            {workout.summary.totalStrivePoints.bonus != 0 &&
-                <div className="flex flex-col items-center space-y-1 mb-3 p-2 border-t border-[#EDF2F4]/20">
-                    <h2 className="text-[#EDF2F4] font-semibold text-xl flex items-center gap-2">
-                        Weekly Target Hit!
-                    </h2>
-                    <p className="text-sm text-[#EDF2F4]">+{workout.summary.totalStrivePoints.bonus}SP</p>
-                </div>
-            }
-        </div>
+            {points.bonus > 0 && (
+                <p className="border-t border-line pt-3 text-center">
+                    <span className="font-semibold text-fg">Weekly target hit!</span>{' '}
+                    <span className="font-bold text-accent-fg">+{points.bonus} SP</span>
+                </p>
+            )}
+        </Card>
     )
 }
 

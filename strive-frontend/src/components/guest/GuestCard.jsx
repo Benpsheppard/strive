@@ -1,25 +1,30 @@
 // GuestCard.jsx
+// Shown to guests: how many free workouts are left and what signing up keeps
 
-// Imports
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import Card from '../ui/Card.jsx'
+import Button from '../ui/Button.jsx'
 
-const GuestCard = ({ workouts, isMigrate }) => {
-    const navigate = useNavigate()
+const GUEST_LIMIT = 5
 
-    const onMigrateAccount = () => {
-        navigate('/migrate')
-    }
+const GuestCard = ({ workouts, showAction = true }) => {
+    const used = Math.min(workouts.length, GUEST_LIMIT)
+    const remaining = GUEST_LIMIT - used
 
     return (
-        <div className="max-w-2xl w-full bg-[#EF233C] text-[#EDF2F4] text-sm text-center rounded-2xl p-2">
-            <p>Guest Account. You have completed {workouts.length}/5 workouts.</p>
-            <p>Migrate to a Strive account for unlimited workout tracking.</p>
-            {isMigrate && (
-                <button onClick={onMigrateAccount} className="w-full bg-[#2B2D42] text-[#EF233C] border-2 border-[#D90429] py-2 rounded mt-2 transition hover:bg-[#D90429] hover:text-[#EDF2F4]">
-                    Migrate Account
-                </button>
-            )}
-        </div>
+        <Card raised as="section" aria-label="Guest account" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p className="font-semibold text-fg">
+                    Guest account: {used} of {GUEST_LIMIT} free workouts used
+                </p>
+                <p className="text-sm text-muted">
+                    {remaining > 0
+                        ? 'Create a free account to keep your workouts, points and streak, with no limit.'
+                        : 'You have used all your guest workouts. Create a free account to keep going. Everything you have logged comes with you.'}
+                </p>
+            </div>
+            {showAction && <Button as={Link} to="/migrate" className="shrink-0">Create free account</Button>}
+        </Card>
     )
 }
 

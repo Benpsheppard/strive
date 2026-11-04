@@ -24,12 +24,12 @@ export const MUSCLE_GROUPS_HEATMAP = [
 ]
 
 export const MUSCLE_GROUP_COLOURS = {
-    'Chest': '#EF233C',
-    'Back': '#0077B6',
-    'Shoulders': '#EF27A6',
-    'Arms': '#2B2D42',
-    'Legs': '#4ECDC4',
-    'Core': '#F4A261',
-    'Full body': '#6A4C93',
-    'Other': '#8D99AE',
+    'Chest': '#ff5c70',
+    'Back': '#3fa7e0',
+    'Shoulders': '#f25db8',
+    'Arms': '#ffd166',
+    'Legs': '#4ecdc4',
+    'Core': '#f4a261',
+    'Full body': '#a78bda',
+    'Other': '#8d99ae',
 }

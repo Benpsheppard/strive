@@ -1,15 +1,12 @@
 // WorkoutComplete.jsx
+// Summary shown right after finishing a workout
 
-// Imports
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
-// Function Imports
 import { getWorkouts, clearLastWorkoutStats } from '../features/workouts/workoutsSlice'
 
-// Component Imports
-import Header from '../components/headers/Header'
 import Spinner from '../components/spinners/Spinner'
 import GuestCard from '../components/guest/GuestCard'
 import StrivePointsEarned from '../components/workout-complete/StrivePointsEarned'
@@ -17,35 +14,33 @@ import WorkoutStats from '../components/workout-complete/WorkoutStats'
 import PBDisplay from '../components/workout-complete/PBDisplay'
 import QuestsCompleted from '../components/workout-complete/QuestsCompleted'
 import RadarGraph from '../components/workout-complete/RadarGraph'
+import PageTitle from '../components/ui/PageTitle.jsx'
+import Button from '../components/ui/Button.jsx'
 
 const WorkoutComplete = () => {
     const { user } = useSelector((state) => state.auth)
-    const { workouts, lastWorkoutStats, isLoading, message, isError } = useSelector((state) => state.workout)
+    const { workouts, lastWorkoutStats } = useSelector((state) => state.workout)
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
     const workout = lastWorkoutStats?.workout
 
+    // Refreshing this page loses the summary, so go back to the start
     useEffect(() => {
-        if (!isLoading && !lastWorkoutStats?.workout) {
-            navigate('/')
-        }
-    }, [isLoading, workout, navigate])
+        if (!workout) navigate('/', { replace: true })
+    }, [workout, navigate])
 
+    // The radar chart compares this workout with earlier ones
     useEffect(() => {
-		if (isError) {
-			console.error(message)
-			return
-		}
+        dispatch(getWorkouts())
+    }, [dispatch])
 
-		if (!user) {
-			navigate('/login')
-			return
-		}
+    if (!workout) return <Spinner />
 
-		dispatch(getWorkouts())
-	}, [user, message, isError, navigate, dispatch])
+    const hasStats = lastWorkoutStats.levelUp || lastWorkoutStats.streakIncreased ||
+        lastWorkoutStats.momentumGained || lastWorkoutStats.shieldEarned ||
+        lastWorkoutStats.shieldUsed || lastWorkoutStats.streakBroken
 
     const onContinue = () => {
         if (hasStats) {
@@ -56,60 +51,28 @@ const WorkoutComplete = () => {
         }
     }
 
-    if (isLoading || !lastWorkoutStats?.workout) {
-        return <Spinner />
+    const onViewProgress = () => {
+        dispatch(clearLastWorkoutStats())
+        navigate('/progress')
     }
 
-    const hasStats = lastWorkoutStats.levelUp || lastWorkoutStats.streakIncreased || 
-    lastWorkoutStats.momentumGained || lastWorkoutStats.shieldEarned || 
-    lastWorkoutStats.shieldUsed || lastWorkoutStats.streakBroken
-
     return (
-        <section className="min-h-screen mt-0 md:mt-20 flex flex-col items-center px-4 pb-32">
-			<Header />
+        <div className="mx-auto max-w-2xl space-y-4">
+            <PageTitle accent="complete!" subtitle={workout.title}>Workout</PageTitle>
 
-            <div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                <h1>
-                    Workout <span className="text-[#EF233C]">Completed!</span>
-                </h1>
-                <p className="text-[#EDF2F4]/40 text-lg">{workout.title}</p>
-            </div>            
+            {user.isGuest && <GuestCard workouts={workouts} />}
 
-            <div className="w-full max-w-2xl space-y-4">
-                {/* Guest Card */}
-                {user?.isGuest && 
-                    <GuestCard workouts={workouts} isMigrate={false} />
-                }
+            <WorkoutStats workout={workout} user={user} />
+            <StrivePointsEarned workout={workout} />
+            <PBDisplay workout={workout} user={user} />
+            <QuestsCompleted workout={workout} />
+            <RadarGraph workouts={workouts} workout={workout} />
 
-                {/* Workout Stats */}
-                <WorkoutStats workout={workout} user={user} />
-
-                {/* Strive Points Earned */}
-                <StrivePointsEarned workout={workout} />
-
-                {/* Radar Diagram */}
-                <RadarGraph workouts={workouts} workout={workout} />
-
-                {/* PBs */}
-                <PBDisplay workout={workout} user={user} />
-
-                {/* Quests Completed */}
-                <QuestsCompleted workout={workout} />
-
-                {/* Actions */}
-                <div className="fade-in-card flex flex-col gap-3 pt-2" style={{ animationDelay: '1.0s' }}>
-                    <button onClick={onContinue} className="w-full bg-[#EF233C] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#D90429]">
-                        Continue
-                    </button>
-
-                    {!hasStats && (
-                        <button onClick={() => { dispatch(clearLastWorkoutStats()); navigate('/progress') }} className="w-full bg-[#8D99AE] text-[#EDF2F4] py-3 rounded-xl font-semibold transition hover:bg-[#EF233C]">
-                            View Progress
-                        </button>
-                    )}
-                </div>
+            <div className="flex flex-col gap-3 pt-2">
+                <Button size="lg" fullWidth onClick={onContinue}>Continue</Button>
+                {!hasStats && <Button variant="secondary" fullWidth onClick={onViewProgress}>View progress</Button>}
             </div>
-        </section>
+        </div>
     )
 }
 

@@ -1,64 +1,58 @@
 // TotalProgressCard.jsx
+// All-time totals
 
-// Imports
 import { useSelector } from 'react-redux'
 
-// Function Imports
 import { formatWeight, formatDuration, formatNumber, formatDistance } from '../../utils/formatValues.js'
 
+import Card, { CardTitle } from '../ui/Card.jsx'
+import StatRow from './StatRow.jsx'
+
 const TotalProgressCard = ({ workouts }) => {
-	const { user } = useSelector((state) => state.auth)
+    const { user } = useSelector((state) => state.auth)
 
-	// Calculate stats
-    const totalWorkouts = workouts.length
-    const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0)
+    const totals = workouts.reduce((acc, workout) => {
+        acc.duration += workout.duration || 0
 
-    let totalWeight = 0
-    let totalReps = 0
-    let totalSets = 0
-    let totalExercises = 0
-    let totalDistance = 0
-    let heaviestLift = 0
+        workout.exercises?.forEach((ex) => {
+            acc.exercises++
 
-    workouts.forEach((w) => {
-        w.exercises.forEach((ex) => {
-            totalExercises++
-
-            ex.sets.forEach((set) => {
+            ex.sets?.forEach((set) => {
                 const weight = Number(set.weight) || 0
                 const reps = Number(set.reps) || 0
-                const distance = Number(set.distance) || 0
 
-                totalWeight += weight * reps
-                totalReps += reps
-                totalSets++
-                totalDistance += distance
-
-                if (weight > heaviestLift) {
-                    heaviestLift = weight
-                }
+                acc.weight += weight * reps
+                acc.reps += reps
+                acc.sets++
+                acc.distance += Number(set.distance) || 0
+                acc.heaviest = Math.max(acc.heaviest, weight)
             })
         })
-    })
 
-	return (
-		<div className="bg-[#8D99AE] p-6 rounded-2xl shadow-lg text-center text-xl w-full">
-			<h2 className="text-[#EDF2F4] text-2xl font-semibold mb-4">
-                <span className="text-[#EF233C] font-bold">All Time</span> Summary
-			</h2>
-			<div className="text-[#EDF2F4] space-y-2">
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Heaviest Lift <span className="text-[#EF233C] font-bold">{formatWeight(heaviestLift, user.useImperial)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Workouts <span className="text-[#EF233C] font-bold">{formatNumber(totalWorkouts)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Exercises <span className="text-[#EF233C] font-bold">{formatNumber(totalExercises)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Duration <span className="text-[#EF233C] font-bold">{formatDuration(totalDuration)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Sets <span className="text-[#EF233C] font-bold">{formatNumber(totalSets)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Weight <span className="text-[#EF233C] font-bold">{formatWeight(totalWeight, user.useImperial)}</span></p>
-				<p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Reps <span className="text-[#EF233C] font-bold">{formatNumber(totalReps)}</span></p>
-                <p className="flex justify-between items-center border-b border-[#EDF2F4]/40">Total Distance Covered <span className="text-[#EF233C] font-bold">{formatDistance(totalDistance, user.useImperial)}</span></p>
-			</div>
-		</div>
-	)
+        return acc
+    }, { duration: 0, exercises: 0, weight: 0, reps: 0, sets: 0, distance: 0, heaviest: 0 })
+
+    const rows = [
+        ['Heaviest lift', formatWeight(totals.heaviest, user.useImperial)],
+        ['Workouts', formatNumber(workouts.length)],
+        ['Exercises', formatNumber(totals.exercises)],
+        ['Time training', formatDuration(totals.duration)],
+        ['Sets', formatNumber(totals.sets)],
+        ['Volume', formatWeight(totals.weight, user.useImperial)],
+        ['Reps', formatNumber(totals.reps)],
+        ['Distance', formatDistance(totals.distance, user.useImperial)]
+    ]
+
+    return (
+        <Card as="section" aria-labelledby="all-time-title" className="space-y-3">
+            <CardTitle id="all-time-title" accent="totals">All time</CardTitle>
+            <dl>
+                {rows.map(([label, value]) => (
+                    <StatRow key={label} label={label} value={value} showComparison={false} />
+                ))}
+            </dl>
+        </Card>
+    )
 }
 
-// Export
 export default TotalProgressCard

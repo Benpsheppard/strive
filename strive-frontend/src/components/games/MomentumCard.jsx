@@ -1,43 +1,33 @@
 // MomentumCard.jsx
 
-// Component Imports
-import ProgressBar from "./ProgressBar.jsx"
+import { Link } from 'react-router-dom'
+import Card, { CardTitle } from '../ui/Card.jsx'
+import ProgressBar from './ProgressBar.jsx'
+
+// Matches the backend multipliers (utils/workoutSummary.js getMomentumMultiplier)
+const MOMENTUM_TIERS = [
+    { threshold: 20, label: 'Warming up', multiplier: 1 },
+    { threshold: 40, label: 'Building', multiplier: 1.2 },
+    { threshold: 60, label: 'Consistent', multiplier: 1.4 },
+    { threshold: 80, label: 'Locked in', multiplier: 1.6 },
+    { threshold: 99, label: 'Unstoppable', multiplier: 1.8 },
+    { threshold: 100, label: 'Peak', multiplier: 2 }
+]
 
 const MomentumCard = ({ user }) => {
-    const MOMENTUM_TIERS = [
-        { threshold: 20,  label: 'Warming Up',  multiplier: 1   },
-        { threshold: 40,  label: 'Building',    multiplier: 1.2 },
-        { threshold: 60,  label: 'Consistent',  multiplier: 1.4 },
-        { threshold: 80,  label: 'Locked In',   multiplier: 1.6 },
-        { threshold: 99,  label: 'Unstoppable', multiplier: 1.8 },
-        { threshold: 100, label: 'Peak',        multiplier: 2   },
-    ]
-
-    const getMomentumInfo = (momentum) => {
-        return MOMENTUM_TIERS.find(tier => momentum <= tier.threshold) 
-            ?? MOMENTUM_TIERS.at(-1)
-    }
-
-    const { label, multiplier } = getMomentumInfo(user.momentum.current)
+    const current = user.momentum.current
+    const { label, multiplier } = MOMENTUM_TIERS.find(tier => current <= tier.threshold) ?? MOMENTUM_TIERS.at(-1)
 
     return (
-        <div className="flex flex-col items-center p-6 w-full space-y-3 bg-[#8D99AE] shadow rounded-2xl text-[#EDF2F4]">
-            <h2 className="font-bold text-2xl">
-                Current Momentum
-            </h2>
-            
-            <div className='flex items-center space-x-2 text-4xl'>
-                <h2 className='animate-pulse-label font-bold text-[#EF233C]'>
-                    {label}
-                </h2>
-            </div>
-
-            <p className="text-sm text-[#EDF2F4]">
-                Current SP multiplier: {multiplier}x
+        <Card as="section" aria-labelledby="momentum-title" className="space-y-3">
+            <CardTitle id="momentum-title">Momentum</CardTitle>
+            <p className="font-display text-3xl font-bold text-accent-fg">{label}</p>
+            <p className="text-sm text-muted">
+                Your Strive Points are multiplied by <span className="font-semibold text-fg">×{multiplier}</span>.{' '}
+                <Link to="/how-it-works#momentum" className="text-accent-fg hover:underline">How momentum works</Link>
             </p>
-
-            <ProgressBar numerator={user.momentum.current} denominator={100} />
-        </div>
+            <ProgressBar numerator={current} denominator={100} label="Momentum" />
+        </Card>
     )
 }
 

@@ -1,10 +1,9 @@
 // PBChart.jsx
 
 // Imports
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, } from 'chart.js'
 import { Bar } from 'react-chartjs-2'
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { calculatePersonalBests } from '../../utils/pbDetection.js'
@@ -12,21 +11,19 @@ import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
 // Variable Imports
 import { MUSCLE_GROUPS, MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
+import { CHART } from '../../utils/chartTheme.js'
+import CollapsibleCard from '../ui/CollapsibleCard.jsx'
+import Select from '../ui/Select.jsx'
+import Card from '../ui/Card.jsx'
+import { useIsMobile } from '../../hooks/useMediaQuery.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const PBChart = ({ workouts, useImperial }) => {
+    const isMobile = useIsMobile()
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
-    const [expanded, setExpanded] = useState(false)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    const exercisePBs = calculatePersonalBests(workouts)
+    const exercisePBs = useMemo(() => calculatePersonalBests(workouts), [workouts])
     const weightUnit = getWeightUnit(useImperial)
 
     const filteredExercises = Object.entries(exercisePBs).filter(([, data]) => {
@@ -40,7 +37,7 @@ const PBChart = ({ workouts, useImperial }) => {
     )
     const dates = filteredExercises.map(([, data]) => data.date)
     const colours = filteredExercises.map(([, data]) =>
-        MUSCLE_GROUP_COLOURS[data.muscleGroup] || '#EDF2F4'
+        MUSCLE_GROUP_COLOURS[data.muscleGroup] || CHART.text
     )
 
     const chartData = {
@@ -73,26 +70,26 @@ const PBChart = ({ workouts, useImperial }) => {
         scales: {
             x: {
                 ticks: {
-                    color: '#EDF2F4',
+                    color: CHART.text,
                     maxRotation: labels.length > 10 ? 90 : 45,
                     minRotation: labels.length > 10 ? 90 : 45,
                     display: labels.length <= 12
                 },
-                grid: { color: 'rgba(237, 242, 244, 0.3)' },
+                grid: { color: CHART.grid },
                 title: {
                     display: labels.length > 12,
                     text: 'Exercise',
-                    color: '#EDF2F4'
+                    color: CHART.text
                 }
             },
             y: {
                 beginAtZero: true,
-                ticks: { color: '#EDF2F4' },
-                grid: { color: 'rgba(237, 242, 244, 0.3)' },
+                ticks: { color: CHART.text },
+                grid: { color: CHART.grid },
                 title: {
                     display: true,
                     text: `Weight (${weightUnit})`,
-                    color: '#EDF2F4'
+                    color: CHART.text
                 }
             }
         }
@@ -100,53 +97,33 @@ const PBChart = ({ workouts, useImperial }) => {
 
     if (Object.keys(exercisePBs).length === 0) {
         return (
-            <div className="bg-[#8D99AE] p-6 rounded-2xl mt-10 text-center text-[#EDF2F4]">
-                <p>No personal bests recorded yet</p>
-            </div>
+            <Card className="text-center text-muted">
+                No personal bests recorded yet. Log some weighted sets and they will appear here.
+            </Card>
         )
     }
 
     return (
-        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            <div className="relative flex items-center justify-center gap-2 mb-8">
-                {isMobile && (
-                    <div className="absolute left-0">
-                        {expanded ? (
-                            <FaChevronDown size={22} />
-                        ) : (
-                            <FaChevronRight size={22} />
-                        )}
-                    </div>
-                )}
-                
-                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
-                    Personal <span className="text-[#EF233C]">Bests</span>
-                </h2>
-            </div>
-
-            {/* Muscle Group Filter */}
-            <select
-                onClick={(e) => e.stopPropagation()}
-                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none"
+        <CollapsibleCard title="Personal" accent="bests" summary="Your heaviest lift for each exercise" defaultOpen={!isMobile}>
+            <Select
+                label="Muscle group"
                 value={selectedMuscleGroup}
                 onChange={(e) => setSelectedMuscleGroup(e.target.value)}
+                className="mb-4"
             >
                 {MUSCLE_GROUPS.map((group) => (
                     <option key={group} value={group}>{group}</option>
                 ))}
-            </select>
+            </Select>
 
-            {/* Chart */}
             <div className="relative h-[300px] md:h-[400px]">
                 {labels.length === 0 ? (
-                    <div className="text-center text-[#EDF2F4] py-8">
-                        <p>No weight exercises found for {selectedMuscleGroup}</p>
-                    </div>
+                    <p className="py-8 text-center text-muted">No weighted exercises found for {selectedMuscleGroup}</p>
                 ) : (
-                    <Bar onClick={(e) => e.stopPropagation()} data={chartData} options={options} />
+                    <Bar data={chartData} options={options} aria-label="Bar chart of your personal best weight for each exercise" role="img" />
                 )}
             </div>
-        </div>
+        </CollapsibleCard>
     )
 }
 

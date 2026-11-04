@@ -1,60 +1,66 @@
 // WorkoutDashboard.jsx
+// Home screen between workouts: start training, see your level, this week and recent history
 
-// Component Imports
-import GuestCard from "../guest/GuestCard"
-import GamesSummary from "../games/GamesSummary"
-import Calendar from "../progress/Calendar"
-import WorkoutItem from "./WorkoutItem"
-import MuscleGroupHeatmap from "../progress/MuscleGroupHeatmap"
+import { Link } from 'react-router-dom'
+import Card from '../ui/Card.jsx'
+import Button from '../ui/Button.jsx'
+import PageTitle from '../ui/PageTitle.jsx'
+import GuestCard from '../guest/GuestCard.jsx'
+import GamesSummary from '../games/GamesSummary.jsx'
+import Calendar from '../progress/Calendar.jsx'
+import MuscleGroupHeatmap from '../progress/MuscleGroupHeatmap.jsx'
+import WorkoutItem from './WorkoutItem.jsx'
 
 const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
-    const lastFourWorkouts = workouts.length > 0 ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4) : []
+    const recent = [...workouts]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 4)
+
+    const isFirstWorkout = workouts.length === 0
 
     return (
-        <section className="space-y-5 w-full">
-            <div className="text-4xl md:text-6xl font-semibold text-[#EDF2F4] text-center p-4">
-                <h1>Welcome back, <span className="text-[#EF233C]">{user.isGuest ? 'Guest' : user.username}</span></h1>
-            </div>
+        <div className="space-y-4">
+            <PageTitle accent={user.isGuest ? 'Guest' : user.username}>Welcome back,</PageTitle>
 
-            {user?.isGuest && <GuestCard workouts={workouts} isMigrate={false} />}
-            
-            <div className='fade-in-card' style={{ animationDelay: '0.2s' }}>
-                <GamesSummary user={user} />
-            </div>
+            {user.isGuest && <GuestCard workouts={workouts} />}
 
-            <div className="card-theme fade-in-card p-6 w-full mx-auto bg-[#8D99AE] rounded-2xl" style={{ animationDelay: '0.4s' }}>
-                <h2 className="font-bold text-[#EDF2F4] text-3xl text-center mb-3">
-                    Ready to <span className="text-[#EF233C]">train?</span>
+            <Card as="section" aria-label="Start a workout" className="space-y-3 text-center" raised>
+                <h2 className="font-display text-3xl font-bold">
+                    {isFirstWorkout ? 'Log your first ' : 'Ready to '}
+                    <span className="text-accent-fg">{isFirstWorkout ? 'workout' : 'train?'}</span>
                 </h2>
-                <button onClick={startWorkout} className="w-full bg-[#EF233C] text-[#EDF2F4] py-2 px-4 rounded-xl hover:bg-[#D90429]">
-                    Start Workout
-                </button>
+                {isFirstWorkout && (
+                    <p className="text-muted">Pick an exercise, add your sets and finish to earn your first Strive Points.</p>
+                )}
+                <Button size="lg" fullWidth onClick={startWorkout}>Start workout</Button>
+            </Card>
+
+            <div className="grid gap-4 md:grid-cols-2">
+                <GamesSummary user={user} />
+                <Calendar workouts={workouts} target={user.target} />
             </div>
 
-            <div className="fade-in-card" style={{ animationDelay: '0.6s' }}>
-                <Calendar workouts={workouts} />
-            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+                <section aria-labelledby="recent-heading" className="space-y-3">
+                    <div className="flex items-baseline justify-between">
+                        <h2 id="recent-heading" className="font-display text-2xl font-bold">
+                            Recent <span className="text-accent-fg">workouts</span>
+                        </h2>
+                        {workouts.length > 0 && (
+                            <Link to="/prev-workouts" className="text-sm font-semibold text-accent-fg hover:underline">See all</Link>
+                        )}
+                    </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-5">
-                <div className="fade-in-card flex flex-col items-center w-full space-y-5 p-2 bg-[#8D99AE] text-[#EDF2F4] rounded-2xl" style={{ animationDelay: '0.8s' }}>
-                    <h1 className="text-lg p-2 font-bold">
-                        Most Recent <span className="text-[#EF233C]">Workouts</span>
-                    </h1>
-
-                    {lastFourWorkouts.length > 0 && (
-                        lastFourWorkouts.map((workout) => 
-                            <div key={workout._id} className="w-full">
-                                <WorkoutItem workout={workout} />
-                            </div>
-                        )
+                    {recent.length === 0 ? (
+                        <Card className="text-center text-muted">Your workouts will show up here.</Card>
+                    ) : (
+                        recent.map(workout => <WorkoutItem key={workout._id} workout={workout} />)
                     )}
-                </div>
+                </section>
 
-                <div className="fade-in-card" style={{ animationDelay: '1.0s' }}>
-                    <MuscleGroupHeatmap workouts={workouts} />
-                </div>
+                <MuscleGroupHeatmap workouts={workouts} />
             </div>
-        </section>
+        </div>
     )
 }
 

@@ -4,21 +4,24 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
 
 // Variables Imports
 import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils'
+import { CHART } from '../../utils/chartTheme.js'
+import CollapsibleCard from '../ui/CollapsibleCard.jsx'
+import Select from '../ui/Select.jsx'
+import Card from '../ui/Card.jsx'
+import { useIsMobile } from '../../hooks/useMediaQuery.js'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
+    const isMobile = useIsMobile()
     const [selectedExercise, setSelectedExercise] = useState('')
     const [workoutLimit, setWorkoutLimit] = useState(10)
-    const [expanded, setExpanded] = useState(false)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
     const weightUnit = getWeightUnit(useImperial)
 
@@ -86,13 +89,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             .slice(-workoutLimit)
     }, [selectedExercise, allExercises, workouts, useImperial, workoutLimit])
 
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    const selectedColour = MUSCLE_GROUP_COLOURS[allExercises.find(e => e.key === selectedExercise)?.muscleGroup] || '#EF233C'
+    const selectedColour = MUSCLE_GROUP_COLOURS[allExercises.find(e => e.key === selectedExercise)?.muscleGroup] || CHART.accent
 
     const data = {
         labels: exerciseData.map((d) => d.date),
@@ -109,8 +106,8 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
             {
                 label: `Avg Weight (${weightUnit})`,
                 data: exerciseData.map((d) => d.avgWeight),
-                backgroundColor: '#EDF2F4',
-                borderColor: '#EDF2F4',
+                backgroundColor: CHART.text,
+                borderColor: CHART.text,
                 tension: 0.3,
                 pointRadius: 5,
                 pointHoverRadius: 7,
@@ -124,29 +121,29 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         scales: {
             x: {
                 ticks: {
-                    color: '#EDF2F4',
+                    color: CHART.text,
                     display: workoutLimit < 15
                 },
-                grid: { color: 'rgba(255,255,255,0.1)' },
+                grid: { color: CHART.grid },
                 title: {
                     display: workoutLimit >= 15,
                     text: 'Workout Date',
-                    color: '#EDF2F4'
+                    color: CHART.text
                 }
             },
             y: {
-                ticks: { color: '#EDF2F4' },
-                grid: { color: 'rgba(255,255,255,0.1)' },
+                ticks: { color: CHART.text },
+                grid: { color: CHART.grid },
                 title: {
                     display: true,
                     text: `Weight (${weightUnit})`,
-                    color: '#EDF2F4'
+                    color: CHART.text
                 }
             },
         },
         plugins: {
             legend: {
-                labels: { color: '#EDF2F4' },
+                labels: { color: CHART.text },
             },
             tooltip: {
                 callbacks: {
@@ -158,72 +155,43 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
 
     if (allExercises.length === 0) {
         return (
-            <div className="bg-[#8D99AE] p-6 rounded-2xl text-center text-[#EDF2F4]">
-                <p>No weight exercises recorded yet</p>
-            </div>
+            <Card className="text-center text-muted">
+                No weighted exercises logged yet. Your lifts will be charted here over time.
+            </Card>
         )
     }
 
     return (
-        <div onClick={() => { if (isMobile) setExpanded(!expanded) }} className={`text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            <div className="relative flex items-center justify-center gap-2 mb-8">
-                {isMobile && (
-                    <div className="absolute left-0">
-                        {expanded ? (
-                            <FaChevronDown size={22} />
-                        ) : (
-                            <FaChevronRight size={22} />
-                        )}
-                    </div>
-                )}
-                
-                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
-                    Exercise <span className="text-[#EF233C]">Progress</span>
-                </h2>
+        <CollapsibleCard title="Exercise" accent="progress" summary="Track one lift over your recent workouts" defaultOpen={!isMobile}>
+            <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                <Select label="Exercise" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
+                    {allExercises.map((ex) => (
+                        <option key={ex.key} value={ex.key}>{ex.key}</option>
+                    ))}
+                </Select>
+
+                <Select label="Show" value={workoutLimit} onChange={(e) => setWorkoutLimit(Number(e.target.value))}>
+                    <option value={5}>Last 5 workouts</option>
+                    <option value={10}>Last 10 workouts</option>
+                    <option value={15}>Last 15 workouts</option>
+                    <option value={20}>Last 20 workouts</option>
+                    {!isMobile && (
+                        <>
+                            <option value={50}>Last 50 workouts</option>
+                            <option value={100}>Last 100 workouts</option>
+                        </>
+                    )}
+                </Select>
             </div>
 
-            {/* Exercise Dropdown */}
-            <select
-                onClick={(e) => e.stopPropagation()}
-                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-2 outline-none"
-                value={selectedExercise}
-                onChange={(e) => setSelectedExercise(e.target.value)}
-            >
-                {allExercises.map((ex) => (
-                    <option key={ex.key} value={ex.key}>{ex.key}</option>
-                ))}
-            </select>
-
-            {/* Workout Limit Dropdown */}
-            <select
-                onClick={(e) => e.stopPropagation()}
-                className="w-full bg-[#2B2D42] text-[#EDF2F4] p-2 rounded-lg mb-6 outline-none"
-                value={workoutLimit}
-                onChange={(e) => setWorkoutLimit(Number(e.target.value))}
-            >
-                <option value={5}>Last 5 Workouts</option>
-                <option value={10}>Last 10 Workouts</option>
-                <option value={15}>Last 15 Workouts</option>
-                <option value={20}>Last 20 Workouts</option>
-                {!isMobile && (
-                    <>
-                        <option value={50}>Last 50 Workouts</option>
-                        <option value={100}>Last 100 Workouts</option>
-                    </>
-                )}
-            </select>
-
-            {/* Chart */}
             <div className="relative h-[300px] md:h-[400px]">
                 {selectedExercise && exerciseData.length > 0 ? (
-                    <Line onClick={(e) => e.stopPropagation()} data={data} options={options} />
+                    <Line data={data} options={options} aria-label={`Line chart of your max and average weight for ${selectedExercise}`} role="img" />
                 ) : (
-                    <p className="text-center text-[#EDF2F4] opacity-70">
-                        No data found for {selectedExercise}
-                    </p>
+                    <p className="text-center text-muted">No data found for {selectedExercise}</p>
                 )}
             </div>
-        </div>
+        </CollapsibleCard>
     )
 }
 

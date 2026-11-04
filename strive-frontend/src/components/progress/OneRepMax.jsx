@@ -2,18 +2,21 @@
 
 // Imports
 import { useState, useEffect } from 'react'
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 // Function Imports
 import { formatWeight } from '../../utils/formatValues'
 
 // Variable Imports
 import { MUSCLE_GROUPS, MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
+import CollapsibleCard from '../ui/CollapsibleCard.jsx'
+import Select from '../ui/Select.jsx'
+import Card from '../ui/Card.jsx'
+import { useIsMobile } from '../../hooks/useMediaQuery.js'
+import Input from '../ui/Input.jsx'
 
 const OneRepMax = ({ workouts, useImperial }) => {
+    const isMobile = useIsMobile()
     const [maxes, setMaxes] = useState([])
-    const [expanded, setExpanded] = useState(false)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
     const [search, setSearch] = useState("")
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
 
@@ -61,12 +64,6 @@ const OneRepMax = ({ workouts, useImperial }) => {
         setMaxes(maxesArray)
     }, [workouts])
 
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
     const displayMaxes = maxes
         .filter(
             max => max.exerciseName.toLowerCase().includes(search.toLowerCase())
@@ -80,63 +77,42 @@ const OneRepMax = ({ workouts, useImperial }) => {
         })
 
     return (
-        <div onClick={() => {if (isMobile) setExpanded(!expanded)}} className={`flex flex-col text-[#EDF2F4] bg-[#8D99AE] p-6 rounded-2xl ${expanded || !isMobile ? 'h-auto' : 'h-[75px] overflow-y-hidden'}`} >
-            <div className="relative flex items-center justify-center gap-2 mb-4">
-                {isMobile && (
-                    <div className="absolute left-0">
-                        {expanded ? (
-                            <FaChevronDown size={22} />
-                        ) : (
-                            <FaChevronRight size={22} />
-                        )}
-                    </div>
-                )}
-                
-                <h2 className="text-[#EDF2F4] text-2xl font-semibold text-center">
-                    One Rep <span className="text-[#EF233C]">Maxes</span>
-                </h2>
-            </div>
-
-            <p className="text-center text-[#EDF2F4]/40 mb-4">
-                1RM = Weight x ( 1 + ( Reps / 30 ) )
-            </p>
-
-            <div 
-                className="flex flex-row items-center w-full gap-3 mb-5" 
-                onClick={(e) => e.stopPropagation()}
-            >
-                <input 
-                    placeholder="Search Maxes..."
-                    className="bg-[#2B2D42] text-[#EDF2F4] rounded-2xl w-full p-4 flex-3"
+        <CollapsibleCard title="One rep" accent="maxes" summary="Estimated heaviest single rep: weight × (1 + reps ÷ 30)" defaultOpen={!isMobile}>
+            <div className="mb-4 grid gap-3 sm:grid-cols-[2fr_1fr]">
+                <Input
+                    label="Search"
+                    placeholder="Search exercises"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}   
+                    onChange={(e) => setSearch(e.target.value)}
                 />
 
-                <select
-                    className="w-full bg-[#2B2D42] text-[#EDF2F4] p-4 rounded-2xl outline-none w-full flex-1"
-                    value={selectedMuscleGroup}
-                    onChange={(e) => setSelectedMuscleGroup(e.target.value)}
-                >
+                <Select label="Muscle group" value={selectedMuscleGroup} onChange={(e) => setSelectedMuscleGroup(e.target.value)}>
                     {MUSCLE_GROUPS.map((group) => (
                         <option key={group} value={group}>{group}</option>
                     ))}
-                </select>
+                </Select>
             </div>
-            
 
-            <div className="w-full space-y-3">
-                {displayMaxes.map((max, index) => (
-                    <div key={index + 1} className="rounded-2xl p-4 flex flex-row items-center justify-between transition hover:scale-102" style={{ backgroundColor: MUSCLE_GROUP_COLOURS[max.muscleGroup] }} >
-                        <div className="flex flex-row items-center gap-4">
-                            <h2 className="font-bold text-xl">{max.exerciseName}</h2>
-                            <h2 className="text-[#EDF2F4]/60">{max.muscleGroup}</h2>
-                        </div>
-                        
-                        <h2>{formatWeight(max.oneRepMax, useImperial)}</h2>
-                    </div>
-                ))}
-            </div>
-        </div>
+            {displayMaxes.length === 0 ? (
+                <p className="py-4 text-center text-muted">No weighted exercises match.</p>
+            ) : (
+                <ul className="space-y-2">
+                    {displayMaxes.map((max) => (
+                        <li
+                            key={`${max.exerciseName}-${max.muscleGroup}`}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-bg/60 p-3"
+                            style={{ borderLeft: `4px solid ${MUSCLE_GROUP_COLOURS[max.muscleGroup] || '#8d99ae'}` }}
+                        >
+                            <div>
+                                <p className="font-semibold text-fg">{max.exerciseName}</p>
+                                <p className="text-sm text-muted">{max.muscleGroup}</p>
+                            </div>
+                            <p className="font-bold text-fg">{formatWeight(max.oneRepMax, useImperial)}</p>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </CollapsibleCard>
     )
 }
 
