@@ -8,23 +8,26 @@ import { toast } from "react-toastify"
 // Feature Imports
 import { createWorkout, setLastWorkoutStats } from "../features/workouts/workoutsSlice"
 
-export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutState }) => {
+// Util Imports
+import { defaultWorkoutTitle } from "../utils/workoutTitle.js"
+
+export const useWorkoutSubmit = ({ title, startTime, resetWorkoutState }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
-    const submitWorkout = async () => {
-        if (!title.trim()) { 
-            toast.error('Please enter a workout title.')
-            return 
-        }
+    // Saves the workout. Returns true when it was saved.
+    const submitWorkout = async (exercises) => {
         if (exercises.length === 0) {
-            toast.error('Please add at least one exercise.')
-            return 
+            toast.error('Add at least one exercise before ending your workout.')
+            return false
         }
 
-        const endTime = Date.now()
-        const durationMinutes = Math.round((endTime - startTime) / 60000)
-        const workoutData = { title, exercises, duration: durationMinutes }
+        const durationMinutes = Math.round((Date.now() - startTime) / 60000)
+        const workoutData = {
+            title: title.trim() || defaultWorkoutTitle(startTime),
+            exercises,
+            duration: durationMinutes
+        }
 
         try {
             const { workout, gamification } = await dispatch(createWorkout(workoutData)).unwrap()
@@ -36,9 +39,11 @@ export const useWorkoutSubmit = ({ title, exercises, startTime, resetWorkoutStat
 
             navigate('/workout-complete')
             resetWorkoutState()
+            return true
         } catch (error) {
             console.error('Submit workout error: ', error)
-            toast.error(error.message || 'Failed to save workout')
+            toast.error(typeof error === 'string' ? error : error.message || 'Failed to save workout. Your workout is still here, so try again.')
+            return false
         }
     }
 

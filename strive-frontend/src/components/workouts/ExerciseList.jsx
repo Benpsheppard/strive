@@ -1,83 +1,80 @@
 // ExerciseList.jsx
-import { formatWeight } from '../../utils/formatValues.js'
+// Exercises already finished in the current workout, with edit and remove
 
-const ExerciseList = ({ exercises, useImperial }) => {
+import { FaPen, FaTrash } from 'react-icons/fa'
+import Card from '../ui/Card.jsx'
+import StatTile from '../ui/StatTile.jsx'
+import SetRow from './SetRow.jsx'
+import { formatWeight, formatNumber } from '../../utils/formatValues.js'
+import { getSetVolume } from '../../utils/trackingModes.js'
+
+const ExerciseList = ({ exercises, useImperial, onEdit, onRemove, canEdit }) => {
     if (!exercises || exercises.length === 0) return null
 
-    const calculateExerciseStats = (exercise) => { 
-        const sets = exercise.sets || [] 
-        const totalSets = sets.length 
-
-        const totalReps = sets.reduce((total, set) => total + (Number(set.reps) || 0), 0) 
-        const totalWeight = sets.reduce((total, set) => { 
-            const weight = Number(set.weight) || 0 
-            const reps = Number(set.reps) || 0 
-            return total + weight * reps 
-        }, 0) 
-        
-        return { 
-            totalSets, 
-            totalReps, 
-            totalWeight, 
-        } 
-    }
-
-    const renderSet = (set, idx) => {
-        return (
-            <li key={idx} className="text-[#2B2D42] bg-[#EDF2F4]/30 rounded-xl flex justify-between p-2">
-                <span>Set {idx + 1}</span>
-                <span>{formatWeight(set.weight, useImperial)} × {set.reps} reps</span>
-            </li>
-        )
-    }
-
     return (
-        <div className="max-h-64 overflow-y-auto mb-4">
-            {exercises.map((ex, i) => {
-                const { totalSets, totalReps, totalWeight } = calculateExerciseStats(ex)
+        <section aria-labelledby="completed-exercises" className="space-y-3">
+            <h2 id="completed-exercises" className="font-display text-2xl font-bold text-fg">
+                Completed <span className="text-accent-fg">exercises</span>
+            </h2>
+
+            {exercises.map((exercise, index) => {
+                const sets = exercise.sets || []
+                const reps = sets.reduce((total, set) => total + (Number(set.reps) || 0), 0)
+                const volume = sets.reduce((total, set) => total + getSetVolume(set), 0)
+
                 return (
-                    <div key={i} className="bg-[#8D99AE] p-6 rounded-lg m-2 text-left shadow-lg">
-                        <h4 className="font-bold text-[#EF233C] text-lg mb-2">
-                            {ex.exerciseName}
-                        </h4>
+                    <Card key={`${exercise.exercise}-${index}`} raised>
+                        <div className="mb-3 flex items-start justify-between gap-2">
+                            <div>
+                                <h3 className="font-display text-xl font-bold text-fg">{exercise.exerciseName}</h3>
+                                <p className="text-sm text-muted">
+                                    {exercise.muscleGroup}{exercise.selectedEquipment && ` · ${exercise.selectedEquipment}`}
+                                </p>
+                            </div>
 
-                        <p className="text-[#EDF2F4]/40 italic mb-2">
-                            {ex.muscleGroup} {ex.selectedEquipment && `— ${ex.selectedEquipment}`}
-                        </p>
+                            <div className="flex">
+                                <button
+                                    type="button"
+                                    aria-label={`Edit ${exercise.exerciseName}`}
+                                    title={canEdit ? 'Edit this exercise' : 'Finish the exercise you are logging first'}
+                                    disabled={!canEdit}
+                                    onClick={() => onEdit(index)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-line/60 hover:text-fg disabled:opacity-40"
+                                >
+                                    <FaPen aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    aria-label={`Remove ${exercise.exerciseName}`}
+                                    onClick={() => onRemove(index)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-line/60 hover:text-accent-fg"
+                                >
+                                    <FaTrash aria-hidden="true" />
+                                </button>
+                            </div>
+                        </div>
 
-                        {ex.trackingMode === 'weight_reps' ? (
-                            <>
-                                {ex.sets && ex.sets.length > 0 && (
-                                    <div className="space-y-2">
-                                        {ex.sets.map((set, idx) => renderSet(set, idx))}
-                                    </div>
-                                )}
+                        <ul className="space-y-2">
+                            {sets.map((set, i) => (
+                                <SetRow
+                                    key={i}
+                                    set={set}
+                                    number={i + 1}
+                                    trackingMode={exercise.trackingMode}
+                                    useImperial={useImperial}
+                                />
+                            ))}
+                        </ul>
 
-                                <div className="grid grid-cols-3 gap-2 mt-2 text-center">
-                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                        <p className="font-bold text-[#EF233C]">{totalSets}</p>
-                                        <p className="text-xs text-[#EDF2F4]/70">Sets</p>
-                                    </div>
-                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                        <p className="font-bold text-[#EF233C]">{totalReps}</p>
-                                        <p className="text-xs text-[#EDF2F4]/70">Reps</p>
-                                    </div>
-                                    <div className="bg-[#EDF2F4]/30 rounded-lg p-2">
-                                        <p className="font-bold text-[#EF233C]">
-                                            {formatWeight(totalWeight, useImperial)}
-                                        </p>
-                                        <p className="text-xs text-[#EDF2F4]/70">Volume</p>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <p role="alert" className="text-sm text-[#EF233C]">
-                                Tracking mode is not supported
-                            </p>
-                        )}
-                    </div>
-                )})}
-        </div>
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                            <StatTile value={sets.length} label="Sets" />
+                            <StatTile value={formatNumber(reps)} label="Reps" />
+                            <StatTile value={volume > 0 ? formatWeight(volume, useImperial) : '—'} label="Volume" />
+                        </div>
+                    </Card>
+                )
+            })}
+        </section>
     )
 }
 

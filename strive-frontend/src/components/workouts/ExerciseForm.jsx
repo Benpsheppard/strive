@@ -1,281 +1,289 @@
 // ExerciseForm.jsx
+// Log one exercise at a time: pick it, choose equipment, then add sets. Shows what you did
+// last time and your personal best, prefills the next set, and lets you fix any set.
 
-// Imports
-import { useState, useEffect } from 'react'
-import { FaUndoAlt } from 'react-icons/fa'
-import { toast } from 'react-toastify'
-import { showChangeExerciseAlert } from '../../alerts/workout.js'
-import { calculatePersonalBests, buildPBKey } from '../../utils/pbDetection.js'
-import { formatWeight, parseWeight, lbsToKg } from '../../utils/formatValues.js'
+import { useState, useMemo, useRef } from 'react'
+import Button from '../ui/Button.jsx'
+import Select from '../ui/Select.jsx'
+import SetForm from './SetForm.jsx'
+import SetRow from './SetRow.jsx'
+import ExerciseSearch from './ExerciseSearch.jsx'
+import CreateExerciseDialog from './CreateExerciseDialog.jsx'
+import { useAlerts } from '../../hooks/useAlerts.js'
+import { calculateAllPersonalBests, getLastSession, getLastEquipment, buildPBKey } from '../../utils/pbDetection.js'
+import {
+    isSupportedMode, getEmptySet, validateSet, buildSet, setToRaw, formatSet, measurePB, formatPBValue, beatsPB
+} from '../../utils/trackingModes.js'
+import { EMPTY_EXERCISE } from '../../utils/constants.js'
 
-// Component Imports
-import SetForm from "./SetForm"
-import SetList from './SetList.jsx'
+const MAX_LAST_SETS_SHOWN = 4
 
-// Constants
-import { EMPTY_EXERCISE, EMPTY_SET } from '../../utils/constants.js'
+const formatShortDate = (date) =>
+    new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
 
-const validateSet = (trackingMode, currentSet) => {
-    if (trackingMode !== 'weight_reps') {
-        return false
-    }
+const ExerciseForm = ({
+    workouts, allExercises, useImperial,
+    currentExercise, setCurrentExercise, currentSet, setCurrentSet,
+    setExercises, restTimerDuration, startRestTimer
+}) => {
+    const alerts = useAlerts()
+    const firstFieldRef = useRef(null)
 
-    const { weight, reps } = currentSet
-    if (!weight || weight <= 0) { toast.error('Please enter a weight.'); return false }
-    if (!reps || reps <= 0) { toast.error('Please enter reps.'); return false }
-    return true
-}
+    const [errors, setErrors] = useState({})
+    const [formError, setFormError] = useState('')
+    const [editingIndex, setEditingIndex] = useState(null)
+    const [creating, setCreating] = useState(null) // null = closed, string = suggested name
 
-const buildSet = (trackingMode, currentSet, useImperial) => {
-    if (trackingMode !== 'weight_reps') {
-        return null
-    }
+    const { exerciseId, trackingMode: mode, selectedEquipment, sets } = currentExercise
+    const hasExercise = Boolean(exerciseId)
+    const supported = isSupportedMode(mode)
 
-    const { weight, reps } = currentSet
-    return { weight: parseWeight(weight, useImperial), reps: Number(reps) }
-}
+    const personalBests = useMemo(() => calculateAllPersonalBests(workouts), [workouts])
+    const lastSession = useMemo(
+        () => (hasExercise && selectedEquipment ? getLastSession(workouts, exerciseId, selectedEquipment) : null),
+        [workouts, hasExercise, exerciseId, selectedEquipment]
+    )
+    const personalBest = hasExercise && selectedEquipment
+        ? personalBests[buildPBKey(currentExercise.exerciseName, selectedEquipment)]
+        : null
 
-const ExerciseForm = ({ workouts, useImperial, currentExercise, setCurrentExercise, currentSet, setCurrentSet, setHistory, setSetHistory, setExercises, allExercises, restTimerDuration, startRestTimer }) => {
-    const [searchResults, setSearchResults] = useState([])
-    const [searchQuery, setSearchQuery] = useState('')
-    const [showSuggestions, setShowSuggestions] = useState(false)
-
-    const personalBests = calculatePersonalBests(workouts)
-
-    const currentPB =
-        currentExercise.exerciseName &&
-        currentExercise.selectedEquipment &&
-        currentExercise.selectedEquipment !== 'not-selected'
-            ? personalBests[buildPBKey(currentExercise.exerciseName, currentExercise.selectedEquipment)]
-            : null
-    
-    const handleSearchChange = (e) => {
-        const newValue = e.target.value
-        setSearchQuery(newValue)
-
-        if (currentExercise.exerciseId && currentExercise.sets?.length > 0) {
-            showChangeExerciseAlert(currentExercise.sets.length).then((result) => {
-                if (result.isConfirmed) {
-                    setCurrentExercise(EMPTY_EXERCISE)
-                    setCurrentSet(EMPTY_SET)
-                    setSetHistory([])
-                } else {
-                    setSearchQuery(currentExercise.exerciseName)
-                }
-            })
-        } else if (currentExercise.exerciseId) {
-            setCurrentExercise(EMPTY_EXERCISE)
-            setCurrentSet(EMPTY_SET)
+    // The set to prefill: repeat the previous set, or mirror last session's matching set
+    const suggestSet = (exerciseMode, equipment, loggedSets, session) => {
+        if (loggedSets.length > 0) return setToRaw(exerciseMode, loggedSets[loggedSets.length - 1], useImperial)
+        if (session?.sets?.length) {
+            const index = Math.min(loggedSets.length, session.sets.length - 1)
+            return setToRaw(exerciseMode, session.sets[index], useImperial)
         }
+        return getEmptySet(exerciseMode)
     }
 
-    const handleSetChange = (e) => {
-        const { name, value } = e.target
-        setCurrentSet((prev) => ({ ...prev, [name]: value }))
-    }
+    const focusFirstField = () => setTimeout(() => firstFieldRef.current?.focus(), 0)
+
+    const resetMessages = () => { setErrors({}); setFormError('') }
 
     const selectExercise = (exercise) => {
-        setSearchQuery(exercise.name)
-        setShowSuggestions(false)
+        resetMessages()
+        setEditingIndex(null)
+
+        // One equipment option is picked for you; otherwise reuse what you used last time
+        const lastEquipment = getLastEquipment(workouts, exercise._id)
+        const equipment = exercise.equipment?.length === 1
+            ? exercise.equipment[0]
+            : exercise.equipment?.find(item => item.toLowerCase() === (lastEquipment || '').toLowerCase()) || ''
+
         setCurrentExercise({
             exerciseId: exercise._id,
             exerciseName: exercise.name,
             muscleGroup: exercise.muscleGroup,
             trackingMode: exercise.trackingMode,
             equipment: exercise.equipment,
-            selectedEquipment: 'not-selected',
+            selectedEquipment: equipment,
             sets: []
         })
-        setCurrentSet(EMPTY_SET)
-        setSetHistory([])
+
+        const session = equipment ? getLastSession(workouts, exercise._id, equipment) : null
+        setCurrentSet(suggestSet(exercise.trackingMode, equipment, [], session))
     }
 
-    const addSet = () => {
-        if (!currentExercise.exerciseId) {
-            toast.error('Please select an exercise first.')
-            return
-        }
-        if (currentExercise.trackingMode !== 'weight_reps') {
-            toast.error('Tracking mode no longer supported.')
-            return
-        }
-        if (!validateSet(currentExercise.trackingMode, currentSet)) {
+    const changeEquipment = (equipment) => {
+        resetMessages()
+        setCurrentExercise(prev => ({ ...prev, selectedEquipment: equipment }))
+        const session = equipment ? getLastSession(workouts, exerciseId, equipment) : null
+        if (editingIndex === null) setCurrentSet(suggestSet(mode, equipment, sets, session))
+    }
+
+    const changeExercise = async () => {
+        if (sets.length > 0 && !(await alerts.changeExercise(sets.length))) return
+        resetMessages()
+        setEditingIndex(null)
+        setCurrentExercise(EMPTY_EXERCISE)
+        setCurrentSet({})
+    }
+
+    const onFieldChange = (name, value) => {
+        setCurrentSet(prev => ({ ...prev, [name]: value }))
+        if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+
+    const submitSet = () => {
+        setFormError('')
+
+        if (!selectedEquipment) {
+            setFormError('Choose the equipment you used first.')
             return
         }
 
-        const newSet = buildSet(currentExercise.trackingMode, currentSet, useImperial)
+        const { valid, errors: fieldErrors } = validateSet(mode, currentSet, useImperial)
+        if (!valid) {
+            setErrors(fieldErrors)
+            return
+        }
 
-        setSetHistory(prev => [...prev, currentExercise.sets || []])
-        setCurrentExercise(prev => ({ ...prev, sets: [...(prev.sets || []), newSet] }))
-        setCurrentSet(EMPTY_SET)
-        toast.success('Set saved!')
+        const newSet = buildSet(mode, currentSet, useImperial)
+        const updatedSets = editingIndex !== null
+            ? sets.map((set, i) => (i === editingIndex ? newSet : set))
+            : [...sets, newSet]
 
-        if (restTimerDuration > 0) {
+        setCurrentExercise(prev => ({ ...prev, sets: updatedSets }))
+        setCurrentSet(suggestSet(mode, selectedEquipment, updatedSets, lastSession))
+        setErrors({})
+
+        if (editingIndex !== null) {
+            setEditingIndex(null)
+        } else if (restTimerDuration > 0) {
             startRestTimer()
         }
+
+        focusFirstField()
     }
 
-    const addExercise = () => {
-        if (!currentExercise.exerciseId) {
-            toast.error('Please select an exercise from the list.')
+    const editSet = (index) => {
+        resetMessages()
+        setEditingIndex(index)
+        setCurrentSet(setToRaw(mode, sets[index], useImperial))
+        focusFirstField()
+    }
+
+    const cancelEdit = () => {
+        resetMessages()
+        setEditingIndex(null)
+        setCurrentSet(suggestSet(mode, selectedEquipment, sets, lastSession))
+    }
+
+    const deleteSet = (index) => {
+        const remaining = sets.filter((_, i) => i !== index)
+        setCurrentExercise(prev => ({ ...prev, sets: remaining }))
+        if (editingIndex === index) setEditingIndex(null)
+        else if (editingIndex !== null && editingIndex > index) setEditingIndex(editingIndex - 1)
+        setCurrentSet(suggestSet(mode, selectedEquipment, remaining, lastSession))
+    }
+
+    const finishExercise = () => {
+        if (!selectedEquipment) {
+            setFormError('Choose the equipment you used first.')
             return
         }
-        if (currentExercise.trackingMode !== 'weight_reps') {
-            toast.error('Tracking mode no longer supported.')
-            return
-        }
-        if (!currentExercise.selectedEquipment || currentExercise.selectedEquipment === 'not-selected') {
-            toast.error('Please select equipment.')
-            return
-        }
-        if (!currentExercise.sets || currentExercise.sets.length === 0) {
-            toast.error('Please add at least one set.')
+        if (sets.length === 0) {
+            setFormError('Add at least one set before finishing this exercise.')
             return
         }
 
-        const exerciseToSave = {
-            exercise: currentExercise.exerciseId,
-            selectedEquipment: currentExercise.selectedEquipment,
+        setExercises(prev => [...prev, {
+            exercise: exerciseId,
+            selectedEquipment,
             exerciseName: currentExercise.exerciseName,
             muscleGroup: currentExercise.muscleGroup,
-            trackingMode: currentExercise.trackingMode,
-            sets: currentExercise.sets
-        }
-
-        setExercises(prev => [...prev, exerciseToSave])
+            trackingMode: mode,
+            sets
+        }])
+        resetMessages()
+        setEditingIndex(null)
         setCurrentExercise(EMPTY_EXERCISE)
-        setCurrentSet(EMPTY_SET)
-        setSetHistory([])
-        setSearchQuery('')
-        toast.success('Exercise added!')
+        setCurrentSet({})
     }
 
-    const undoLastSet = () => {
-        if (setHistory.length === 0) return
-        const previous = setHistory[setHistory.length - 1]
-        setCurrentExercise(prev => ({ ...prev, sets: previous }))
-        setSetHistory(prev => prev.slice(0, -1))
-        toast.info('Last set removed.')
-    }
+    // PB hint: what to beat, or a note that you already have
+    const reading = personalBest && sets.length ? measurePB(mode, sets) : null
+    const pbBeaten = reading && beatsPB(personalBest.metric, personalBest.value, reading.value)
 
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setSearchResults([])
-            setShowSuggestions(false)
-            return
-        }
-
-        const filtered = allExercises.filter(ex =>
-            ex.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        setSearchResults(filtered)
-        setShowSuggestions(filtered.length > 0)
-    }, [searchQuery, allExercises])
-    
     return (
-        <div className="mb-4 bg-[#8D99AE] p-4 rounded-xl shadow-xl space-y-3">
-            {/* Exercise Search */}
-            <div className="relative">
-                <input
-                    type="text"
-                    value={currentExercise.exerciseName ? currentExercise.exerciseName : searchQuery}
-                    onChange={handleSearchChange}
-                    placeholder="Exercise name *"
-                    className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] placeholder-gray-300 focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40"
+        <div className="space-y-4">
+            {!hasExercise ? (
+                <ExerciseSearch
+                    allExercises={allExercises}
+                    workouts={workouts}
+                    onSelect={selectExercise}
+                    onCreate={(name) => setCreating(name)}
                 />
+            ) : (
+                <div className="flex items-center justify-between gap-3">
+                    <div>
+                        <h3 className="font-display text-2xl font-bold text-fg">{currentExercise.exerciseName}</h3>
+                        <p className="text-sm text-muted">{currentExercise.muscleGroup}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={changeExercise}>Change</Button>
+                </div>
+            )}
 
-                {/* Suggestions dropdown */}
-                {showSuggestions && !currentExercise.exerciseName && (
-                    <ul onClick={(e) => e.stopPropagation()} className="absolute z-50 left-0 right-0 bg-[#2B2D42] border border-[#EF233C]/30 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
-                        {searchResults.map((exercise) => (
-                            <li key={exercise._id} onClick={() => selectExercise(exercise)} className="px-4 py-2 text-[#EDF2F4] hover:bg-[#EF233C]/40 cursor-pointer">
-                                <div className="font-semibold">{exercise.name}</div>
-                                <div className="text-xs text-[#8D99AE]">{exercise.muscleGroup} · {exercise.subMuscleGroup}</div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+            {hasExercise && !supported && (
+                <p role="alert" className="text-sm text-accent-fg">This exercise type cannot be logged yet.</p>
+            )}
 
-            {currentExercise.exerciseId && (
+            {hasExercise && supported && (
                 <>
-                    {currentExercise.trackingMode !== 'weight_reps' ? (
-                        <p role="alert" className="text-sm text-[#EF233C]">
-                            Tracking mode no longer supported
-                        </p>
-                    ) : (
-                        <>
-                            {/* Select Equipment Used */}
-                            <select value={currentExercise.selectedEquipment} onChange={(e) => setCurrentExercise((prev) => ({ ...prev, selectedEquipment: e.target.value }))} className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4] focus:border-[#EF233C] focus:outline-none focus:ring-2 focus:ring-[#EF233C]/40" >
-                                <option value={'not-selected'}>Not Selected</option>
-                                {currentExercise.equipment.map((eq) => (
-                                    <option key={eq} value={eq}>{eq}</option>
-                                ))}
-                            </select>
+                    {currentExercise.equipment?.length > 1 && (
+                        <Select
+                            label="Equipment"
+                            value={selectedEquipment}
+                            onChange={(event) => changeEquipment(event.target.value)}
+                        >
+                            <option value="">Choose equipment…</option>
+                            {currentExercise.equipment.map(item => <option key={item} value={item}>{item}</option>)}
+                        </Select>
+                    )}
 
-                            {/* Selected Exercise PB */}
-                            {currentPB && (
-                                <div className="w-full rounded-lg border border-[#EDF2F4]/40 bg-[#2B2D42] px-4 py-2 text-[#EDF2F4]">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm">
-                                            Personal Best | <span className="font-semibold">{formatWeight(currentPB.weight, useImperial)}</span>
-                                        </span>
-                                        <span className="text-xs text-[#EDF2F4]/60">
-                                            {new Date(currentPB.date).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs mt-1 text-[#EF233C]">
-                                        {(() => {
-                                            const currentMax = currentExercise.sets.length > 0
-                                                ? Math.max(...currentExercise.sets.map(s => s.weight || 0))
-                                                : null
-
-                                            if (currentMax === null) {
-                                                return `Try to beat your PB — aim for ${formatWeight(currentPB.weight + (useImperial ? lbsToKg(5) : 2.5), useImperial)}!`
-                                            } else if (currentMax > currentPB.weight) {
-                                                return `New PB incoming! You're already lifting heavier than your best!`
-                                            } else if (currentMax === currentPB.weight) {
-                                                return `Matching your PB! Try one more rep or add ${useImperial ? '5 lbs' : '2.5 kg'} next set.`
-                                            } else {
-                                                return `${formatWeight(currentPB.weight - currentMax, useImperial)} off your PB — push for it!`
-                                            }
-                                        })()}
-                                    </p>
-                                </div>
+                    {(lastSession || personalBest) && (
+                        <div className="space-y-1 rounded-xl bg-bg/60 p-3 text-sm">
+                            {lastSession && (
+                                <p className="text-muted">
+                                    <span className="font-semibold text-fg">Last time ({formatShortDate(lastSession.date)}):</span>{' '}
+                                    {lastSession.sets.slice(0, MAX_LAST_SETS_SHOWN).map(set => formatSet(mode, set, useImperial)).join(' · ')}
+                                    {lastSession.sets.length > MAX_LAST_SETS_SHOWN && ` · +${lastSession.sets.length - MAX_LAST_SETS_SHOWN} more`}
+                                </p>
                             )}
+                            {personalBest && (
+                                <p className="text-muted">
+                                    <span className="font-semibold text-fg">Personal best:</span>{' '}
+                                    {formatPBValue(personalBest.metric, personalBest.value, useImperial)}
+                                    {pbBeaten && <span className="ml-2 font-semibold text-success">New PB on the way!</span>}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
-                            {/* Set Input */}
-                            <div className="space-y-2">
-                                <SetForm currentExercise={currentExercise} currentSet={currentSet} handleSetChange={handleSetChange} useImperial={useImperial} />
-                                <button type="button" onClick={addSet} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                    Add Set to Exercise
-                                </button>
-                            </div>
-
-                            {/* Undo + Set List */}
-                            <div className="flex flex-col items-center">
-                                {setHistory.length > 0 && (
-                                    <button type="button" onClick={undoLastSet} className="flex flex-row items-center gap-2 text-[#EDF2F4]/40 hover:text-[#EF233C] text-sm transition mb-2">
-                                        <FaUndoAlt /> Undo last set
-                                    </button>
-                                )}
-                                <SetList
-                                    sets={currentExercise.sets}
-                                    trackingMode={currentExercise.trackingMode}
+                    {sets.length > 0 && (
+                        <ul className="space-y-2" aria-label="Sets logged for this exercise">
+                            {sets.map((set, index) => (
+                                <SetRow
+                                    key={index}
+                                    set={set}
+                                    number={index + 1}
+                                    trackingMode={mode}
                                     useImperial={useImperial}
+                                    active={editingIndex === index}
+                                    onEdit={() => editSet(index)}
+                                    onDelete={() => deleteSet(index)}
                                 />
-                            </div>
+                            ))}
+                        </ul>
+                    )}
 
-                            {/* Add Exercise Button */}
-                            {currentExercise.sets.length > 0 && (
-                                <button type="button" onClick={addExercise} className="bg-[#EF233C] w-full text-white px-4 py-2 rounded transition hover:bg-[#D90429]">
-                                    Finish Exercise
-                                </button>
-                            )}
-                        </>
+                    <SetForm
+                        ref={firstFieldRef}
+                        trackingMode={mode}
+                        values={currentSet}
+                        errors={errors}
+                        onChange={onFieldChange}
+                        onSubmit={submitSet}
+                        onCancel={cancelEdit}
+                        editing={editingIndex !== null}
+                        useImperial={useImperial}
+                    />
+
+                    {formError && <p role="alert" className="text-sm text-accent-fg">{formError}</p>}
+
+                    {sets.length > 0 && editingIndex === null && (
+                        <Button variant="outline" fullWidth onClick={finishExercise}>Finish exercise</Button>
                     )}
                 </>
             )}
+
+            <CreateExerciseDialog
+                open={creating !== null}
+                initialName={creating || ''}
+                onClose={() => setCreating(null)}
+                onCreated={(exercise) => { setCreating(null); selectExercise(exercise) }}
+            />
         </div>
     )
 }
