@@ -17,8 +17,8 @@ export default defineConfig({
         description: 'Track your workouts, build habits, and monitor progress with Strive.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#EDF2F4',
-        theme_color: '#2B2D42',
+        background_color: '#1b1d2e',
+        theme_color: '#1b1d2e',
         icons: [
           {
             src: '/icons/android-chrome-192x192.png',
