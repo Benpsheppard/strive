@@ -1,147 +1,68 @@
 // server.js
+// Starts the API: check the environment, connect to the database, then listen.
 
-// Imports
 require('dotenv').config()
-const express = require('express')                                                       
-const rateLimit = require('express-rate-limit')
-const path = require('path')                                          
-const helmet = require('helmet')  
-const cors = require('cors')
 
-// Function Imports
-const connectDB = require('./config/db.js')                       
-const { errorHandler } = require('./middleware/errorMiddleware.js')   
+const mongoose = require('mongoose')
+const connectDB = require('./config/db.js')
+const { validateEnv } = require('./config/env.js')
+const { createApp } = require('./app.js')
 
-// Router Imports
-const { workoutRouter } = require('./routes/workoutRoutes.js') 
-const { exerciseRouter } = require('./routes/exerciseRoutes.js')       
-const { userRouter } = require('./routes/userRoutes.js')              
-const { questRouter } = require('./routes/questRoutes.js')
-const { leaderboardRouter } = require('./routes/leaderboardRoutes.js')
-
-// .env variables validation
-const requiredEnv = [
-	'NODE_ENV',
-	'PORT',
-	'MONGO_URI',
-	'JWT_SECRET',
-	'FRONTEND_URL'
-]
-
-const missing = requiredEnv.filter(key => !process.env[key])
-if (missing.length > 0) {
-	console.error(`Missing .env keys: ${missing.join(', ')}`)
-	process.exit(1)
+const { errors, warnings } = validateEnv()
+warnings.forEach(message => console.warn(`Warning: ${message}`))
+if (errors.length > 0) {
+    errors.forEach(message => console.error(message))
+    process.exit(1)
 }
 
-if (!['development','production','test'].includes(process.env.NODE_ENV)) {
-	console.error(`NODE_ENV invalid: ${process.env.NODE_ENV}`)
-	process.exit(1)
-}
-
-if (process.env.NODE_ENV === 'production' && !/^https?:\/\/.+/.test(process.env.FRONTEND_URL)) {
-	console.error(`FRONTEND_URL invalid: ${process.env.FRONTEND_URL}`)
-	process.exit(1)
-}
-
-if (process.env.JWT_SECRET.length < 32) {
-	const message = 'JWT_SECRET should be at least 32 characters long'
-	if (process.env.NODE_ENV === 'production') {
-		console.error(message)
-		process.exit(1)
-	}
-	console.warn(`Warning: ${message}`)
-}
-
-// Variables
 const port = process.env.PORT || 5050
+const SHUTDOWN_TIMEOUT_MS = 10000
 
-// Connect to database
-connectDB()
+const start = async () => {
+    // Only start listening once the database is available, so the first requests don't fail
+    await connectDB()
 
-// Initialise app
-const app = express()
+    const app = createApp()
+    const server = app.listen(port, () => {
+        console.log(`Server running on port ${port}`)
+    })
 
-// Trust the first proxy hop (Render) so rate limiting sees the real client IP
-// and not the proxy's address, which would make every user share one limit
-app.set('trust proxy', 1)
+    // Graceful shutdown: stop taking new requests, let in-flight ones finish, close the database
+    let shuttingDown = false
+    const shutdown = (signal) => {
+        if (shuttingDown) return
+        shuttingDown = true
+        console.log(`${signal} received, shutting down`)
 
-// Middleware
-app.use(express.json()) 
-app.use(express.urlencoded({ extended: false }))
+        const force = setTimeout(() => {
+            console.error('Shutdown timed out, forcing exit')
+            process.exit(1)
+        }, SHUTDOWN_TIMEOUT_MS)
+        force.unref()
 
-// Helmet HTTP security
-app.use(helmet())
+        server.close(async () => {
+            try {
+                await mongoose.disconnect()
+            } finally {
+                process.exit(0)
+            }
+        })
+    }
 
-// Custom Content Security Policy
-app.use(
-	helmet.contentSecurityPolicy({
-		directives: {
-			defaultSrc: ["'self'"],
-			scriptSrc: ["'self'"],
-			connectSrc: ["'self'"],
-			imgSrc: ["'self'", "data:"],
-			styleSrc: [
-				"'self'",
-				"'unsafe-inline'",
-				"https://fonts.googleapis.com"
-			],
-			fontSrc: [
-				"'self'",
-				"https://fonts.gstatic.com"
-			],
-			objectSrc: ["'none'"]
-		},
-	})
-)
-
-// CORS
-if (process.env.NODE_ENV === 'production') {
-    app.use(cors({
-      	origin: process.env.FRONTEND_URL,
-		methods: ['GET', 'POST', 'PUT', 'DELETE'],
-		allowedHeaders: ['Content-Type', 'Authorization'],
-		credentials: true,
-		optionsSuccessStatus: 200
-    }))
-} else {
-    app.use(cors({
-      	origin: 'http://localhost:3000',
-		methods: ['GET', 'POST', 'PUT', 'DELETE'],
-		allowedHeaders: ['Content-Type', 'Authorization'],
-		credentials: true,
-		optionsSuccessStatus: 200
-    }))
+    process.on('SIGTERM', () => shutdown('SIGTERM'))
+    process.on('SIGINT', () => shutdown('SIGINT'))
 }
 
-// General rate limit for all API routes
-app.use('/api', rateLimit({
-	windowMs: 15 * 60 * 1000,
-	limit: 500,
-	standardHeaders: true,
-	legacyHeaders: false,
-	message: { message: 'Too many requests, please try again later' }
-}))
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection:', reason instanceof Error ? reason.stack : reason)
+})
 
-// Routes
-app.use('/api/workouts', workoutRouter)
-app.use('/api/exercises', exerciseRouter)
-app.use('/api/users', userRouter)
-app.use('/api/quests', questRouter)
-app.use('/api/leaderboard', leaderboardRouter)
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught exception:', error.stack)
+    process.exit(1)
+})
 
-// Production configuration
-if (process.env.NODE_ENV === 'production') {
-	app.use(express.static(path.join(__dirname, '..', 'strive-frontend', 'dist')))
-	app.get(/.*/, (req, res) => {
-		res.sendFile(path.resolve(__dirname, '..', 'strive-frontend', 'dist', 'index.html'))
-	})
-}
-
-// Custom Error Handler initialisation
-app.use(errorHandler)
-
-// Port listener
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`)
+start().catch((error) => {
+    console.error('Failed to start server:', error.message)
+    process.exit(1)
 })

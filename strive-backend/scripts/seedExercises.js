@@ -40,7 +40,7 @@ const seedDB = async () => {
 
         console.log(`Exercises seeded successfully! (${exercises.length} upserted)`)
     } catch (err) {
-        console.error(err)
+        console.error(err.message)
         process.exitCode = 1
     } finally {
         await mongoose.connection.close()

@@ -1,24 +1,25 @@
 // db.js
 
-// Import
 const mongoose = require('mongoose')
 
-// Function to connect to database
-const connectDB = async () => { 
+// Development and test use the separate test database, never the production one.
+// Errors are rethrown (with the credentials-safe message only) so the caller decides what to do.
+const connectDB = async () => {
+    const usesTestDatabase = ['development', 'test'].includes(process.env.NODE_ENV)
+
+    if (usesTestDatabase && !process.env.MONGO_URI_TEST) {
+        throw new Error(`MONGO_URI_TEST must be set when NODE_ENV=${process.env.NODE_ENV}`)
+    }
+
+    const uri = usesTestDatabase ? process.env.MONGO_URI_TEST : process.env.MONGO_URI
+
     try {
-        if (process.env.NODE_ENV === 'development') {
-            if (!process.env.MONGO_URI_TEST) {
-                throw new Error('MONGO_URI_TEST must be set when NODE_ENV=development')
-            }
-            const conn = await mongoose.connect(process.env.MONGO_URI_TEST)
-            console.log(`MongoDB Connected (development): ${conn.connection.host}`)
-        } else {
-            const conn = await mongoose.connect(process.env.MONGO_URI)
-            console.log(`MongoDB Connected (production): ${conn.connection.host}`)
-        }
+        const conn = await mongoose.connect(uri)
+        console.log(`MongoDB connected (${process.env.NODE_ENV}): ${conn.connection.host}`)
+        return conn
     } catch (error) {
-        console.log(error)
-        process.exit(1)
+        // The full error can include the connection string, so only pass on its message
+        throw new Error(`Could not connect to MongoDB: ${error.message.replace(/mongodb(\+srv)?:\/\/\S+/g, '[connection string hidden]')}`)
     }
 }
 

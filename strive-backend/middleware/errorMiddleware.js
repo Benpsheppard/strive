@@ -3,7 +3,11 @@
 
 // Function to set error code to custom or default to 500 (server error)
 const errorHandler = (err, req, res, next) => {
-    const statusCode = res.statusCode >= 400 ? res.statusCode : 500
+    // Errors from middleware (e.g. body-parser's 413 or 400) carry their own status
+    const errorStatus = Number(err.status || err.statusCode)
+    const statusCode = res.statusCode >= 400
+        ? res.statusCode
+        : (errorStatus >= 400 && errorStatus < 600 ? errorStatus : 500)
 
     const isDevelopment = ['development'].includes(process.env.NODE_ENV)
 
