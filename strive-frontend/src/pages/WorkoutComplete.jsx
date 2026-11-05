@@ -1,7 +1,7 @@
 // WorkoutComplete.jsx
 // Summary shown right after finishing a workout
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -15,6 +15,8 @@ import PBDisplay from '../components/workout-complete/PBDisplay'
 import QuestsCompleted from '../components/workout-complete/QuestsCompleted'
 import RadarGraph from '../components/workout-complete/RadarGraph'
 import PageTitle from '../components/ui/PageTitle.jsx'
+import SaveRoutineDialog from '../components/routines/SaveRoutineDialog.jsx'
+import { routineExercisesFromWorkout } from '../utils/routineQueue.js'
 import Button from '../components/ui/Button.jsx'
 
 const WorkoutComplete = () => {
@@ -25,6 +27,8 @@ const WorkoutComplete = () => {
     const dispatch = useDispatch()
 
     const workout = lastWorkoutStats?.workout
+    const [savingRoutine, setSavingRoutine] = useState(false)
+    const [routineSaved, setRoutineSaved] = useState(false)
 
     // Refreshing this page loses the summary, so go back to the start
     useEffect(() => {
@@ -37,6 +41,8 @@ const WorkoutComplete = () => {
     }, [dispatch])
 
     if (!workout) return <Spinner />
+
+    const routineExercises = routineExercisesFromWorkout(workout)
 
     const hasStats = lastWorkoutStats.levelUp || lastWorkoutStats.streakIncreased ||
         lastWorkoutStats.momentumGained || lastWorkoutStats.shieldEarned ||
@@ -70,8 +76,19 @@ const WorkoutComplete = () => {
 
             <div className="flex flex-col gap-3 pt-2">
                 <Button size="lg" fullWidth onClick={onContinue}>Continue</Button>
+                {routineExercises.length > 0 && !routineSaved && (
+                    <Button variant="secondary" fullWidth onClick={() => setSavingRoutine(true)}>Save as routine</Button>
+                )}
                 {!hasStats && <Button variant="secondary" fullWidth onClick={onViewProgress}>View progress</Button>}
             </div>
+
+            <SaveRoutineDialog
+                open={savingRoutine}
+                initialName={workout.title}
+                exercises={routineExercises}
+                onClose={() => setSavingRoutine(false)}
+                onSaved={() => setRoutineSaved(true)}
+            />
         </div>
     )
 }

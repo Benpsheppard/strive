@@ -3,12 +3,13 @@
 // Imports
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 // Feature Imports
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 import { getExercises } from '../features/exercises/exerciseSlice.js'
+import { getRoutines } from '../features/routines/routineSlice.js'
 import { updateMomentum, checkIfStreakBroken } from '../features/auth/authSlice.js'
 
 // Hook Imports
@@ -24,6 +25,7 @@ import Timer from '../components/workouts/Timer.jsx'
 import WorkoutDashBoard from '../components/workouts/WorkoutDashboard.jsx'
 import ExerciseForm from '../components/workouts/ExerciseForm.jsx'
 import RollingStats from '../components/workouts/RollingStats.jsx'
+import ExerciseQueue from '../components/workouts/ExerciseQueue.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
@@ -32,10 +34,12 @@ import PageTitle from '../components/ui/PageTitle.jsx'
 // Utils
 import { EMPTY_EXERCISE } from '../utils/constants.js'
 import { setToRaw } from '../utils/trackingModes.js'
+import { startExercise } from '../utils/exerciseSelection.js'
+import { getUpNext, moveItem, removeItem } from '../utils/routineQueue.js'
 
 const DRAFT_KEYS = [
     'newWorkout_title', 'newWorkout_exercises', 'newWorkout_currentExercise', 'newWorkout_currentSet',
-    'newWorkout_started', 'newWorkout_startTime', 'newWorkout_setHistory', 'newWorkout_clientId'
+    'newWorkout_started', 'newWorkout_startTime', 'newWorkout_setHistory', 'newWorkout_clientId', 'newWorkout_queue'
 ]
 
 // A random id for one workout. Drafts started before this existed get one when they are saved.
@@ -45,9 +49,11 @@ const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
     const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
     const { exercises: allExercises } = useSelector((state) => state.exercise)
+    const { routines, isOffline: routinesOffline } = useSelector((state) => state.routine)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const location = useLocation()
     const alerts = useAlerts()
 
     // Persisted state (survives a refresh or a closed tab mid-workout)
@@ -60,6 +66,8 @@ const NewWorkout = () => {
     const [restTimerDuration, setRestTimerDuration] = useLocalStorage('newWorkout_restTimer', 60)
     // Identifies this workout to the server so saving it twice (a retry, a double tap) is harmless
     const [clientId, setClientId] = useLocalStorage('newWorkout_clientId', null)
+    // Exercises still to do when the workout was started from a routine
+    const [queue, setQueue] = useLocalStorage('newWorkout_queue', [])
 
     // Local state
     const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
@@ -77,6 +85,7 @@ const NewWorkout = () => {
         setStarted(false)
         setStartTime(null)
         setClientId(null)
+        setQueue([])
         setTimeout(() => DRAFT_KEYS.forEach(key => localStorage.removeItem(key)), 0)
     }
 
@@ -129,6 +138,7 @@ const NewWorkout = () => {
 
         dispatch(getWorkouts())
         dispatch(getExercises())
+        dispatch(getRoutines())
     }, [user, message, isError, navigate, dispatch])
 
     // ----- REST TIMER -----
@@ -198,7 +208,8 @@ const NewWorkout = () => {
         }
     }
 
-    const startWorkout = () => {
+    // Starts a workout. A routine (or a repeated workout) passes the exercises to queue and a name.
+    const startWorkout = ({ queue: newQueue = [], title: newTitle = '' } = {}) => {
         if (user.isGuest && workouts.length >= 5) {
             toast.error('Guest accounts are limited to 5 workouts. Create a free Strive account for unlimited access!')
             return
@@ -206,10 +217,40 @@ const NewWorkout = () => {
         if (user.isGuest && workouts.length === 2) {
             toast.info('Enjoying Strive? Create a free account to keep your progress and get unlimited workouts.')
         }
+        setQueue(newQueue)
+        setTitle(newTitle)
         setStarted(true)
         setStartTime(Date.now())
         setClientId(newClientId())
     }
+
+    // "Start" on the Routines page and "Repeat workout" in history arrive here with the queue in
+    // the navigation state. Starting is skipped if a workout is already in progress.
+    useEffect(() => {
+        if (!user || !location.state?.queue) return
+        const { queue: incoming, title: incomingTitle } = location.state
+        navigate(location.pathname, { replace: true, state: null })
+        if (!started) startWorkout({ queue: incoming, title: incomingTitle })
+        else toast.info('Finish or cancel your current workout before starting another.')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.state, user])
+
+    // The queue minus what is being logged and what is already finished
+    const upNext = getUpNext(queue, currentExercise.exerciseId, exercises)
+
+    const startQueued = (item) => {
+        const { currentExercise: chosen, currentSet: firstSet } = startExercise({
+            exercise: item.exercise,
+            workouts,
+            useImperial: user.useImperial,
+            preferredEquipment: item.selectedEquipment
+        })
+        setCurrentExercise(chosen)
+        setCurrentSet(firstSet)
+    }
+
+    const skipQueued = (index) => setQueue(removeItem(upNext, index))
+    const moveQueued = (index, delta) => setQueue(moveItem(upNext, index, delta))
 
     if (isLoading || !user || isSubmittingWorkout) return <Spinner />
 
@@ -220,6 +261,8 @@ const NewWorkout = () => {
                 <WorkoutDashBoard
                     user={user}
                     workouts={workouts}
+                    routines={routines}
+                    routinesOffline={routinesOffline}
                     startWorkout={startWorkout}
                 />
             )}
@@ -238,6 +281,14 @@ const NewWorkout = () => {
                     />
 
                     <PageTitle accent="workout" className="!py-2">Your</PageTitle>
+
+                    <ExerciseQueue
+                        items={upNext}
+                        canStart={!currentExercise.exerciseId}
+                        onStart={startQueued}
+                        onSkip={skipQueued}
+                        onMove={moveQueued}
+                    />
 
                     <Card as="section" aria-label="Log an exercise" className="space-y-4">
                         <Input

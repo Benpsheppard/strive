@@ -58,6 +58,12 @@ export const useAlerts = () => {
             confirmLabel: 'Remove',
             tone: 'danger'
         }),
+        deleteRoutine: (name) => confirm({
+            title: `Delete ${name}?`,
+            message: 'The routine is removed. Workouts you have already logged are not affected.',
+            confirmLabel: 'Delete routine',
+            tone: 'danger'
+        }),
         deleteWorkout: () => confirm({
             title: 'Delete workout?',
             message: 'You will lose this workout and any Strive Points earned from it.',

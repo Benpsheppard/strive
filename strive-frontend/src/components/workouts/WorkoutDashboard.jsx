@@ -10,13 +10,18 @@ import GamesSummary from '../games/GamesSummary.jsx'
 import Calendar from '../progress/Calendar.jsx'
 import MuscleGroupHeatmap from '../progress/MuscleGroupHeatmap.jsx'
 import WorkoutItem from './WorkoutItem.jsx'
+import RoutineList from '../routines/RoutineList.jsx'
+import { queueFromRoutine, queueFromWorkout } from '../../utils/routineQueue.js'
 
-const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
+const WorkoutDashBoard = ({ user, workouts, routines = [], routinesOffline = false, startWorkout }) => {
     const recent = [...workouts]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 4)
 
     const isFirstWorkout = workouts.length === 0
+
+    // The most recent workout that still has exercises that can be started again
+    const lastWorkoutQueue = recent.length > 0 ? queueFromWorkout(recent[0]) : []
 
     return (
         <div className="space-y-4">
@@ -32,8 +37,21 @@ const WorkoutDashBoard = ({ user, workouts, startWorkout }) => {
                 {isFirstWorkout && (
                     <p className="text-muted">Pick an exercise, add your sets and finish to earn your first Strive Points.</p>
                 )}
-                <Button size="lg" fullWidth onClick={startWorkout}>Start workout</Button>
+                <Button size="lg" fullWidth onClick={() => startWorkout()}>Start workout</Button>
+                {lastWorkoutQueue.length > 0 && (
+                    <Button variant="secondary" fullWidth onClick={() => startWorkout({ queue: lastWorkoutQueue, title: recent[0].title })}>
+                        Repeat last workout ({recent[0].title})
+                    </Button>
+                )}
             </Card>
+
+            {!isFirstWorkout || routines.length > 0 ? (
+                <RoutineList
+                    routines={routines}
+                    isOffline={routinesOffline}
+                    onStart={(routine) => startWorkout({ queue: queueFromRoutine(routine), title: routine.name })}
+                />
+            ) : null}
 
             <div className="grid gap-4 md:grid-cols-2">
                 <GamesSummary user={user} />

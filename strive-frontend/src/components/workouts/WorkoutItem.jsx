@@ -3,6 +3,7 @@
 
 import { useState, useId } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { FaTrash, FaChevronDown } from 'react-icons/fa'
 
 import { deleteWorkout } from '../../features/workouts/workoutsSlice.js'
@@ -11,6 +12,9 @@ import { useAlerts } from '../../hooks/useAlerts.js'
 import Card from '../ui/Card.jsx'
 import StatTile from '../ui/StatTile.jsx'
 import SetRow from './SetRow.jsx'
+import Button from '../ui/Button.jsx'
+import SaveRoutineDialog from '../routines/SaveRoutineDialog.jsx'
+import { queueFromWorkout, routineExercisesFromWorkout } from '../../utils/routineQueue.js'
 import { formatDistance, formatDuration, formatNumber, formatSeconds, formatWeight, formatWorkoutStartTime } from '../../utils/formatValues.js'
 import { cx } from '../../utils/cx.js'
 
@@ -18,15 +22,19 @@ const WorkoutItem = ({ workout }) => {
     const { user } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
     const alerts = useAlerts()
+    const navigate = useNavigate()
     const panelId = useId()
 
     const [expanded, setExpanded] = useState(false)
     const [openExercises, setOpenExercises] = useState({})
+    const [savingRoutine, setSavingRoutine] = useState(false)
 
     // Older workouts may be missing parts of the summary
     const summary = { totalWeight: 0, totalReps: 0, totalSets: 0, totalDistance: 0, totalDuration: 0, ...workout.summary }
     const exercises = workout.exercises || []
     const sp = summary.totalStrivePoints?.total
+    const repeatQueue = queueFromWorkout(workout)
+    const routineExercises = routineExercisesFromWorkout(workout)
 
     const onDelete = async () => {
         if (await alerts.deleteWorkout()) {
@@ -125,8 +133,28 @@ const WorkoutItem = ({ workout }) => {
                             })}
                         </ul>
                     )}
+
+                    {repeatQueue.length > 0 && (
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <Button
+                                variant="secondary"
+                                fullWidth
+                                onClick={() => navigate('/', { state: { queue: repeatQueue, title: workout.title } })}
+                            >
+                                Repeat this workout
+                            </Button>
+                            <Button variant="secondary" fullWidth onClick={() => setSavingRoutine(true)}>Save as routine</Button>
+                        </div>
+                    )}
                 </div>
             )}
+
+            <SaveRoutineDialog
+                open={savingRoutine}
+                initialName={workout.title}
+                exercises={routineExercises}
+                onClose={() => setSavingRoutine(false)}
+            />
         </Card>
     )
 }

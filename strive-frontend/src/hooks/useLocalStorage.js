@@ -34,5 +34,6 @@ export function clearLocalStorage() {
 	localStorage.removeItem('newWorkout_restTimer')
 	localStorage.removeItem('newWorkout_setHistory')
 	localStorage.removeItem('newWorkout_clientId')
+	localStorage.removeItem('newWorkout_queue')
 	localStorage.removeItem('restTimerEnd')
 }

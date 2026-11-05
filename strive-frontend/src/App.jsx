@@ -34,6 +34,7 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'))
 const Privacy = lazy(() => import('./pages/Privacy.jsx'))
 const Terms = lazy(() => import('./pages/Terms.jsx'))
 const Support = lazy(() => import('./pages/Support.jsx'))
+const Routines = lazy(() => import('./pages/Routines.jsx'))
 
 // The home screen is the workout logger when signed in, and the landing page when not
 const Home = () => {
@@ -86,6 +87,7 @@ const App = () => {
 								<Route path='/prev-workouts' element={<PrevWorkouts />} />
 								<Route path='/progress' element={<Progress />} />
 								<Route path='/games' element={<Games />} />
+								<Route path='/routines' element={<Routines />} />
 								<Route path='/profile' element={<Profile />} />
 							</Route>
 						</Route>

@@ -4,6 +4,7 @@
 import axios from 'axios'
 import { clearLocalStorage } from '../../hooks/useLocalStorage'
 import { clearPendingWorkouts } from '../../utils/pendingWorkouts.js'
+import { clearRoutineCache } from '../routines/routineService.js'
 
 const API_URL = import.meta.env.VITE_API_URL + '/api/users/'
 
@@ -74,6 +75,7 @@ const logout = () => {
     
     // Clear workout-related localStorage to prevent data leakage between users
     clearLocalStorage()
+    clearRoutineCache()
 }
 
 // Delete user (members confirm with their password)
@@ -91,6 +93,7 @@ const deleteUser = async (userId, token, password) => {
         // Clear user data and workout data, including any workouts still waiting to upload
         clearLocalStorage()
         clearPendingWorkouts()
+        clearRoutineCache()
     }
 
     return response.data

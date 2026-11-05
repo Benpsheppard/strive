@@ -10,7 +10,8 @@ import SetRow from './SetRow.jsx'
 import ExerciseSearch from './ExerciseSearch.jsx'
 import CreateExerciseDialog from './CreateExerciseDialog.jsx'
 import { useAlerts } from '../../hooks/useAlerts.js'
-import { calculateAllPersonalBests, getLastSession, getLastEquipment, buildPBKey } from '../../utils/pbDetection.js'
+import { calculateAllPersonalBests, getLastSession, buildPBKey } from '../../utils/pbDetection.js'
+import { startExercise } from '../../utils/exerciseSelection.js'
 import {
     isSupportedMode, getEmptySet, validateSet, buildSet, setToRaw, formatSet, measurePB, formatPBValue, beatsPB
 } from '../../utils/trackingModes.js'
@@ -65,24 +66,9 @@ const ExerciseForm = ({
         resetMessages()
         setEditingIndex(null)
 
-        // One equipment option is picked for you; otherwise reuse what you used last time
-        const lastEquipment = getLastEquipment(workouts, exercise._id)
-        const equipment = exercise.equipment?.length === 1
-            ? exercise.equipment[0]
-            : exercise.equipment?.find(item => item.toLowerCase() === (lastEquipment || '').toLowerCase()) || ''
-
-        setCurrentExercise({
-            exerciseId: exercise._id,
-            exerciseName: exercise.name,
-            muscleGroup: exercise.muscleGroup,
-            trackingMode: exercise.trackingMode,
-            equipment: exercise.equipment,
-            selectedEquipment: equipment,
-            sets: []
-        })
-
-        const session = equipment ? getLastSession(workouts, exercise._id, equipment) : null
-        setCurrentSet(suggestSet(exercise.trackingMode, equipment, [], session))
+        const { currentExercise: chosen, currentSet: firstSet } = startExercise({ exercise, workouts, useImperial })
+        setCurrentExercise(chosen)
+        setCurrentSet(firstSet)
     }
 
     const changeEquipment = (equipment) => {
