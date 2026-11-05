@@ -8,6 +8,17 @@
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
 
+    <!-- Apply the saved / system theme before first paint to avoid a flash -->
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('theme');
+          var light = pref === 'light' || (pref !== 'dark' && window.matchMedia('(prefers-color-scheme: light)').matches);
+          document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

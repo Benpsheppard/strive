@@ -5,7 +5,7 @@ import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler,
 import { Radar } from 'react-chartjs-2'
 import { FaDumbbell } from 'react-icons/fa'
 import Card, { CardTitle } from '../ui/Card.jsx'
-import { CHART } from '../../utils/chartTheme.js'
+import { useChartColours } from '../../utils/chartTheme.js'
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
 
@@ -25,6 +25,7 @@ const averageReward = (workouts, field) => {
 }
 
 const RadarGraph = ({ workouts = [], workout = null }) => {
+    const CHART = useChartColours()
     // Exclude the current workout (if it's already been saved into `workouts`)
     // so "Last" always refers to the workout before the current one.
     const previousWorkouts = workout?._id
@@ -55,8 +56,8 @@ const RadarGraph = ({ workouts = [], workout = null }) => {
     const data = {
         labels: LABELS,
         datasets: [
-            dataset('Average', '#8d99ae', '33'),
-            dataset('Last', '#edf2f4', '40'),
+            dataset('Average', CHART.muted, '33'),
+            dataset('Last', CHART.text, '40'),
             dataset('Current', CHART.accent, '80')
         ]
     }

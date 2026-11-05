@@ -4,6 +4,7 @@
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import Wordmark from './Wordmark.jsx'
+import ThemeToggle from '../ui/ThemeToggle.jsx'
 import Button from '../ui/Button.jsx'
 
 const PublicHeader = () => {
@@ -24,6 +25,7 @@ const PublicHeader = () => {
                             <Button as={Link} to="/register" size="sm">Get started</Button>
                         </>
                     )}
+                    <ThemeToggle />
                 </nav>
             </div>
         </header>

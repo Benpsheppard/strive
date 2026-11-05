@@ -11,7 +11,7 @@ import { kgToLbs, getWeightUnit } from '../../utils/formatValues.js'
 
 // Variable Imports
 import { MUSCLE_GROUPS, MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
-import { CHART } from '../../utils/chartTheme.js'
+import { useChartColours } from '../../utils/chartTheme.js'
 import CollapsibleCard from '../ui/CollapsibleCard.jsx'
 import Select from '../ui/Select.jsx'
 import Card from '../ui/Card.jsx'
@@ -20,6 +20,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery.js'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const PBChart = ({ workouts, useImperial }) => {
+    const CHART = useChartColours()
     const isMobile = useIsMobile()
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
 

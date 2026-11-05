@@ -11,6 +11,7 @@
 	--color-surface: #2b2d42;
 	--color-surface-2: #373a56;
 	--color-line: #4f5374;
+	--color-glow: rgb(79 83 116 / 0.35);
 
 	/* Text */
 	--color-fg: #edf2f4;
@@ -37,6 +38,35 @@
 	--shadow-card: 0 4px 20px rgb(0 0 0 / 0.25);
 }
 
+/*
+  Light palette. Dark is the default above; the theme hook sets data-theme="light" or "dark" on <html>
+  (following the system setting unless the user picked one), so these override the @theme values.
+*/
+:root[data-theme='light'] {
+	--color-bg: #f3f4fa;
+	--color-surface: #ffffff;
+	--color-surface-2: #e6e8f2;
+	--color-line: #aeb3cc;
+	--color-glow: rgb(160 166 200 / 0.35);
+
+	--color-fg: #1b1d2e;
+	--color-muted: #4b5069;
+
+	--color-accent: #d90429;
+	--color-accent-strong: #b80322;
+	--color-accent-fg: #b80322;
+	--color-secondary: #5d6a85;
+
+	--color-success: #116c33;
+	--color-warning: #924208;
+	--color-danger: #b80322;
+
+	--shadow-card: 0 4px 20px rgb(27 29 46 / 0.1);
+}
+
+:root[data-theme='light'] { color-scheme: light; }
+:root:not([data-theme='light']) { color-scheme: dark; }
+
 @layer base {
 	html {
 		font-family: var(--font-sans);
@@ -49,7 +79,7 @@
 		margin: 0;
 		min-height: 100dvh;
 		background-color: var(--color-bg);
-		background-image: radial-gradient(ellipse at top, rgb(79 83 116 / 0.35), transparent 60%);
+		background-image: radial-gradient(ellipse at top, var(--color-glow), transparent 60%);
 		padding-top: env(safe-area-inset-top);
 		padding-left: env(safe-area-inset-left);
 		padding-right: env(safe-area-inset-right);

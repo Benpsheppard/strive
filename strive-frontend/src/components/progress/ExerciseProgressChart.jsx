@@ -10,7 +10,7 @@ import { getWeightUnit, kgToLbs } from '../../utils/formatValues'
 
 // Variables Imports
 import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils'
-import { CHART } from '../../utils/chartTheme.js'
+import { useChartColours } from '../../utils/chartTheme.js'
 import CollapsibleCard from '../ui/CollapsibleCard.jsx'
 import Select from '../ui/Select.jsx'
 import Card from '../ui/Card.jsx'
@@ -19,6 +19,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
+    const CHART = useChartColours()
     const isMobile = useIsMobile()
     const [chosenExercise, setChosenExercise] = useState('')
     const [workoutLimit, setWorkoutLimit] = useState(10)

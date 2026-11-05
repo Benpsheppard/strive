@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { Link, NavLink } from 'react-router-dom'
 import { FaDumbbell, FaHistory, FaChartBar, FaGamepad, FaUser, FaFire, FaBolt, FaStar } from 'react-icons/fa'
 import Wordmark from './Wordmark.jsx'
+import ThemeToggle from '../ui/ThemeToggle.jsx'
 import { cx } from '../../utils/cx.js'
 
 const NAV_ITEMS = [
@@ -59,6 +60,7 @@ const Header = () => {
                         <Stat icon={FaStar} value={user?.level ?? 0} label="Level" colour="text-warning" />
                         <Stat icon={FaFire} value={user?.streak?.current ?? 0} label="Streak" colour="text-accent-fg" />
                         <Stat icon={FaBolt} value={user?.momentum?.current ?? 0} label="Momentum" colour="text-secondary" />
+                        <ThemeToggle />
                     </div>
                 </div>
             </header>

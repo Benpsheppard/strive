@@ -19,13 +19,16 @@ const contrast = (a, b) => {
 
 // Read the tokens straight from the stylesheet so this test can't drift from the real values
 const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
-const token = (name) => {
-    const match = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))
+const lightBlock = css.match(/:root\[data-theme='light'\]\s*\{[^}]*\}/)[0]
+const darkBlock = css.slice(0, css.indexOf(lightBlock))
+const tokenFrom = (block) => (name) => {
+    const match = block.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))
     if (!match) throw new Error(`Missing colour token: ${name}`)
     return match[1]
 }
 
-describe('colour contrast (WCAG AA, 4.5:1 for normal text)', () => {
+describe.each([['dark', darkBlock], ['light', lightBlock]])('%s theme colour contrast (WCAG AA, 4.5:1 for normal text)', (_name, block) => {
+    const token = tokenFrom(block)
     const surfaces = ['bg', 'surface', 'surface-2']
 
     test.each(surfaces)('main text on %s', (surface) => {

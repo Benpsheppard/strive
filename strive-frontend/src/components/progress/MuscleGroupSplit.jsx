@@ -11,7 +11,7 @@ import { kgToLbs, getWeightUnit, formatNumber } from '../../utils/formatValues.j
 
 // Variables Imports
 import { MUSCLE_GROUP_COLOURS } from '../../utils/muscleGroupUtils.js'
-import { CHART } from '../../utils/chartTheme.js'
+import { useChartColours } from '../../utils/chartTheme.js'
 import CollapsibleCard from '../ui/CollapsibleCard.jsx'
 import Select from '../ui/Select.jsx'
 import Card from '../ui/Card.jsx'
@@ -22,6 +22,7 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 const EXCLUDED_MUSCLE_GROUPS = ['Cardio']
 
 const MuscleGroupSplit = ({ workouts, useImperial }) => {
+    const CHART = useChartColours()
     const isMobile = useIsMobile()
     const [viewMode, setViewMode] = useState('exercises')
 
