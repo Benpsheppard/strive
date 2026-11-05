@@ -10,7 +10,7 @@ import GamesSummary from '../games/GamesSummary.jsx'
 import Calendar from '../progress/Calendar.jsx'
 import MuscleGroupHeatmap from '../progress/MuscleGroupHeatmap.jsx'
 import WorkoutItem from './WorkoutItem.jsx'
-import RoutineList from '../routines/RoutineList.jsx'
+import RoutineChips from '../routines/RoutineChips.jsx'
 import { queueFromRoutine, queueFromWorkout } from '../../utils/routineQueue.js'
 
 const WorkoutDashBoard = ({ user, workouts, routines = [], routinesOffline = false, startWorkout }) => {
@@ -43,15 +43,16 @@ const WorkoutDashBoard = ({ user, workouts, routines = [], routinesOffline = fal
                         Repeat last workout ({recent[0].title})
                     </Button>
                 )}
-            </Card>
 
-            {!isFirstWorkout || routines.length > 0 ? (
-                <RoutineList
-                    routines={routines}
-                    isOffline={routinesOffline}
-                    onStart={(routine) => startWorkout({ queue: queueFromRoutine(routine), title: routine.name })}
-                />
-            ) : null}
+                {/* A brand-new user gets the simple version first; routines appear once there is something to repeat */}
+                {(!isFirstWorkout || routines.length > 0) && (
+                    <RoutineChips
+                        routines={routines}
+                        isOffline={routinesOffline}
+                        onStart={(routine) => startWorkout({ queue: queueFromRoutine(routine), title: routine.name })}
+                    />
+                )}
+            </Card>
 
             <div className="grid gap-4 md:grid-cols-2">
                 <GamesSummary user={user} />

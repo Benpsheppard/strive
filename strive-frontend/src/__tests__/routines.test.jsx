@@ -19,7 +19,7 @@ import routineService, { saveRoutineCache, readRoutineCache } from '../features/
 import routineReducer, { getRoutines, createRoutine, updateRoutine, deleteRoutine } from '../features/routines/routineSlice.js'
 import exerciseReducer from '../features/exercises/exerciseSlice.js'
 import ExerciseQueue from '../components/workouts/ExerciseQueue.jsx'
-import RoutineList from '../components/routines/RoutineList.jsx'
+import RoutineChips from '../components/routines/RoutineChips.jsx'
 import RoutineEditor from '../components/routines/RoutineEditor.jsx'
 import SaveRoutineDialog from '../components/routines/SaveRoutineDialog.jsx'
 import WorkoutDashBoard from '../components/workouts/WorkoutDashboard.jsx'
@@ -172,26 +172,38 @@ describe('the up next queue', () => {
 })
 
 describe('routines on the dashboard', () => {
-    test('lists routines with a Start button each', async () => {
+    test('shows each routine as a button that starts it, with its exercise count', async () => {
         const user = userEvent.setup()
         const onStart = vi.fn()
-        renderWith(<RoutineList routines={[pushDay]} onStart={onStart} />)
+        renderWith(<RoutineChips routines={[pushDay]} onStart={onStart} />)
 
-        expect(screen.getByText('Push day')).toBeTruthy()
-        expect(screen.getByText('Bench Press · Squat')).toBeTruthy()
-        await user.click(screen.getByRole('button', { name: 'Start Push day' }))
+        expect(screen.getByRole('heading', { name: 'Or start a routine' })).toBeTruthy()
+        expect(screen.getByRole('list', { name: 'Or start a routine' })).toBeTruthy()
+        const button = screen.getByRole('button', { name: /^Push day/ })
+        expect(button.textContent).toMatch(/Push day\s*· 2/)
+
+        await user.click(button)
         expect(onStart).toHaveBeenCalledWith(pushDay)
+        expect(screen.getByRole('link', { name: 'Manage' }).getAttribute('href')).toBe('/routines')
+    })
+
+    test('shows only the first six and links to the rest', () => {
+        const many = Array.from({ length: 9 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
+        renderWith(<RoutineChips routines={many} onStart={vi.fn()} />)
+
+        expect(screen.getAllByRole('button')).toHaveLength(6)
+        expect(screen.getByRole('link', { name: 'See all 9' }).getAttribute('href')).toBe('/routines')
     })
 
     test('explains how to get a first routine when there are none', () => {
-        renderWith(<RoutineList routines={[]} onStart={vi.fn()} />)
+        renderWith(<RoutineChips routines={[]} onStart={vi.fn()} />)
 
-        expect(screen.getByText(/Save as routine/)).toBeTruthy()
-        expect(screen.getByRole('link', { name: 'Create one' }).getAttribute('href')).toBe('/routines')
+        expect(screen.getByText(/start them in one tap/)).toBeTruthy()
+        expect(screen.getByRole('link', { name: 'Create a routine' }).getAttribute('href')).toBe('/routines')
     })
 
     test('says when it is showing the copy saved on the device', () => {
-        renderWith(<RoutineList routines={[pushDay]} isOffline onStart={vi.fn()} />)
+        renderWith(<RoutineChips routines={[pushDay]} isOffline onStart={vi.fn()} />)
         expect(screen.getByText(/saved on this device/)).toBeTruthy()
     })
 
@@ -229,7 +241,7 @@ describe('routines on the dashboard', () => {
         const startWorkout = vi.fn()
         renderWith(<WorkoutDashBoard user={USER} workouts={[history('x', [])]} routines={[pushDay]} startWorkout={startWorkout} />)
 
-        await user.click(screen.getByRole('button', { name: 'Start Push day' }))
+        await user.click(screen.getByRole('button', { name: /^Push day/ }))
 
         const [{ queue, title }] = startWorkout.mock.calls[0]
         expect(title).toBe('Push day')
