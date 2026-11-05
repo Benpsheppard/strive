@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Spinner from './components/spinners/Spinner.jsx'
 import { ConfirmProvider } from './components/ui/ConfirmProvider.jsx'
 import AppLayout from './components/layout/AppLayout.jsx'
+import WorkoutDashboardSkeleton from './components/workouts/WorkoutDashboardSkeleton.jsx'
 import RequireAuth from './components/layout/RequireAuth.jsx'
 import { getMe } from './features/auth/authSlice.js'
 
@@ -40,7 +41,14 @@ const Routines = lazy(() => import('./pages/Routines.jsx'))
 const Home = () => {
 	const { user } = useSelector((state) => state.auth)
 
-	return user ? <AppLayout><NewWorkout /></AppLayout> : <Landing />
+	// While the NewWorkout chunk downloads, paint the app shell and a skeleton instead of a spinner
+	return user ? (
+		<AppLayout>
+			<Suspense fallback={<WorkoutDashboardSkeleton user={user} />}>
+				<NewWorkout />
+			</Suspense>
+		</AppLayout>
+	) : <Landing />
 }
 
 // App

@@ -23,6 +23,7 @@ import Spinner from '../components/spinners/Spinner.jsx'
 import ExerciseList from '../components/workouts/ExerciseList.jsx'
 import Timer from '../components/workouts/Timer.jsx'
 import WorkoutDashBoard from '../components/workouts/WorkoutDashboard.jsx'
+import WorkoutDashboardSkeleton from '../components/workouts/WorkoutDashboardSkeleton.jsx'
 import ExerciseForm from '../components/workouts/ExerciseForm.jsx'
 import RollingStats from '../components/workouts/RollingStats.jsx'
 import ExerciseQueue from '../components/workouts/ExerciseQueue.jsx'
@@ -47,7 +48,7 @@ const newClientId = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? 
 
 const NewWorkout = () => {
     const { user } = useSelector((state) => state.auth)
-    const { workouts, isLoading, isError, message } = useSelector((state) => state.workout)
+    const { workouts, isError, message } = useSelector((state) => state.workout)
     const { exercises: allExercises } = useSelector((state) => state.exercise)
     const { routines, isOffline: routinesOffline } = useSelector((state) => state.routine)
 
@@ -71,6 +72,8 @@ const NewWorkout = () => {
 
     // Local state
     const [isSubmittingWorkout, setIsSubmittingWorkout] = useState(false)
+    // False until the workout history request has settled (success or failure)
+    const [historyReady, setHistoryReady] = useState(false)
 
     // Refs
     const hasCheckedGamification = useRef(false)
@@ -136,7 +139,7 @@ const NewWorkout = () => {
             return
         }
 
-        dispatch(getWorkouts())
+        dispatch(getWorkouts()).finally(() => setHistoryReady(true))
         dispatch(getExercises())
         dispatch(getRoutines())
     }, [user, message, isError, navigate, dispatch])
@@ -252,12 +255,13 @@ const NewWorkout = () => {
     const skipQueued = (index) => setQueue(removeItem(upNext, index))
     const moveQueued = (index, delta) => setQueue(moveItem(upNext, index, delta))
 
-    if (isLoading || !user || isSubmittingWorkout) return <Spinner />
+    // Don't wait on the workout history: the logger renders now and fills in as data arrives
+    if (!user || isSubmittingWorkout) return <Spinner />
 
     return (
         <div>
 
-            {!started && (
+            {!started && (historyReady ? (
                 <WorkoutDashBoard
                     user={user}
                     workouts={workouts}
@@ -265,7 +269,14 @@ const NewWorkout = () => {
                     routinesOffline={routinesOffline}
                     startWorkout={startWorkout}
                 />
-            )}
+            ) : (
+                // The guest workout limit needs the history, so guests wait for it before starting
+                <WorkoutDashboardSkeleton
+                    user={user}
+                    onStart={() => startWorkout()}
+                    startDisabled={!!user.isGuest}
+                />
+            ))}
 
             {started && (
                 <div className="mx-auto w-full max-w-2xl space-y-4">
