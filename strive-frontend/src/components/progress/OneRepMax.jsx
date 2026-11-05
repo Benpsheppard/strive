@@ -1,7 +1,7 @@
 // OneRepMax.jsx
 
 // Imports
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 
 // Function Imports
 import { formatWeight } from '../../utils/formatValues'
@@ -16,15 +16,11 @@ import Input from '../ui/Input.jsx'
 
 const OneRepMax = ({ workouts, useImperial }) => {
     const isMobile = useIsMobile()
-    const [maxes, setMaxes] = useState([])
-    const [search, setSearch] = useState("")
+        const [search, setSearch] = useState("")
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('All')
 
-    useEffect(() => {
-        if (!workouts || workouts.length === 0) {
-            setMaxes([])
-            return
-        }
+    const maxes = useMemo(() => {
+        if (!workouts || workouts.length === 0) return []
 
         const maxByExercise = workouts.reduce((acc, workout) => {
             workout.exercises?.forEach((exercise) => {
@@ -55,13 +51,11 @@ const OneRepMax = ({ workouts, useImperial }) => {
             return acc
         }, {})
 
-        const maxesArray = Object.entries(maxByExercise).map(([exerciseName, data]) => ({
+        return Object.entries(maxByExercise).map(([exerciseName, data]) => ({
             exerciseName,
             muscleGroup: data.muscleGroup,
             oneRepMax: Number(data.oneRepMax.toFixed(1))
         }))
-
-        setMaxes(maxesArray)
     }, [workouts])
 
     const displayMaxes = maxes

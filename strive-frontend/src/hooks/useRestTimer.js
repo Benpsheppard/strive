@@ -39,10 +39,7 @@ export const useRestTimer = (restTimerDuration) => {
     const audioRef = useRef(null)
 
     useEffect(() => {
-        if (!endTime) {
-            setRestTimeRemaining(0)
-            return
-        }
+        if (!endTime) return
 
         const tick = () => {
             const remaining = getRemaining(endTime)
@@ -99,5 +96,5 @@ export const useRestTimer = (restTimerDuration) => {
         })
     }, [])
 
-    return { restTimeRemaining, startRestTimer, skipTimer, adjustRest, adjustSeconds: ADJUST_SECONDS }
+    return { restTimeRemaining: endTime ? restTimeRemaining : 0, startRestTimer, skipTimer, adjustRest, adjustSeconds: ADJUST_SECONDS }
 }

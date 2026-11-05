@@ -1,7 +1,7 @@
 // ExerciseProgressChart.jsx
 
 // Imports
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 
@@ -20,7 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const ExerciseProgressChart = ({ workouts, useImperial }) => {
     const isMobile = useIsMobile()
-    const [selectedExercise, setSelectedExercise] = useState('')
+    const [chosenExercise, setChosenExercise] = useState('')
     const [workoutLimit, setWorkoutLimit] = useState(10)
 
     const weightUnit = getWeightUnit(useImperial)
@@ -49,12 +49,8 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
         return Array.from(seen.values()).sort((a, b) => a.key.localeCompare(b.key))
     }, [workouts])
 
-    // Auto-select first exercise
-    useEffect(() => {
-        if (allExercises.length > 0 && !selectedExercise) {
-            setSelectedExercise(allExercises[0].key)
-        }
-    }, [allExercises, selectedExercise])
+    // Until the user picks one, show the first exercise
+    const selectedExercise = chosenExercise || allExercises[0]?.key || ''
 
     // Build chart data points for selected exercise
     const exerciseData = useMemo(() => {
@@ -164,7 +160,7 @@ const ExerciseProgressChart = ({ workouts, useImperial }) => {
     return (
         <CollapsibleCard title="Exercise" accent="progress" summary="Track one lift over your recent workouts" defaultOpen={!isMobile}>
             <div className="mb-4 grid gap-3 sm:grid-cols-2">
-                <Select label="Exercise" value={selectedExercise} onChange={(e) => setSelectedExercise(e.target.value)}>
+                <Select label="Exercise" value={selectedExercise} onChange={(e) => setChosenExercise(e.target.value)}>
                     {allExercises.map((ex) => (
                         <option key={ex.key} value={ex.key}>{ex.key}</option>
                     ))}
