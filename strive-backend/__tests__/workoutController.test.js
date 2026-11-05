@@ -145,10 +145,12 @@ describe('workoutController', () => {
                 }
             ]
 
-            const populate = jest.fn().mockResolvedValue(workouts)
+            const lean = jest.fn().mockResolvedValue(workouts)
+            const populate = jest.fn().mockReturnValue({ lean })
+            const sort = jest.fn().mockReturnValue({ populate })
 
             Workout.find.mockReturnValue({
-                populate
+                sort
             })
 
             await getWorkouts(req, res)
@@ -156,6 +158,7 @@ describe('workoutController', () => {
             expect(Workout.find).toHaveBeenCalledWith({
                 user: '123'
             })
+            expect(sort).toHaveBeenCalledWith({ createdAt: -1 })
             expect(populate).toHaveBeenCalledWith(
                 'exercises.exercise'
             )

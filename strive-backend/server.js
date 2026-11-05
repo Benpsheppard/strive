@@ -19,13 +19,14 @@ const port = process.env.PORT || 5050
 const SHUTDOWN_TIMEOUT_MS = 10000
 
 const start = async () => {
-    // Only start listening once the database is available, so the first requests don't fail
-    await connectDB()
-
+    // Listen straight away so the frontend's HTML/JS can be served while the database connects
+    // (/ready reports 503 until it does; mongoose buffers early queries)
     const app = createApp()
     const server = app.listen(port, () => {
         console.log(`Server running on port ${port}`)
     })
+
+    await connectDB()
 
     // Graceful shutdown: stop taking new requests, let in-flight ones finish, close the database
     let shuttingDown = false

@@ -64,7 +64,10 @@ const buildGamificationFlags = (before, updatedUser) => ({
  */
 const getWorkouts = asyncHandler(async (req, res) => {
     // Find workouts for specific user
-    const workouts = await Workout.find({ user: req.user.id }).populate('exercises.exercise')
+    const workouts = await Workout.find({ user: req.user.id })
+        .sort({ createdAt: -1 })
+        .populate('exercises.exercise')
+        .lean()
 
     // Output list of workouts
     res.status(200).json(workouts) 

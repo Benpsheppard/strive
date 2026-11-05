@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit')
 const path = require('path')
 const helmet = require('helmet')
 const cors = require('cors')
+const compression = require('compression')
 const mongoose = require('mongoose')
 
 const { errorHandler } = require('./middleware/errorMiddleware.js')
@@ -34,6 +35,9 @@ const createApp = () => {
         const ready = mongoose.connection.readyState === 1
         res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'database unavailable' })
     })
+
+    // Gzip responses (JS bundle and JSON payloads)
+    app.use(compression())
 
     // Body parsing with an explicit size limit
     app.use(express.json({ limit: '100kb' }))
@@ -90,8 +94,12 @@ const createApp = () => {
 
     // Production: serve the built frontend
     if (process.env.NODE_ENV === 'production') {
-        app.use(express.static(path.join(__dirname, '..', 'strive-frontend', 'dist')))
+        const distDir = path.join(__dirname, '..', 'strive-frontend', 'dist')
+        // Vite content-hashes everything in /assets, so it can be cached for a year
+        app.use('/assets', express.static(path.join(distDir, 'assets'), { maxAge: '1y', immutable: true }))
+        app.use(express.static(distDir))
         app.get(/.*/, (req, res) => {
+            res.setHeader('Cache-Control', 'no-cache')
             res.sendFile(path.resolve(__dirname, '..', 'strive-frontend', 'dist', 'index.html'))
         })
     }
