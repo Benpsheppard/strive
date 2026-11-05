@@ -51,9 +51,9 @@ describe('route guard', () => {
     test('the app shell has a skip link and labelled stats', () => {
         renderAt('/progress', signedIn)
         expect(screen.getByRole('link', { name: 'Skip to content' })).toBeTruthy()
-        expect(screen.getByRole('link', { name: 'Level: 3' })).toBeTruthy()
-        expect(screen.getByRole('link', { name: 'Streak: 2' })).toBeTruthy()
-        expect(screen.getByRole('link', { name: 'Momentum: 40' })).toBeTruthy()
+        expect(screen.getByRole('link', { name: /^3 ?Level$/ })).toBeTruthy()
+        expect(screen.getByRole('link', { name: /^2 ?Streak$/ })).toBeTruthy()
+        expect(screen.getByRole('link', { name: /^40 ?Momentum$/ })).toBeTruthy()
     })
 })
 

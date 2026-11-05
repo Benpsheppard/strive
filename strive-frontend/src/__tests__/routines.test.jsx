@@ -172,7 +172,7 @@ describe('the up next queue', () => {
 })
 
 describe('routines on the dashboard', () => {
-    test('shows each routine as a button with its exercises and muscle groups, and starts it', async () => {
+    test('shows each routine as a button with its exercise count and muscle groups, and starts it', async () => {
         const user = userEvent.setup()
         const onStart = vi.fn()
         renderWith(<RoutineChips routines={[pushDay]} onStart={onStart} />)
@@ -180,7 +180,9 @@ describe('routines on the dashboard', () => {
         expect(screen.getByRole('list', { name: 'Or start a routine' })).toBeTruthy()
         const button = screen.getByRole('button', { name: /^Push day/ })
         expect(button.textContent).toContain('2 exercises')
-        expect(button.textContent).toContain('Bench Press · Squat')
+        // The exercises themselves are not listed
+        expect(button.textContent).not.toContain('Bench Press')
+        expect(button.textContent).not.toContain('Squat')
         expect(button.textContent).toContain('Chest · Legs')
 
         await user.click(button)
@@ -188,51 +190,86 @@ describe('routines on the dashboard', () => {
         expect(screen.getByRole('link', { name: 'Manage' }).getAttribute('href')).toBe('/routines')
     })
 
-    test('says "1 exercise" for a single-exercise routine and lists each muscle group once', () => {
-        const single = routine('r9', 'Arms', [{ exercise: { ...bench, name: 'Curl', muscleGroup: 'Arms' } }, { exercise: { ...bench, _id: 'b2', name: 'Pushdown', muscleGroup: 'Arms' } }])
-        renderWith(<RoutineChips routines={[routine('r8', 'Solo', [{ exercise: squat }]), single]} onStart={vi.fn()} />)
+    test('says "1 exercise" for a single-exercise routine and lists each muscle group once', async () => {
+        const user = userEvent.setup()
+        const arms = routine('r9', 'Arms', [{ exercise: { ...bench, name: 'Curl', muscleGroup: 'Arms' } }, { exercise: { ...bench, _id: 'b2', name: 'Pushdown', muscleGroup: 'Arms' } }])
+        renderWith(<RoutineChips routines={[routine('r8', 'Solo', [{ exercise: squat }]), arms]} onStart={vi.fn()} />)
+
+        await user.click(screen.getByRole('button', { name: '1 more routine · tap to see all' }))
 
         expect(screen.getByRole('button', { name: /^Solo/ }).textContent).toContain('1 exercise')
         expect(screen.getByRole('button', { name: /^Arms/ }).textContent.match(/Arms/g)).toHaveLength(2) // the name, and the muscle group once
     })
 
-    test('shows three routines at first, and an expand button for the rest', async () => {
-        const user = userEvent.setup()
-        const many = Array.from({ length: 7 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
-        renderWith(<RoutineChips routines={many} onStart={vi.fn()} />)
+    const many = (n) => Array.from({ length: n }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
+
+    test('shows the first routine in full, with the others tucked underneath as one stack', () => {
+        renderWith(<RoutineChips routines={many(7)} onStart={vi.fn()} />)
 
         const list = screen.getByRole('list', { name: 'Or start a routine' })
-        expect(within(list).getAllByRole('button')).toHaveLength(3)
+        expect(within(list).getAllByRole('button')).toHaveLength(1)
+        expect(within(list).getByRole('button', { name: /^Routine 0/ })).toBeTruthy()
 
-        const expand = screen.getByRole('button', { name: 'Show 4 more' })
-        expect(expand.getAttribute('aria-expanded')).toBe('false')
-        await user.click(expand)
+        // The cards underneath are decorative edges (at most two), reached through one button
+        const stack = screen.getByRole('button', { name: '6 more routines · tap to see all' })
+        expect(stack.getAttribute('aria-expanded')).toBe('false')
+        expect(stack.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2)
+        expect(stack.textContent).toContain('6 more routines')
+        expect(screen.queryByRole('button', { name: /^Routine 1/ })).toBeNull()
+    })
 
-        expect(within(list).getAllByRole('button')).toHaveLength(7)
+    test('the stack shows one edge for two routines and none for one', () => {
+        renderWith(<RoutineChips routines={many(2)} onStart={vi.fn()} />)
+        expect(screen.getByRole('button', { name: '1 more routine · tap to see all' }).querySelectorAll('[aria-hidden="true"]')).toHaveLength(1)
+        expect(screen.getByRole('button', { name: '1 more routine · tap to see all' }).textContent).toContain('1 more routine ')
+
+        cleanup()
+        renderWith(<RoutineChips routines={many(1)} onStart={vi.fn()} />)
+        expect(screen.queryByRole('button', { name: /tap to see all/ })).toBeNull()
+        expect(screen.getByRole('button', { name: /^Routine 0/ })).toBeTruthy()
+    })
+
+    test('clicking the stack opens every routine one after the other, and Show fewer closes it', async () => {
+        const user = userEvent.setup()
+        renderWith(<RoutineChips routines={many(7)} onStart={vi.fn()} />)
+
+        await user.click(screen.getByRole('button', { name: '6 more routines · tap to see all' }))
+
+        const list = screen.getByRole('list', { name: 'Or start a routine' })
+        expect(within(list).getAllByRole('button').map(b => b.textContent.match(/Routine \d/)[0]))
+            .toEqual(['Routine 0', 'Routine 1', 'Routine 2', 'Routine 3', 'Routine 4', 'Routine 5', 'Routine 6'])
+        expect(screen.queryByRole('button', { name: /tap to see all/ })).toBeNull()
+
         const collapse = screen.getByRole('button', { name: 'Show fewer' })
         expect(collapse.getAttribute('aria-expanded')).toBe('true')
-
         await user.click(collapse)
-        expect(within(list).getAllByRole('button')).toHaveLength(3)
+
+        expect(within(screen.getByRole('list', { name: 'Or start a routine' })).getAllByRole('button')).toHaveLength(1)
+        expect(screen.getByRole('button', { name: '6 more routines · tap to see all' })).toBeTruthy()
     })
 
-    test('has no expand button when there are three or fewer', () => {
-        const three = Array.from({ length: 3 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
-        renderWith(<RoutineChips routines={three} onStart={vi.fn()} />)
-
-        expect(screen.queryByRole('button', { name: /Show/ })).toBeNull()
-    })
-
-    test('a routine revealed by expanding can be started', async () => {
+    test('the top routine starts straight away, without opening the stack', async () => {
         const user = userEvent.setup()
         const onStart = vi.fn()
-        const many = Array.from({ length: 5 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
-        renderWith(<RoutineChips routines={many} onStart={onStart} />)
+        const routines = many(4)
+        renderWith(<RoutineChips routines={routines} onStart={onStart} />)
 
-        await user.click(screen.getByRole('button', { name: 'Show 2 more' }))
+        await user.click(screen.getByRole('button', { name: /^Routine 0/ }))
+
+        expect(onStart).toHaveBeenCalledWith(routines[0])
+        expect(screen.getByRole('button', { name: '3 more routines · tap to see all' })).toBeTruthy()
+    })
+
+    test('a routine revealed by opening the stack can be started', async () => {
+        const user = userEvent.setup()
+        const onStart = vi.fn()
+        const routines = many(5)
+        renderWith(<RoutineChips routines={routines} onStart={onStart} />)
+
+        await user.click(screen.getByRole('button', { name: '4 more routines · tap to see all' }))
         await user.click(screen.getByRole('button', { name: /^Routine 4/ }))
 
-        expect(onStart).toHaveBeenCalledWith(many[4])
+        expect(onStart).toHaveBeenCalledWith(routines[4])
     })
 
     test('explains how to get a first routine when there are none', () => {

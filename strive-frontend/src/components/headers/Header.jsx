@@ -19,12 +19,11 @@ const Stat = ({ icon: Icon, value, label, colour }) => (
     <Link
         to="/how-it-works"
         title={`${label} - tap to learn how it works`}
-        aria-label={`${label}: ${value}`}
         className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-base font-semibold text-fg hover:bg-surface-2"
     >
         <Icon size={16} aria-hidden="true" className={colour} />
         <span className="tabular-nums">{value}</span>
-        <span className="hidden text-sm font-normal text-muted lg:inline">{label}</span>
+        <span className="sr-only text-sm font-normal text-muted lg:not-sr-only">{label}</span>
     </Link>
 )
 
