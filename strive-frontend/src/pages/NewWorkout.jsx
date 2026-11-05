@@ -268,7 +268,7 @@ const NewWorkout = () => {
             )}
 
             {started && (
-                <div className="w-full max-w-2xl space-y-4">
+                <div className="mx-auto w-full max-w-2xl space-y-4">
                     <Timer
                         started={started}
                         startTime={startTime}
