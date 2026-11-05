@@ -9,6 +9,7 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 ### Workouts
 - Build workouts from a library of 130+ exercises, or create your own custom exercises. Every exercise is tracked the right way: weight and reps, bodyweight reps, assisted reps, time, distance, or distance and time
 - Last session and personal best shown while you train, with the next set prefilled; any set or exercise can be edited or removed
+- Routines: save the exercises you do regularly (no sets or weights, you enter your own each session) and start them in one tap, or repeat your last workout. Starting one queues its exercises in an "Up next" list you can reorder or skip. Routines work with no signal once loaded
 - Sticky workout clock and rest timer (+/-15s, sound and vibration)
 - An in-progress workout survives a refresh, and a workout finished with no signal is kept on the device and uploaded automatically later (saving is safe to repeat, so nothing is stored or scored twice)
 - Previous workouts list, with the ability to delete workouts
@@ -156,6 +157,7 @@ All routes are under `/api`. Everything except register, login and the exercise 
 | `/api/workouts` | Create, list and delete workouts, plus add an exercise to a workout |
 | `/api/exercises` | `GET` the exercise library (plus your own custom exercises when signed in), `POST` to create a custom exercise |
 | `/api/quests` | `GET /` list quests, `POST /generate/:duration` (`daily`, `weekly`, `monthly`) |
+| `/api/routines` | `GET` your routines, `POST` to create, `PUT /:id` to rename or change exercises, `DELETE /:id` |
 | `/api/leaderboard` | Leaderboard rankings |
 
 Login, registration, password reset and quest generation have their own stricter rate limits on top of the general 500 requests / 15 minutes limit, and repeated failed sign-ins lock that account for a while.

@@ -83,32 +83,34 @@ const RoutineEditor = ({ routine, onSave, onCancel }) => {
                 ) : (
                     <ol className="space-y-2" aria-label="Exercises in this routine">
                         {items.map((item, index) => (
-                            <li key={item.exercise._id} className="flex flex-wrap items-center gap-2 rounded-xl bg-bg/60 p-2 pl-3">
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate font-semibold text-fg">{item.exercise.name}</p>
-                                    <p className="text-sm text-muted">{item.exercise.muscleGroup}</p>
+                            <li key={item.exercise._id} className="space-y-2 rounded-xl bg-bg/60 p-2 pl-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate font-semibold text-fg">{item.exercise.name}</p>
+                                        <p className="text-sm text-muted">{item.exercise.muscleGroup}</p>
+                                    </div>
+
+                                    <div className="flex shrink-0">
+                                        <RowButton label={`Move ${item.exercise.name} up`} disabled={index === 0} onClick={() => setItems(moveItem(items, index, -1))}><FaArrowUp aria-hidden="true" /></RowButton>
+                                        <RowButton label={`Move ${item.exercise.name} down`} disabled={index === items.length - 1} onClick={() => setItems(moveItem(items, index, 1))}><FaArrowDown aria-hidden="true" /></RowButton>
+                                        <RowButton label={`Remove ${item.exercise.name}`} onClick={() => setItems(removeItem(items, index))}><FaTrash aria-hidden="true" /></RowButton>
+                                    </div>
                                 </div>
 
                                 {item.exercise.equipment.length > 1 && (
-                                    <>
+                                    <div className="pr-2">
                                         <label htmlFor={`equipment-${item.exercise._id}`} className="sr-only">Equipment for {item.exercise.name}</label>
                                         <select
                                             id={`equipment-${item.exercise._id}`}
                                             value={item.selectedEquipment}
                                             onChange={(event) => setEquipment(index, event.target.value)}
-                                            className="rounded-lg border border-line bg-bg px-2 py-1.5 text-sm text-fg"
+                                            className="w-full rounded-lg border border-line bg-bg px-2 py-1.5 text-sm text-fg"
                                         >
                                             <option value="">Any equipment</option>
                                             {item.exercise.equipment.map(option => <option key={option} value={option}>{option}</option>)}
                                         </select>
-                                    </>
+                                    </div>
                                 )}
-
-                                <div className="flex shrink-0">
-                                    <RowButton label={`Move ${item.exercise.name} up`} disabled={index === 0} onClick={() => setItems(moveItem(items, index, -1))}><FaArrowUp aria-hidden="true" /></RowButton>
-                                    <RowButton label={`Move ${item.exercise.name} down`} disabled={index === items.length - 1} onClick={() => setItems(moveItem(items, index, 1))}><FaArrowDown aria-hidden="true" /></RowButton>
-                                    <RowButton label={`Remove ${item.exercise.name}`} onClick={() => setItems(removeItem(items, index))}><FaTrash aria-hidden="true" /></RowButton>
-                                </div>
                             </li>
                         ))}
                     </ol>
