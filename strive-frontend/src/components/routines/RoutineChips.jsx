@@ -100,8 +100,8 @@ const RoutineChips = ({ routines, isOffline, onStart }) => {
                                     key={i}
                                     aria-hidden="true"
                                     className={cx(
-                                        'relative block h-3 rounded-b-xl border border-t-0 border-line shadow-card transition-colors group-hover:border-accent-fg',
-                                        i === 0 ? '-mt-1 mx-3 bg-surface-2' : '-mt-1.5 mx-6 bg-surface',
+                                        'relative block h-3 rounded-b-xl bg-surface border border-t-0 border-line shadow-card transition-colors group-hover:border-accent-fg',
+                                        i === 0 ? '-mt-1 mx-3' : '-mt-1.5 mx-6',
                                     )}
                                     style={{ zIndex: 20 - i * 10 }}
                                 />
