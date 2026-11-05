@@ -172,27 +172,67 @@ describe('the up next queue', () => {
 })
 
 describe('routines on the dashboard', () => {
-    test('shows each routine as a button that starts it, with its exercise count', async () => {
+    test('shows each routine as a button with its exercises and muscle groups, and starts it', async () => {
         const user = userEvent.setup()
         const onStart = vi.fn()
         renderWith(<RoutineChips routines={[pushDay]} onStart={onStart} />)
 
-        expect(screen.getByRole('heading', { name: 'Or start a routine' })).toBeTruthy()
         expect(screen.getByRole('list', { name: 'Or start a routine' })).toBeTruthy()
         const button = screen.getByRole('button', { name: /^Push day/ })
-        expect(button.textContent).toMatch(/Push day\s*· 2/)
+        expect(button.textContent).toContain('2 exercises')
+        expect(button.textContent).toContain('Bench Press · Squat')
+        expect(button.textContent).toContain('Chest · Legs')
 
         await user.click(button)
         expect(onStart).toHaveBeenCalledWith(pushDay)
         expect(screen.getByRole('link', { name: 'Manage' }).getAttribute('href')).toBe('/routines')
     })
 
-    test('shows only the first six and links to the rest', () => {
-        const many = Array.from({ length: 9 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
+    test('says "1 exercise" for a single-exercise routine and lists each muscle group once', () => {
+        const single = routine('r9', 'Arms', [{ exercise: { ...bench, name: 'Curl', muscleGroup: 'Arms' } }, { exercise: { ...bench, _id: 'b2', name: 'Pushdown', muscleGroup: 'Arms' } }])
+        renderWith(<RoutineChips routines={[routine('r8', 'Solo', [{ exercise: squat }]), single]} onStart={vi.fn()} />)
+
+        expect(screen.getByRole('button', { name: /^Solo/ }).textContent).toContain('1 exercise')
+        expect(screen.getByRole('button', { name: /^Arms/ }).textContent.match(/Arms/g)).toHaveLength(2) // the name, and the muscle group once
+    })
+
+    test('shows three routines at first, and an expand button for the rest', async () => {
+        const user = userEvent.setup()
+        const many = Array.from({ length: 7 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
         renderWith(<RoutineChips routines={many} onStart={vi.fn()} />)
 
-        expect(screen.getAllByRole('button')).toHaveLength(6)
-        expect(screen.getByRole('link', { name: 'See all 9' }).getAttribute('href')).toBe('/routines')
+        const list = screen.getByRole('list', { name: 'Or start a routine' })
+        expect(within(list).getAllByRole('button')).toHaveLength(3)
+
+        const expand = screen.getByRole('button', { name: 'Show 4 more' })
+        expect(expand.getAttribute('aria-expanded')).toBe('false')
+        await user.click(expand)
+
+        expect(within(list).getAllByRole('button')).toHaveLength(7)
+        const collapse = screen.getByRole('button', { name: 'Show fewer' })
+        expect(collapse.getAttribute('aria-expanded')).toBe('true')
+
+        await user.click(collapse)
+        expect(within(list).getAllByRole('button')).toHaveLength(3)
+    })
+
+    test('has no expand button when there are three or fewer', () => {
+        const three = Array.from({ length: 3 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
+        renderWith(<RoutineChips routines={three} onStart={vi.fn()} />)
+
+        expect(screen.queryByRole('button', { name: /Show/ })).toBeNull()
+    })
+
+    test('a routine revealed by expanding can be started', async () => {
+        const user = userEvent.setup()
+        const onStart = vi.fn()
+        const many = Array.from({ length: 5 }, (_, i) => routine(`r${i}`, `Routine ${i}`, [{ exercise: bench }]))
+        renderWith(<RoutineChips routines={many} onStart={onStart} />)
+
+        await user.click(screen.getByRole('button', { name: 'Show 2 more' }))
+        await user.click(screen.getByRole('button', { name: /^Routine 4/ }))
+
+        expect(onStart).toHaveBeenCalledWith(many[4])
     })
 
     test('explains how to get a first routine when there are none', () => {
