@@ -262,7 +262,6 @@ const requestQuests = async (prompt) => {
         response = await anthropic.messages.create({
             model: 'claude-sonnet-5-5',
             max_tokens: 4096,
-            temperature: 1.0,
             thinking: { type: 'between_tools' },
             tools: [QUEST_TOOL],
             messages: [{ role: 'user', content: prompt }]

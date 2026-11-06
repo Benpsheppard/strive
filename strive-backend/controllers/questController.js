@@ -125,9 +125,7 @@ const getQuests = asyncHandler(async (req, res) => {
         results.forEach((result, i) => {
             if (result.status === 'rejected') {
                 recentFailures.set(`${userId}:${retryable[i]}`, Date.now())
-                if (result.reason?.message !== 'ANTHROPIC_CREDIT_EXHAUSTED') {
-                    console.error(`Quest generation failed (${retryable[i]}):`, result.reason?.message)
-                }
+                console.error(`Quest generation failed (${retryable[i]}):`, result.reason?.message)
             } else {
                 recentFailures.delete(`${userId}:${retryable[i]}`)
             }
