@@ -107,7 +107,24 @@ const validateWorkoutInput = (body = {}) => {
         clientId = body.clientId
     }
 
-    return { value: { title, duration, exercises, ...(clientId ? { clientId } : {}) } }
+    // Optional timezone offset in minutes (as from Date.getTimezoneOffset()), used for
+    // time-of-day achievements
+    let tzOffset
+    if (body.tzOffset !== undefined) {
+        const value = toNumber(body.tzOffset)
+        if (!Number.isInteger(value) || value < -840 || value > 840) {
+            return { error: 'tzOffset must be a whole number of minutes between -840 and 840' }
+        }
+        tzOffset = value
+    }
+
+    return {
+        value: {
+            title, duration, exercises,
+            ...(clientId ? { clientId } : {}),
+            ...(tzOffset !== undefined ? { tzOffset } : {})
+        }
+    }
 }
 
 module.exports = { validateWorkoutInput, sanitiseSets, sanitiseTitle, sanitiseDuration }

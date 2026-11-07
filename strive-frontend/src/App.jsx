@@ -26,6 +26,7 @@ const StreakUpdate = lazy(() => import('./pages/StreakUpdate.jsx'))
 const PrevWorkouts = lazy(() => import('./pages/PrevWorkouts.jsx'))
 const Progress = lazy(() => import('./pages/Progress.jsx'))
 const Games = lazy(() => import('./pages/Games.jsx'))
+const Achievements = lazy(() => import('./pages/Achievements.jsx'))
 const Profile = lazy(() => import('./pages/Profile.jsx'))
 const GuestMigration = lazy(() => import('./pages/GuestMigration.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
@@ -95,6 +96,7 @@ const App = () => {
 								<Route path='/prev-workouts' element={<PrevWorkouts />} />
 								<Route path='/progress' element={<Progress />} />
 								<Route path='/games' element={<Games />} />
+								<Route path='/achievements' element={<Achievements />} />
 								<Route path='/routines' element={<Routines />} />
 								<Route path='/profile' element={<Profile />} />
 							</Route>

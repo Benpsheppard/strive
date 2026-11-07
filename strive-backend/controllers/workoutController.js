@@ -10,6 +10,7 @@ const { getDuplicateField } = require('../utils/duplicateKey.js')
 const { calculateWorkoutSummary } = require('../utils/workoutSummary.js')
 const { applyQuestResults, snapshotQuests, restoreQuests } = require('../utils/quests/progress.js') 
 const { updateLeaderboardEntry } = require('../utils/leaderboard.js')
+const { evaluateWorkoutAchievements } = require('../utils/achievements/evaluate.js')
 const { validateWorkoutInput, sanitiseSets } = require('../utils/validateWorkoutInput.js')
 const { updateUserPointsAndMomentum, checkAndIncreaseStreak, getWorkoutsThisWeek, calculateLevel, resetWorkoutData } = require('../utils/workoutServices.js')
 
@@ -128,7 +129,8 @@ const setWorkout = asyncHandler(async (req, res) => {
             streak: req.user.streak.current,
             shield: req.user.streak.shield,
             momentum: req.user.momentum.current,
-            level: req.user.level
+            level: req.user.level,
+            lastWorkout: req.user.lastWorkout
         }
 
         // Calculate workout summary (no database writes)
@@ -184,11 +186,34 @@ const setWorkout = asyncHandler(async (req, res) => {
                 .catch(e => console.error('Leaderboard update failed:', e.message))
         }
 
+        const gamification = buildGamificationFlags(before, updatedUser)
+
+        // Achievements are a bonus on top of a finished workout, so like the leaderboard a
+        // failure here is logged and must not fail the save
+        gamification.newBadges = await evaluateWorkoutAchievements({
+            user: updatedUser,
+            workout,
+            summary,
+            exercises: populatedExercises,
+            flags: gamification,
+            previousWorkoutAt: before.lastWorkout,
+            tzOffset: input.tzOffset
+        }).catch(e => {
+            console.error('Achievement evaluation failed:', e.message)
+            return []
+        })
+
+        // updatedUser was read before the unlocks were recorded, so add them to its count
+        const responseUser = formatUser(updatedUser)
+        if (gamification.newBadges.length > 0) {
+            responseUser.achievementCount = (responseUser.achievementCount || 0) + gamification.newBadges.length
+        }
+
         // Output created workout + user + gamification flags
         res.status(201).json({
             workout,
-            user: formatUser(updatedUser),
-            gamification: buildGamificationFlags(before, updatedUser)
+            user: responseUser,
+            gamification
         })
     })
 })

@@ -18,6 +18,7 @@ const formatUser = (user, token = null) => {
         target: user.target,
         height: user.height,
         weight: user.weight,
+        achievementCount: user.achievements?.length || 0,
     }
 
     if (token) formatted.token = token

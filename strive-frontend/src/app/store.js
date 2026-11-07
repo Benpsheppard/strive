@@ -5,6 +5,7 @@ import questReducer from '../features/quests/questSlice.js'
 import exerciseReducer from '../features/exercises/exerciseSlice.js'
 import leaderboardReducer from '../features/leaderboard/leaderboardSlice.js'
 import routineReducer from '../features/routines/routineSlice.js'
+import achievementsReducer from '../features/achievements/achievementsSlice.js'
 
 const appReducer = combineReducers({
     auth: authReducer,
@@ -12,7 +13,8 @@ const appReducer = combineReducers({
     quest: questReducer,
     exercise: exerciseReducer,
     leaderboard: leaderboardReducer,
-    routine: routineReducer
+    routine: routineReducer,
+    achievements: achievementsReducer
 })
 
 // On logout, drop the previous user's workouts, quests and leaderboard so the next

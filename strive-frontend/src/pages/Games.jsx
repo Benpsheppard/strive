@@ -18,6 +18,7 @@ import Leaderboard from '../components/games/Leaderboard.jsx'
 import StreakCard from '../components/games/StreakCard.jsx'
 import MomentumCard from '../components/games/MomentumCard.jsx'
 import BonusCard from '../components/games/BonusCard.jsx'
+import AchievementsCard from '../components/achievements/AchievementsCard.jsx'
 
 const MIN_WORKOUTS = 3
 
@@ -74,6 +75,8 @@ const Games = () => {
                 <BonusCard user={user} workouts={workouts} />
                 <MomentumCard user={user} />
             </div>
+
+            <AchievementsCard user={user} />
 
             <Leaderboard />
 
