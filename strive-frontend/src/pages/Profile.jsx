@@ -19,6 +19,7 @@ import ProfileStats from '../components/profile/ProfileStats.jsx'
 import EditDetailsDialog from '../components/profile/EditDetailsDialog.jsx'
 import SecurityCard from '../components/profile/SecurityCard.jsx'
 import Toggle from '../components/profile/Toggle.jsx'
+import AchievementsCard from '../components/achievements/AchievementsCard.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import PageTitle from '../components/ui/PageTitle.jsx'
@@ -82,6 +83,8 @@ const Profile = () => {
 
                 <Toggle useImperial={user.useImperial} />
             </Card>
+
+            <AchievementsCard user={user} />
 
             <ProfileStats user={user} onEdit={() => setEditing(true)} />
             <EditDetailsDialog open={editing} user={user} onClose={() => setEditing(false)} />

@@ -30,7 +30,9 @@ export const useWorkoutSubmit = ({ title, startTime, clientId, resetWorkoutState
             exercises,
             duration: durationMinutes,
             // Lets the server recognise a repeat of this same save instead of storing it twice
-            clientId
+            clientId,
+            // Lets the server judge time-of-day achievements (Early Bird etc.) on the user's clock
+            tzOffset: new Date().getTimezoneOffset()
         }
 
         const result = await dispatch(createWorkout(workoutData))

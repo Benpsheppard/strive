@@ -105,6 +105,14 @@ const userSchema = mongoose.Schema ({
             default: 0
         }
     },
+    // Unlocked achievements (definitions live in utils/achievements/definitions.js)
+    achievements: [
+        {
+            _id: false,
+            id: { type: String, required: true },
+            unlockedAt: { type: Date, default: Date.now }
+        }
+    ],
     // User unit preference
     useImperial: {
         type: Boolean,

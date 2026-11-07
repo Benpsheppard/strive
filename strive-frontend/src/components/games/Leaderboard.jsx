@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import Card, { CardTitle } from '../ui/Card.jsx'
 import { getLeaderboard } from '../../features/leaderboard/leaderboardSlice'
 import { formatNumber } from '../../utils/formatValues.js'
+import { useAchievementEvent } from '../../hooks/useAchievementEvent.js'
 import { cx } from '../../utils/cx.js'
 
 const METRICS = [
@@ -20,10 +21,17 @@ const Leaderboard = () => {
     const { leaderboard, isLoading, isError } = useSelector((state) => state.leaderboard)
     const { user } = useSelector((state) => state.auth)
     const [metric, setMetric] = useState(METRICS[0])
+    const reportEvent = useAchievementEvent()
 
     useEffect(() => {
         dispatch(getLeaderboard(metric.key))
     }, [dispatch, metric])
+
+    // Secret achievement: being last on a leaderboard with a few people on it
+    const lastPlace = leaderboard.length >= 3 && leaderboard[leaderboard.length - 1].user?._id === user?._id
+    useEffect(() => {
+        if (lastPlace && !isLoading) reportEvent('leaderboard_last')
+    }, [lastPlace, isLoading, reportEvent])
 
     return (
         <Card as="section" aria-labelledby="leaderboard-title" className="space-y-4">

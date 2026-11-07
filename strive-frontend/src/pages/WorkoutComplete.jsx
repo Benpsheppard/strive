@@ -13,6 +13,7 @@ import StrivePointsEarned from '../components/workout-complete/StrivePointsEarne
 import WorkoutStats from '../components/workout-complete/WorkoutStats'
 import PBDisplay from '../components/workout-complete/PBDisplay'
 import QuestsCompleted from '../components/workout-complete/QuestsCompleted'
+import BadgesEarned from '../components/workout-complete/BadgesEarned'
 import RadarGraph from '../components/workout-complete/RadarGraph'
 import PageTitle from '../components/ui/PageTitle.jsx'
 import SaveRoutineDialog from '../components/routines/SaveRoutineDialog.jsx'
@@ -72,6 +73,7 @@ const WorkoutComplete = () => {
             <StrivePointsEarned workout={workout} />
             <PBDisplay workout={workout} user={user} />
             <QuestsCompleted workout={workout} />
+            <BadgesEarned badges={lastWorkoutStats.newBadges} />
             <RadarGraph workouts={workouts} workout={workout} />
 
             <div className="flex flex-col gap-3 pt-2">

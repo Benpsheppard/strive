@@ -24,6 +24,10 @@ jest.mock('../utils/quests/progress.js', () => ({
     restoreQuests: jest.fn().mockResolvedValue(undefined)
 }))
 
+jest.mock('../utils/achievements/evaluate.js', () => ({
+    evaluateWorkoutAchievements: jest.fn().mockResolvedValue([])
+}))
+
 jest.mock('../utils/leaderboard.js', () => ({
     updateLeaderboardEntry: jest.fn()
 }))
@@ -367,11 +371,28 @@ describe('workoutController', () => {
                     shieldEarned: true,
                     shieldUsed: false,
                     streakBroken: false,
-                    momentumGained: 10
+                    momentumGained: 10,
+                    newBadges: []
                 }
             })
         })
- 
+
+        test('a failing achievement check does not fail the workout save', async () => {
+            const { evaluateWorkoutAchievements } = require('../utils/achievements/evaluate.js')
+            const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+            evaluateWorkoutAchievements.mockRejectedValueOnce(new Error('boom'))
+
+            req.user = createUser()
+            req.body = { title: 'Workout', duration: 20, exercises: [] }
+            arrangeWorkout()
+
+            await setWorkout(req, res)
+
+            expect(res.status).toHaveBeenCalledWith(201)
+            expect(res.json.mock.calls[0][0].gamification.newBadges).toEqual([])
+            consoleError.mockRestore()
+        })
+
         test('passes zero points when workout earns none', async () => {
             req.user = createUser()
             req.body = { title: 'Easy Workout', duration: 20, exercises: [] }
