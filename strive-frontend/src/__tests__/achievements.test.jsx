@@ -22,13 +22,12 @@ const USER = { _id: 'u1', username: 'ben', token: 't', achievementCount: 1 }
 
 const LIST = {
     achievements: [
-        { id: 'workouts_1', category: 'milestone', tier: 'bronze', secret: false, name: 'Workout Warrior I', description: 'Complete your first workout', icon: 'dumbbell', unlockedAt: '2026-03-10T12:00:00.000Z' },
-        { id: 'workouts_10', category: 'milestone', tier: 'bronze', secret: false, name: 'Workout Warrior II', description: 'Complete 10 workouts', icon: 'dumbbell', unlockedAt: null },
-        { id: 'early_bird', category: 'wacky', tier: null, secret: false, name: 'Early Bird', description: 'Finish a workout before 6am', icon: 'sunrise', unlockedAt: null },
-        { id: 'high_noon', category: 'secret', tier: null, secret: true, name: '???', description: 'A secret achievement. Keep exploring.', icon: 'lock', unlockedAt: null }
+        { id: 'workouts_1', category: 'achievement', tier: 'common', secret: false, name: 'Workout Warrior I', description: 'Complete your first workout', icon: 'dumbbell', unlockedAt: '2026-03-10T12:00:00.000Z' },
+        { id: 'workouts_10', category: 'achievement', tier: 'common', secret: false, name: 'Workout Warrior II', description: 'Complete 10 workouts', icon: 'dumbbell', unlockedAt: null },
+        { id: 'early_bird', category: 'achievement', tier: 'uncommon', secret: false, name: 'Early Bird', description: 'Finish a workout before 6am', icon: 'sunrise', unlockedAt: null },
     ],
     unlocked: 1,
-    total: 4
+    total: 3
 }
 
 const makeStore = () => configureStore({
@@ -49,9 +48,10 @@ describe('achievements slice', () => {
     test('stores the list and counts from the server', () => {
         const state = achievementsReducer(undefined, getAchievements.fulfilled(LIST, 'req'))
 
-        expect(state.achievements).toHaveLength(4)
+        expect(state.achievements).toHaveLength(3)
         expect(state.unlocked).toBe(1)
-        expect(state.total).toBe(4)
+        expect(state.total).toBe(3)
+        expect(state.secrets).toEqual({ unlocked: 0, total: null })
     })
 
     test('records a load failure', () => {
@@ -63,7 +63,7 @@ describe('achievements slice', () => {
 })
 
 describe('achievements page', () => {
-    test('shows unlocked, locked and masked secret badges grouped by category', async () => {
+    test('combines all non-secret badges and hides secrets until unlocked', async () => {
         achievementsService.getAchievements.mockResolvedValue(LIST)
 
         renderWith(<Achievements />)
@@ -71,14 +71,76 @@ describe('achievements page', () => {
         expect(await screen.findByText('Workout Warrior I')).toBeTruthy()
         expect(screen.getByText('Workout Warrior II')).toBeTruthy()
         expect(screen.getByText('Early Bird')).toBeTruthy()
-        expect(screen.getByRole('heading', { name: /Milestones/ })).toBeTruthy()
-        expect(screen.getByRole('heading', { name: /Secret/ })).toBeTruthy()
+        expect(screen.getByRole('heading', { name: /^Achievements \d/ })).toBeTruthy()
+        expect(screen.queryByRole('heading', { name: /Milestones|Wacky/ })).toBeNull()
 
-        // The secret stays hidden
-        expect(screen.getByText('???')).toBeTruthy()
-        expect(screen.queryByText(/12:00/)).toBeNull()
+        // No secret section until at least one secret is unlocked
+        expect(screen.queryByRole('heading', { name: /Secret/ })).toBeNull()
+        expect(screen.queryByText('High Noon')).toBeNull()
 
         expect(screen.getByRole('progressbar', { name: 'Achievements unlocked' }).getAttribute('aria-valuenow')).toBe('1')
+    })
+
+    test('shows the secret total only once every secret is unlocked', async () => {
+        achievementsService.getAchievements.mockResolvedValue({
+            ...LIST,
+            achievements: [
+                ...LIST.achievements,
+                { id: 'high_noon', category: 'secret', tier: 'legendary', secret: true, name: 'High Noon', description: 'Secret thing', icon: 'sun', unlockedAt: '2026-03-11T12:00:00.000Z' }
+            ],
+            secrets: { unlocked: 7, total: 7 }
+        })
+
+        renderWith(<Achievements />)
+
+        expect(await screen.findByRole('heading', { name: 'Secrets 7 / 7' })).toBeTruthy()
+    })
+
+    test('lists an unlocked secret under a partial count', async () => {
+        achievementsService.getAchievements.mockResolvedValue({
+            achievements: [
+                ...LIST.achievements,
+                { id: 'high_noon', category: 'secret', tier: null, secret: true, name: 'High Noon', description: 'Secret thing', icon: 'star', unlockedAt: '2026-03-11T12:00:00.000Z' }
+            ],
+            unlocked: 2,
+            total: 4,
+            secrets: { unlocked: 1, total: null }
+        })
+
+        renderWith(<Achievements />)
+
+        expect(await screen.findByText('High Noon')).toBeTruthy()
+        expect(screen.getByRole('heading', { name: 'Secret 1 / ???' })).toBeTruthy()
+    })
+
+    test('shows one card per ladder: the highest rung unlocked', async () => {
+        const rung = (n, unlockedAt) => ({ id: `workouts_${n}`, ladder: 'workouts', category: 'achievement', tier: 'common', secret: false, name: `Workout Warrior ${n}`, description: `Complete ${n}`, icon: 'dumbbell', unlockedAt })
+        achievementsService.getAchievements.mockResolvedValue({
+            achievements: [
+                rung(1, '2026-03-10T12:00:00.000Z'),
+                rung(10, '2026-03-12T12:00:00.000Z'),
+                rung(50, null),
+                { id: 'level_5', ladder: 'level', category: 'achievement', tier: 'common', secret: false, name: 'Level Up 5', description: 'Reach 5', icon: 'level', unlockedAt: null },
+                { id: 'level_10', ladder: 'level', category: 'achievement', tier: 'uncommon', secret: false, name: 'Level Up 10', description: 'Reach 10', icon: 'level', unlockedAt: null },
+                { id: 'early_bird', ladder: null, category: 'achievement', tier: 'uncommon', secret: false, name: 'Early Bird', description: 'Early', icon: 'sunrise', unlockedAt: null }
+            ],
+            unlocked: 2,
+            total: 6,
+            secrets: { unlocked: 0, total: null }
+        })
+
+        renderWith(<Achievements />)
+
+        // Highest unlocked rung, not the lower or the locked higher ones
+        expect(await screen.findByText('Workout Warrior 10')).toBeTruthy()
+        expect(screen.queryByText('Workout Warrior 1')).toBeNull()
+        expect(screen.queryByText('Workout Warrior 50')).toBeNull()
+        // Nothing unlocked on a ladder: the first rung is shown
+        expect(screen.getByText('Level Up 5')).toBeTruthy()
+        expect(screen.queryByText('Level Up 10')).toBeNull()
+        expect(screen.getByText('Early Bird')).toBeTruthy()
+        // The section count still covers every achievement
+        expect(screen.getByRole('heading', { name: 'Achievements 2 / 6' })).toBeTruthy()
     })
 
     test('shows a message when the list cannot be loaded', async () => {
@@ -102,7 +164,7 @@ describe('badges earned card', () => {
 
     test('lists each badge earned by the workout', () => {
         renderWith(<BadgesEarned badges={[
-            { id: 'workouts_1', name: 'Workout Warrior I', description: 'Complete your first workout', icon: 'dumbbell', tier: 'bronze' },
+            { id: 'workouts_1', name: 'Workout Warrior I', description: 'Complete your first workout', icon: 'dumbbell', tier: 'common' },
             { id: 'early_bird', name: 'Early Bird', description: 'Finish a workout before 6am', icon: 'sunrise', tier: null }
         ]} />)
 

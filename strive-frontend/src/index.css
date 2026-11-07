@@ -28,6 +28,14 @@
 	--color-warning: #f4a261;
 	--color-danger: #ff8593;
 
+	/* Achievement tiers (icon colours; used as text-common ... text-insane) */
+	--color-common: #e5e7eb;         /* gray / white */
+	--color-uncommon: #4ade80;       /* green */
+	--color-rare: #60a5fa;           /* blue */
+	--color-epic: #c084fc;           /* purple */
+	--color-legendary: #facc15;      /* gold */
+	--color-insane: #a5f3fc;         /* icy, diamond-like */
+
 	/* Type */
 	--font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 	--font-display: 'Barlow Condensed', 'DM Sans', system-ui, sans-serif;
@@ -60,6 +68,13 @@
 	--color-success: #116c33;
 	--color-warning: #924208;
 	--color-danger: #b80322;
+
+	--color-common: #4b5563;
+	--color-uncommon: #15803d;
+	--color-rare: #1d4ed8;
+	--color-epic: #7e22ce;
+	--color-legendary: #a16207;
+	--color-insane: #0e7490;
 
 	--shadow-card: 0 4px 20px rgb(27 29 46 / 0.1);
 }
@@ -236,6 +251,47 @@
 
 .jitter {
 	animation: jitter 0.8s infinite;
+}
+
+/* Achievement badges: the two top tiers are animated */
+@keyframes legendaryPulse {
+	0%, 100% { box-shadow: 0 0 3px 0 color-mix(in srgb, var(--color-legendary) 35%, transparent); }
+	50% { box-shadow: 0 0 14px 3px color-mix(in srgb, var(--color-legendary) 70%, transparent); }
+}
+
+.badge-legendary {
+	border-color: var(--color-legendary);
+	animation: legendaryPulse 2s infinite ease-in-out;
+}
+
+@keyframes insaneGlint {
+	0% { transform: translateX(-130%) skewX(-20deg); }
+	45%, 100% { transform: translateX(230%) skewX(-20deg); }
+}
+
+@keyframes insaneSparkle {
+	0%, 100% { box-shadow: 0 0 4px 0 color-mix(in srgb, var(--color-insane) 40%, transparent); }
+	50% { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--color-insane) 75%, white 10%); }
+}
+
+.badge-insane {
+	position: relative;
+	overflow: hidden;
+	border-color: var(--color-insane);
+	background-image: linear-gradient(135deg, color-mix(in srgb, var(--color-insane) 22%, transparent), transparent 60%);
+	animation: insaneSparkle 3s infinite ease-in-out;
+}
+
+/* A bright facet of light sweeping across the stone */
+.badge-insane::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	width: 40%;
+	background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.85), transparent);
+	transform: translateX(-130%) skewX(-20deg);
+	animation: insaneGlint 3s infinite ease-in-out;
+	pointer-events: none;
 }
 
 /* Respect users who ask for less motion */

@@ -3,6 +3,7 @@ const User = require('../../models/userModel')
 const Workout = require('../../models/workoutModel')
 const Exercise = require('../../models/exerciseModel')
 const mailer = require('../../utils/mailer')
+const { ACHIEVEMENTS } = require('../../utils/achievements/definitions')
 
 jest.setTimeout(120000)
 
@@ -105,7 +106,7 @@ describe('GET /api/achievements', () => {
         expect(res.status).toBe(401)
     })
 
-    test('lists everything and masks locked secrets', async () => {
+    test('omits locked secrets entirely', async () => {
         const { token } = await registerUser(app)
 
         const res = await request(app).get('/api/achievements').set(auth(token))
@@ -113,12 +114,86 @@ describe('GET /api/achievements', () => {
         expect(res.status).toBe(200)
         expect(res.body.total).toBe(res.body.achievements.length)
 
-        const secrets = res.body.achievements.filter(a => a.secret)
-        expect(secrets.length).toBeGreaterThan(0)
-        for (const s of secrets) {
-            expect(s.name).toBe('???')
-            expect(s.unlockedAt).toBeNull()
+        expect(res.body.achievements.some(a => a.secret)).toBe(false)
+        // The secret count stays hidden until they are all found
+        expect(res.body.secrets).toEqual({ unlocked: 0, total: null })
+    })
+
+    test('reveals the secret total once every secret is unlocked', async () => {
+        const { token } = await registerUser(app)
+        const secrets = ACHIEVEMENTS.filter(a => a.secret)
+        await User.updateOne({}, { $set: { achievements: secrets.map(a => ({ id: a.id, unlockedAt: new Date() })) } })
+
+        const res = await request(app).get('/api/achievements').set(auth(token))
+
+        expect(res.body.secrets).toEqual({ unlocked: secrets.length, total: secrets.length })
+    })
+
+    test('catches up muscle-focus achievements and only counts mostly-on-group workouts', async () => {
+        const { token } = await registerUser(app)
+        const user = await User.findOne()
+        const squat = await Exercise.create({ name: 'Squat', muscleGroup: 'Legs', subMuscleGroup: 'Quads', equipment: ['Barbell'], trackingMode: 'weight_reps' })
+        const entry = (ex) => ({ exercise: ex._id, selectedEquipment: 'Barbell', sets: [{ weight: 50, reps: 5 }] })
+
+        // 10 chest-focused workouts (2 of 3 exercises are chest) and 9 that are only half legs
+        for (let i = 0; i < 10; i++) {
+            await Workout.create({ user: user._id, title: 'Push', duration: 20, exercises: [entry(bench), entry(bench), entry(squat)] })
         }
+        for (let i = 0; i < 9; i++) {
+            await Workout.create({ user: user._id, title: 'Mixed', duration: 20, exercises: [entry(squat), entry(bench)] })
+        }
+
+        const res = await request(app).get('/api/achievements').set(auth(token))
+        const byId = Object.fromEntries(res.body.achievements.map(a => [a.id, a]))
+
+        expect(byId.focus_chest.unlockedAt).not.toBeNull()
+        expect(byId.focus_legs.unlockedAt).toBeNull()
+    })
+
+    test('catches up equipment explorer from distinct equipment used in history', async () => {
+        const { token } = await registerUser(app)
+        const user = await User.findOne()
+        const entry = (equipment) => ({ exercise: bench._id, selectedEquipment: equipment, sets: [{ weight: 50, reps: 5 }] })
+
+        await Workout.create({ user: user._id, title: 'A', duration: 20, exercises: [entry('Barbell'), entry('Dumbbell'), entry('Cable')] })
+        await Workout.create({ user: user._id, title: 'B', duration: 20, exercises: [entry('Barbell'), entry('Machine')] })
+
+        let res = await request(app).get('/api/achievements').set(auth(token))
+        expect(res.body.achievements.find(a => a.id === 'equipment_5').unlockedAt).toBeNull()
+
+        await Workout.create({ user: user._id, title: 'C', duration: 20, exercises: [entry('Kettlebell'), entry('Other')] })
+
+        res = await request(app).get('/api/achievements').set(auth(token))
+        expect(res.body.achievements.find(a => a.id === 'equipment_5').unlockedAt).not.toBeNull()
+    })
+
+    test('shows everything unlocked for dev accounts without storing it', async () => {
+        const { token } = await registerUser(app)
+        const user = await User.findOne()
+        process.env.DEV_ACCOUNT_EMAILS = `other@example.com, ${user.email.toUpperCase()}`
+
+        try {
+            const res = await request(app).get('/api/achievements').set(auth(token))
+
+            expect(res.body.achievements).toHaveLength(ACHIEVEMENTS.length)
+            expect(res.body.achievements.every(a => a.unlockedAt)).toBe(true)
+            expect(res.body.secrets.total).toBe(ACHIEVEMENTS.filter(a => a.secret).length)
+            expect((await User.findOne()).achievements.length).toBeLessThan(ACHIEVEMENTS.length)
+        } finally {
+            delete process.env.DEV_ACCOUNT_EMAILS
+        }
+    })
+
+    test('awards Completionist when the last other achievement is unlocked', async () => {
+        const { token } = await registerUser(app)
+        const others = ACHIEVEMENTS.filter(a => !a.completion && a.id !== 'logo_tapper')
+        await User.updateOne({}, { $set: { achievements: others.map(a => ({ id: a.id, unlockedAt: new Date() })) } })
+
+        const res = await request(app).post('/api/achievements/event').set(auth(token)).send({ event: 'logo_tap_10' })
+
+        expect(res.body.unlocked.id).toBe('logo_tapper')
+        const ids = (await User.findOne()).achievements.map(a => a.id)
+        expect(ids).toContain('completionist')
     })
 
     test('catches up milestones for existing history', async () => {

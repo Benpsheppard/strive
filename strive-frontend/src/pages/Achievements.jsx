@@ -1,5 +1,5 @@
 // Achievements.jsx
-// Every badge: milestones, wacky ones and (masked) secrets
+// Every badge the user can see: all regular achievements, plus any secrets the user has unlocked
 
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,15 +12,34 @@ import Card, { CardTitle } from '../components/ui/Card.jsx'
 import ProgressBar from '../components/games/ProgressBar.jsx'
 import BadgeTile from '../components/achievements/BadgeTile.jsx'
 
+// Show one card per ladder: the highest rung unlocked, or the first rung while none are.
+// Rungs arrive lowest first, and a collapsed card keeps the position of its ladder.
+const collapseLadders = (items) => {
+    const shown = []
+    const slots = new Map()
+
+    for (const a of items) {
+        if (!a.ladder) {
+            shown.push(a)
+        } else if (!slots.has(a.ladder)) {
+            slots.set(a.ladder, shown.length)
+            shown.push(a)
+        } else if (a.unlockedAt) {
+            shown[slots.get(a.ladder)] = a
+        }
+    }
+
+    return shown
+}
+
 const SECTIONS = [
-    { category: 'milestone', title: 'Milestones' },
-    { category: 'wacky', title: 'Wacky' },
-    { category: 'secret', title: 'Secret' }
+    { key: 'achievements', title: 'Achievements', match: a => a.category !== 'secret' },
+    { key: 'secret', title: 'Secret', match: a => a.category === 'secret' }
 ]
 
 const Achievements = () => {
     const dispatch = useDispatch()
-    const { achievements, unlocked, total, isLoading, isError } = useSelector((state) => state.achievements)
+    const { achievements, unlocked, total, secrets, isLoading, isError } = useSelector((state) => state.achievements)
 
     useEffect(() => {
         dispatch(getAchievements())
@@ -30,7 +49,7 @@ const Achievements = () => {
 
     return (
         <div className="mx-auto max-w-2xl space-y-4">
-            <PageTitle accent="Achievements" subtitle="Badges for milestones, silly feats and a few things we are not telling you about.">
+            <PageTitle accent="Achievements">
                 Your
             </PageTitle>
 
@@ -42,16 +61,32 @@ const Achievements = () => {
                         <ProgressBar numerator={unlocked} denominator={total} label="Achievements unlocked" />
                     </Card>
 
-                    {SECTIONS.map(({ category, title }) => {
-                        const items = achievements.filter(a => a.category === category)
+                    {SECTIONS.map(({ key, title, match }) => {
+                        const all = achievements.filter(match)
+                        const items = collapseLadders(all)
+                        const isSecret = key === 'secret'
+
+                        // Nothing is shown until something is unlocked (this hides secrets entirely)
                         if (items.length === 0) return null
 
-                        const done = items.filter(a => a.unlockedAt).length
+                        // The secret section never reveals how many are left:
+                        // "Secret 2 / ???" until all are found, then "Secrets 7 / 7"
+
+                        let heading = title
+                        let count
+                        if (isSecret) {
+                            const complete = secrets.total !== null
+                            heading = complete ? 'Secrets' : 'Secret'
+                            count = `${secrets.unlocked} / ${complete ? secrets.total : '???'}`
+                        } else {
+                            // Counted over every achievement, matching the progress bar, not the collapsed cards
+                            count = `${all.filter(a => a.unlockedAt).length} / ${all.length}`
+                        }
 
                         return (
-                            <Card key={category} as="section" aria-labelledby={`${category}-title`} className="space-y-3">
-                                <CardTitle id={`${category}-title`}>
-                                    {title} <span className="text-base font-normal text-muted">{done} / {items.length}</span>
+                            <Card key={key} as="section" aria-labelledby={`${key}-title`} className="space-y-3">
+                                <CardTitle id={`${key}-title`}>
+                                    {heading} <span className="text-base font-normal text-muted">{count}</span>
                                 </CardTitle>
                                 <ul className="space-y-2">
                                     {items.map(a => <BadgeTile key={a.id} achievement={a} />)}

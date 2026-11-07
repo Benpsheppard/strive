@@ -8,8 +8,16 @@ const { unlockForEvent, evaluateBackfill } = require('../utils/achievements/eval
 // Model Imports
 const User = require('../models/userModel.js')
 
+// Dev accounts (emails in DEV_ACCOUNT_EMAILS, comma-separated) see every achievement as unlocked
+// so the UI can be checked. This only changes what GET /api/achievements returns: nothing is
+// stored, and earning achievements works as normal.
+const isDevAccount = (user) => {
+    const emails = (process.env.DEV_ACCOUNT_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    return emails.includes(String(user.email || '').toLowerCase())
+}
+
 /**
- * @desc    List every achievement with the user's unlocks (locked secrets are masked)
+ * @desc    List every achievement with the user's unlocks (locked secrets are omitted)
  * @route   GET /api/achievements
  * @access  Private
  */
@@ -21,17 +29,32 @@ const getAchievements = asyncHandler(async (req, res) => {
         throw new Error('User not found')
     }
 
-    // Catch up milestones earned before achievements existed (silent: no celebration)
+    // Catch up lifetime-total achievements earned before achievements existed (silent: no celebration)
     await evaluateBackfill(user).catch(e => console.error('Achievement backfill failed:', e.message))
     const fresh = await User.findById(req.user.id)
 
     const unlockedAt = new Map((fresh.achievements || []).map(a => [a.id, a.unlockedAt]))
-    const achievements = ACHIEVEMENTS.map(a => toPublic(a, unlockedAt.get(a.id) || null))
+    if (isDevAccount(fresh)) {
+        for (const a of ACHIEVEMENTS) {
+            if (!unlockedAt.has(a.id)) unlockedAt.set(a.id, new Date())
+        }
+    }
+    // Locked secrets are left out entirely so they never reach the client
+    const visible = ACHIEVEMENTS.filter(a => !a.secret || unlockedAt.has(a.id))
+    const achievements = visible.map(a => toPublic(a, unlockedAt.get(a.id) || null))
+
+    // The number of secrets is itself a spoiler: only reveal it once they have all been found
+    const allSecrets = ACHIEVEMENTS.filter(a => a.secret)
+    const secretsUnlocked = allSecrets.filter(a => unlockedAt.has(a.id)).length
 
     res.status(200).json({
         achievements,
         unlocked: unlockedAt.size,
-        total: ACHIEVEMENTS.length
+        total: visible.length,
+        secrets: {
+            unlocked: secretsUnlocked,
+            total: secretsUnlocked === allSecrets.length ? allSecrets.length : null
+        }
     })
 })
 

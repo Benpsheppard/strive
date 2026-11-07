@@ -48,6 +48,11 @@ describe.each([['dark', darkBlock], ['light', lightBlock]])('%s theme colour con
         expect(contrast(token('warning'), token(surface))).toBeGreaterThanOrEqual(4.5)
     })
 
+    test.each(['common', 'uncommon', 'rare', 'epic', 'legendary', 'insane'])('%s tier icon colour on surface-2', (tier) => {
+        // 3:1 is the WCAG minimum for graphical objects such as icons
+        expect(contrast(token(tier), token('surface-2'))).toBeGreaterThanOrEqual(3)
+    })
+
     test('white text on primary buttons', () => {
         expect(contrast('#ffffff', token('accent'))).toBeGreaterThanOrEqual(4.5)
         expect(contrast('#ffffff', token('accent-strong'))).toBeGreaterThanOrEqual(4.5)

@@ -4,7 +4,7 @@
 import BadgeIcon from './BadgeIcon.jsx'
 import { cx } from '../../utils/cx.js'
 
-const TIER_LABEL = { bronze: 'Bronze', silver: 'Silver', gold: 'Gold' }
+const TIER_LABEL = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic', legendary: 'Legendary', insane: 'Insane' }
 
 const BadgeTile = ({ achievement }) => {
     const { name, description, icon, tier, unlockedAt } = achievement

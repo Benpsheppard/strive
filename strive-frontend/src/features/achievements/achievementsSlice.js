@@ -8,6 +8,7 @@ const initialState = {
     achievements: [],
     unlocked: 0,
     total: 0,
+    secrets: { unlocked: 0, total: null },
     isError: false,
     isLoading: false,
     message: '',
@@ -48,6 +49,7 @@ export const achievementsSlice = createSlice({
                 state.achievements = action.payload.achievements
                 state.unlocked = action.payload.unlocked
                 state.total = action.payload.total
+                state.secrets = action.payload.secrets || initialState.secrets
             })
             .addCase(getAchievements.rejected, (state, action) => {
                 state.isLoading = false

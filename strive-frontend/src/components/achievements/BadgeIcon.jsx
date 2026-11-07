@@ -1,10 +1,12 @@
 // BadgeIcon.jsx
-// The round icon for an achievement. Colour shows the tier; locked ones are muted.
+// The round icon for an achievement. Colour (and, for legendary and insane, animation) shows the tier; locked ones are muted.
 
 import {
     FaDumbbell, FaStar, FaFire, FaTrophy, FaWeightHanging, FaScroll, FaCloudSun, FaMoon,
     FaShoePrints, FaCircleNotch, FaUndo, FaShieldAlt, FaGlassCheers, FaDice, FaClock,
-    FaHatWizard, FaBolt, FaLayerGroup, FaPalette, FaCat, FaLock, FaSun, FaHippo, FaMedal
+    FaHatWizard, FaBolt, FaLayerGroup, FaPalette, FaCat, FaLock, FaSun, FaHippo, FaMedal, FaCalendarDay, FaPercentage,
+    FaAngleDoubleUp, FaHandRock, FaBullseye, FaHeartbeat, FaChild, FaMountain,
+    FaThLarge, FaToolbox, FaBirthdayCake, FaRetweet
 } from 'react-icons/fa'
 import { cx } from '../../utils/cx.js'
 
@@ -14,10 +16,19 @@ const ICONS = {
     scroll: FaScroll, sunrise: FaCloudSun, moon: FaMoon, legs: FaShoePrints, round: FaCircleNotch,
     comeback: FaUndo, shield: FaShieldAlt, party: FaGlassCheers, dice: FaDice, clock: FaClock,
     hat: FaHatWizard, sun: FaSun, bolt: FaBolt, cards: FaLayerGroup, palette: FaPalette,
-    cat: FaCat, turtle: FaHippo, lock: FaLock
+    cat: FaCat, turtle: FaHippo, lock: FaLock, calendar: FaCalendarDay, percentage: FaPercentage, variety: FaThLarge, toolbox: FaToolbox, cake: FaBirthdayCake, mirror: FaRetweet,
+    back: FaAngleDoubleUp, shoulders: FaMountain, fist: FaHandRock, core: FaBullseye, heart: FaHeartbeat, body: FaChild
 }
 
-const TIER_COLOUR = { gold: 'text-warning', silver: 'text-fg', bronze: 'text-accent-fg' }
+// Colours are the --color-<tier> tokens in index.css; legendary and insane also animate
+const TIER_STYLE = {
+    common: 'text-common',
+    uncommon: 'text-uncommon',
+    rare: 'text-rare',
+    epic: 'text-epic',
+    legendary: 'text-legendary badge-legendary',
+    insane: 'text-insane badge-insane'
+}
 
 const BadgeIcon = ({ icon, tier, locked = false, size = 'md' }) => {
     const Icon = ICONS[icon] || FaMedal
@@ -28,7 +39,7 @@ const BadgeIcon = ({ icon, tier, locked = false, size = 'md' }) => {
             className={cx(
                 'flex shrink-0 items-center justify-center rounded-full border border-line/60',
                 size === 'lg' ? 'h-14 w-14 text-2xl' : 'h-12 w-12 text-xl',
-                locked ? 'bg-bg text-muted' : cx('bg-surface-2', TIER_COLOUR[tier] || 'text-secondary')
+                locked ? 'bg-bg text-muted' : cx('bg-surface-2', TIER_STYLE[tier] || 'text-secondary')
             )}
         >
             <Icon />
