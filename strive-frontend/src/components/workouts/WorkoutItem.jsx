@@ -53,7 +53,7 @@ const WorkoutItem = ({ workout }) => {
         { label: 'SP earned', value: formatNumber(sp ?? 0) },
         { label: 'PBs', value: formatNumber(summary.personalBests?.length || 0) },
         { label: 'Quests', value: formatNumber(summary.questsCompleted?.length || 0) }
-    ].filter(tile => tile.show !== false)
+    ]  
 
     return (
         <Card padding="none" as="article">
