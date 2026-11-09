@@ -10,7 +10,9 @@ const fmt = (n) => Number(n).toLocaleString('en-GB')
 
 // Progress towards the next rung of a ladder, or "Completed" once the top rung is unlocked
 const LadderProgress = ({ achievement }) => {
-    const { next, current } = achievement
+    const { current, unlockedAt } = achievement
+    // Ladders aim at their next rung; a single achievement aims at itself until unlocked
+    const next = achievement.ladder ? achievement.next : (unlockedAt ? null : achievement)
     if (!next) {
         return <p className="mt-1 text-xs font-semibold text-accent">Completed</p>
     }
@@ -39,7 +41,7 @@ const LadderProgress = ({ achievement }) => {
 }
 
 const BadgeTile = ({ achievement }) => {
-    const { name, description, icon, tier, unlockedAt, ladder } = achievement
+    const { name, description, icon, tier, unlockedAt, threshold } = achievement
     const unlocked = Boolean(unlockedAt)
 
     return (
@@ -60,7 +62,7 @@ const BadgeTile = ({ achievement }) => {
                     <span className="sr-only">{unlocked ? 'Unlocked' : 'Locked'}. </span>
                     {unlocked ? `Unlocked ${new Date(unlockedAt).toLocaleDateString()}` : 'Locked'}
                 </p>
-                {ladder && <LadderProgress achievement={achievement} />}
+                {threshold != null && <LadderProgress achievement={achievement} />}
             </div>
         </li>
     )

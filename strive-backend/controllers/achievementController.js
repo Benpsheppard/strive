@@ -42,10 +42,10 @@ const getAchievements = asyncHandler(async (req, res) => {
     // Locked secrets are left out entirely so they never reach the client
     const visible = ACHIEVEMENTS.filter(a => !a.secret || unlockedAt.has(a.id))
 
-    // Current lifetime totals, so ladder rungs can show progress
-    const ctx = { user: fresh, stats: await loadStats(fresh._id) }
+    // Current lifetime totals, so progress achievements can show a bar
+    const ctx = { user: fresh, stats: await loadStats(fresh._id, { muscleFocus: true }) }
     const currentFor = (a) => {
-        if (!a.ladder) return null
+        if (!a.value) return null
         try {
             return Math.round(a.value(ctx))
         } catch (e) {

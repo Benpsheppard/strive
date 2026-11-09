@@ -180,6 +180,8 @@ const focus = MUSCLE_GROUPS.filter(group => FOCUS_ICONS[group]).map(group => ({
     description: `Complete ${FOCUS_WORKOUTS} ${group.toLowerCase()}-focused workouts`,
     backfill: true,
     usesMuscleFocus: true,
+    threshold: FOCUS_WORKOUTS,
+    value: (ctx) => ctx.stats.muscleFocus?.[group] || 0,
     check: (ctx) => (ctx.stats.muscleFocus?.[group] || 0) >= FOCUS_WORKOUTS
 }))
 
@@ -276,8 +278,8 @@ const toPublic = (achievement, unlockedAt = null, current = null) => {
         description: hidden ? 'A secret achievement. Keep exploring.' : achievement.description,
         icon: hidden ? 'lock' : achievement.icon,
         unlockedAt,
-        // Ladder rungs only: the target for this rung and the user's current total towards it
-        ...(achievement.ladder ? { threshold: achievement.threshold, current } : {})
+        // Progress achievements only (ladder rungs, focus): the target and the user's current total
+        ...(achievement.value ? { threshold: achievement.threshold, current } : {})
     }
 }
 
