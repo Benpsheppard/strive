@@ -14,22 +14,27 @@ import BadgeTile from '../components/achievements/BadgeTile.jsx'
 
 // Show one card per ladder: the highest rung unlocked, or the first rung while none are.
 // Rungs arrive lowest first, and a collapsed card keeps the position of its ladder.
+// Each ladder card also gets `next`: the first locked rung (null once the ladder is complete).
 const collapseLadders = (items) => {
     const shown = []
     const slots = new Map()
+    const nexts = new Map()
 
     for (const a of items) {
         if (!a.ladder) {
             shown.push(a)
-        } else if (!slots.has(a.ladder)) {
+            continue
+        }
+        if (!slots.has(a.ladder)) {
             slots.set(a.ladder, shown.length)
             shown.push(a)
         } else if (a.unlockedAt) {
             shown[slots.get(a.ladder)] = a
         }
+        if (!a.unlockedAt && !nexts.has(a.ladder)) nexts.set(a.ladder, a)
     }
 
-    return shown
+    return shown.map(a => a.ladder ? { ...a, next: nexts.get(a.ladder) || null } : a)
 }
 
 const SECTIONS = [

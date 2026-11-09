@@ -3,7 +3,7 @@
 // Imports
 const asyncHandler = require('express-async-handler')
 const { ACHIEVEMENTS, EVENTS, toPublic } = require('../utils/achievements/definitions.js')
-const { unlockForEvent, evaluateBackfill } = require('../utils/achievements/evaluate.js')
+const { unlockForEvent, evaluateBackfill, loadStats } = require('../utils/achievements/evaluate.js')
 
 // Model Imports
 const User = require('../models/userModel.js')
@@ -41,7 +41,18 @@ const getAchievements = asyncHandler(async (req, res) => {
     }
     // Locked secrets are left out entirely so they never reach the client
     const visible = ACHIEVEMENTS.filter(a => !a.secret || unlockedAt.has(a.id))
-    const achievements = visible.map(a => toPublic(a, unlockedAt.get(a.id) || null))
+
+    // Current lifetime totals, so ladder rungs can show progress
+    const ctx = { user: fresh, stats: await loadStats(fresh._id) }
+    const currentFor = (a) => {
+        if (!a.ladder) return null
+        try {
+            return Math.round(a.value(ctx))
+        } catch (e) {
+            return null
+        }
+    }
+    const achievements = visible.map(a => toPublic(a, unlockedAt.get(a.id) || null, currentFor(a)))
 
     // The number of secrets is itself a spoiler: only reveal it once they have all been found
     const allSecrets = ACHIEVEMENTS.filter(a => a.secret)

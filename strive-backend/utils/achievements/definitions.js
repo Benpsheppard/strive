@@ -8,7 +8,8 @@
 // Ladder achievements are lifetime totals, so they are also flagged `backfill` and can be
 // awarded retroactively from a user's history.
 // Ladder rungs also carry `ladder: <key>` (rungs of one ladder are listed lowest first) so the
-// app can show just the highest rung reached.
+// app can show just the highest rung reached, plus `threshold` and `value(ctx)` so it can show
+// progress towards the next rung.
 // `completion: true` marks the Completionist meta-achievement: it has no check() and is awarded
 // by recordUnlocks (evaluate.js) once every other achievement is unlocked.
 // check(ctx) is only used for workout-based achievements. Event-based ones (unlocked by the
@@ -31,6 +32,8 @@ const ladder = ({ key, name, describe, icon, rungs, value }) =>
         tier,
         icon,
         backfill: true,
+        threshold,
+        value,
         check: (ctx) => value(ctx) >= threshold
     }))
 
@@ -261,7 +264,7 @@ const BY_ID = new Map(ACHIEVEMENTS.map(a => [a.id, a]))
 
 // What the API shows for an achievement. Locked secrets are masked so the answer can't be read
 // out of the response.
-const toPublic = (achievement, unlockedAt = null) => {
+const toPublic = (achievement, unlockedAt = null, current = null) => {
     const hidden = achievement.secret && !unlockedAt
     return {
         id: achievement.id,
@@ -272,7 +275,9 @@ const toPublic = (achievement, unlockedAt = null) => {
         name: hidden ? '???' : achievement.name,
         description: hidden ? 'A secret achievement. Keep exploring.' : achievement.description,
         icon: hidden ? 'lock' : achievement.icon,
-        unlockedAt
+        unlockedAt,
+        // Ladder rungs only: the target for this rung and the user's current total towards it
+        ...(achievement.ladder ? { threshold: achievement.threshold, current } : {})
     }
 }
 
