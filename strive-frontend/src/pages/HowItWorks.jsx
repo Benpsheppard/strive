@@ -60,10 +60,10 @@ const Content = () => {
         <Section id="streaks" title="Weekly" accent="streaks">
             <p>
                 Your streak counts the weeks in a row you have trained. It goes up with your first workout each week.
-                At the end of the week, if you did fewer workouts than your weekly target, the streak resets.
+                Keep it going by training at least once every week. If you miss a whole week, the streak resets.
             </p>
             <ul>
-                <li>Set your weekly target (1 to 7 workouts) in Profile.</li>
+                <li>Set your weekly target (1 to 7 workouts) in Profile to track your goal for the week.</li>
                 <li><strong>Shields:</strong> you earn a streak shield every 4 weeks of streak. You can hold one at a time.</li>
                 <li>A shield protects you from <strong>one</strong> missed week. Miss more than a week and the streak resets.</li>
             </ul>

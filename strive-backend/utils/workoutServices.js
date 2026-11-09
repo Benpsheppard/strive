@@ -11,6 +11,10 @@ const { calculateMomentum } = require('./momentum')
 // A shield is earned every time the streak reaches a multiple of this many weeks
 const WEEKS_PER_SHIELD = 4
 
+// A week keeps the streak alive if it contains at least this many workouts. This matches
+// checkAndIncreaseStreak, which counts a week as soon as its first workout is logged.
+const MIN_WORKOUTS_FOR_STREAK = 1
+
 // Get number of workouts completed this week
 const getWorkoutsThisWeek = async (userId, date) => {
     const start = getStartOfWeek(date)
@@ -142,7 +146,7 @@ const checkAndBreakStreak = async (userId) => {
 
     if (weeksSinceLastWorkoutWeek > 1) {
         user.streak.current = 0
-    } else if (completedWorkouts < user.target) {
+    } else if (completedWorkouts < MIN_WORKOUTS_FOR_STREAK) {
         if (user.streak.shield) {
             user.streak.shield = false
         } else {

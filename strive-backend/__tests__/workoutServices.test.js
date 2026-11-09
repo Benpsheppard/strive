@@ -153,6 +153,16 @@ describe('workoutServices', () => {
             expect(user.streak.current).toBe(0)
         })
 
+        test('one workout last week keeps the streak and shield even when below the weekly target', async () => {
+            const user = makeUser({ current: 4, shield: true, lastIncrementedWeek: '2026-W43' }, 3)
+            setupMissedWeek(user, 1, 1)
+
+            await checkAndBreakStreak('user123')
+
+            expect(user.streak.current).toBe(4)
+            expect(user.streak.shield).toBe(true)
+        })
+
         test('a shield does not cover more than one missed week', async () => {
             const user = makeUser({ current: 4, shield: true, lastIncrementedWeek: '2026-W40' })
             setupMissedWeek(user, 4, 0)
