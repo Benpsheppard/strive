@@ -81,7 +81,7 @@ const Header = () => {
                                     isActive ? 'text-accent-fg' : 'text-muted hover:text-fg'
                                 )}
                             >
-                                <Icon size={26} aria-hidden="true" />
+                                <Icon size={20} aria-hidden="true" />
                                 <span>{label}</span>
                             </NavLink>
                         </li>
