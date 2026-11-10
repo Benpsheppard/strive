@@ -9,6 +9,9 @@ import { toast } from 'react-toastify'
 import { logout, deleteUser, resetUser, reset } from '../features/auth/authSlice.js'
 import { getWorkouts } from '../features/workouts/workoutsSlice.js'
 
+// Config Imports
+import { APP_VERSION } from '../config/version.js'
+
 // Hook Imports
 import { useAlerts } from '../hooks/useAlerts.js'
 
@@ -105,6 +108,8 @@ const Profile = () => {
                     <Button variant="danger" fullWidth onClick={onDeleteAccount}>Delete account</Button>
                 </div>
             </Card>
+
+            <p className="pb-2 text-center text-sm text-muted">Strive v{APP_VERSION}</p>
         </div>
     )
 }
