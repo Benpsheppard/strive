@@ -14,7 +14,7 @@ const MIN_WEIGHT_PB_INCREASE = 0.5
 const MAX_FIRST_LIFTS_REWARDED = 5
 
 // Max SP a user can earn in one calendar day
-const DAILY_SP_CAP = 1500
+const DAILY_SP_CAP = 5000
 
 const NO_SP_REASON = `Log at least ${MIN_SETS_FOR_SP} sets over ${MIN_DURATION_MINUTES_FOR_SP} minutes to earn Strive Points.`
 
