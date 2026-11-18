@@ -5,6 +5,7 @@ const Quest = require('../../models/questModel')
 const Exercise = require('../../models/exerciseModel')
 const LeaderboardEntry = require('../../models/leaderboardEntryModel')
 const mailer = require('../../utils/mailer')
+const { DAILY_SP_CAP } = require('../../utils/spRules')
 
 jest.setTimeout(120000)
 
@@ -256,18 +257,20 @@ describe('scoring against real history', () => {
 
         const totals = []
         let last
-        for (let i = 0; i < 7; i++) {
+        // Keep saving until the cap is hit, then save once more to confirm nothing further is paid
+        for (let i = 0; i < 100; i++) {
             last = await save(token, workoutBody({
                 clientId: `client-cap-${i}-xxxxxxxx`,
                 exercises: [{ exercise: String(bench._id), selectedEquipment: 'Barbell', sets: [{ weight: 60 + i * 5, reps: 8 }, { weight: 60 + i * 5, reps: 8 }, { weight: 60 + i * 5, reps: 8 }] }]
             }))
             totals.push(last.body.workout.summary.totalStrivePoints.total)
+            if (last.body.workout.summary.totalStrivePoints.dailyCapReached && totals.length > 1 && totals[totals.length - 1] === 0) break
         }
 
-        expect(totals.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(1500)
+        expect(totals.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(DAILY_SP_CAP)
         expect(totals[totals.length - 1]).toBe(0)
         expect(last.body.workout.summary.totalStrivePoints.dailyCapReached).toBe(true)
-        expect(await pointsOf(credentials.username)).toBeLessThanOrEqual(1500)
+        expect(await pointsOf(credentials.username)).toBeLessThanOrEqual(DAILY_SP_CAP)
     })
 
     test('personal bests compare with all-time history, even from long ago', async () => {

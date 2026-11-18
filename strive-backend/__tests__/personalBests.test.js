@@ -172,7 +172,7 @@ describe('anti-farming rules', () => {
         const earlierToday = {
             ...pastWorkout('Bench Press', 60),
             createdAt: new Date(),
-            summary: { totalWeight: 1000, totalStrivePoints: { total: 1450 } }
+            summary: { totalWeight: 1000, totalStrivePoints: { total: 4950 } }
         }
         mockHistory([earlierToday])
         const { summary } = await runWith([lift(100)], 30)
