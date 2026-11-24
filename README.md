@@ -41,6 +41,10 @@ Strive is a gym tracker built with the MERN stack. Log workouts, track your prog
 - Guest mode, with a migration flow to move guest data into a new account
 - Onboarding, profile editing, account reset and deletion
 
+### Life integration
+- A read-only endpoint, `GET /api/integrations/life/workouts?since=<date>`, gives my Life app a summary of my workouts (title, when, personal bests, quests, Strive points) saved after a moment in time
+- It is not a member route: it needs an `X-Integration-Key` header, and does nothing until `LIFE_API_KEY` and `LIFE_USER_EMAIL` are set (the key is any long random string, the email is the Strive account to share)
+
 ## Tech Stack
 
 | Area | Technology |

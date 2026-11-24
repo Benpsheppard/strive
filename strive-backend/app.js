@@ -19,6 +19,7 @@ const { questRouter } = require('./routes/questRoutes.js')
 const { leaderboardRouter } = require('./routes/leaderboardRoutes.js')
 const { routineRouter } = require('./routes/routineRoutes.js')
 const { achievementRouter } = require('./routes/achievementRoutes.js')
+const { integrationRouter } = require('./routes/integrationRoutes.js')
 
 const createApp = () => {
     const app = express()
@@ -88,6 +89,7 @@ const createApp = () => {
     app.use('/api/leaderboard', leaderboardRouter)
     app.use('/api/routines', routineRouter)
     app.use('/api/achievements', achievementRouter)
+    app.use('/api/integrations', integrationRouter)
 
     // Unknown API routes get a JSON 404 (not the frontend's HTML)
     app.use('/api', (req, res) => {
