@@ -7,13 +7,16 @@ process.env.FRONTEND_URL = 'http://localhost:3000'
 
 const mongoose = require('mongoose')
 const request = require('supertest')
+const os = require('os')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 
 let mongod
 
 const startDatabase = async () => {
     mongod = await MongoMemoryServer.create()
-    await mongoose.connect(mongod.getUri('strive_integration'))
+    await mongoose.connect(mongod.getUri('strive_integration'), {
+        runtimeAdapters: { os }
+    })
 
     // Build indexes now so unique constraints behave as in production
     await Promise.all(Object.values(mongoose.models).map(model => model.init()))
